@@ -1,0 +1,18 @@
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+
+<http://remy-live.github.io/lv2/fade>
+    modgui:gui [
+        a modgui:Gui ;
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/icon-fade.html> ;
+        modgui:stylesheet <modgui/style-fade.css> ;
+        modgui:javascript <modgui/script-fade.js> ;
+        modgui:brand "REMY" ;
+        modgui:label "FADE" ;
+
+        # Correct form: nodes carrying lv2:symbol, not a bare string.
+        # A bare string here silently stops the outputs being monitored.
+        modgui:monitoredOutputs [ lv2:symbol "position" ] ,
+                                [ lv2:symbol "state" ] ;
+    ] .

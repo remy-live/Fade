@@ -1,0 +1,141 @@
+<div class="mod-pedal mod-pedal-fade{{{cns}}}">
+
+    <div mod-role="drag-handle" class="mod-drag-handle"></div>
+
+    <div class="fade-head{{{cns}}}">
+        <span class="fade-brand{{{cns}}}">{{brand}}</span>
+        <span class="fade-name{{{cns}}}">{{label}}</span>
+    </div>
+
+    <div class="fade-light{{{cns}}}" mod-role="bypass-light"></div>
+
+    <!-- Fade bar, animated by the "avancement" output port -->
+    <div class="fade-meter{{{cns}}}">
+        <div class="fade-ends{{{cns}}}">
+            <span class="fade-end-1{{{cns}}} fade-end-1">IN 1</span>
+            <span class="fade-pct{{{cns}}} fade-pct">0%</span>
+            <span class="fade-end-2{{{cns}}} fade-end-2">IN 2</span>
+        </div>
+        <div class="fade-track{{{cns}}}">
+            <div class="fade-fill{{{cns}}} fade-fill"></div>
+            <div class="fade-dot{{{cns}}} fade-dot"></div>
+        </div>
+    </div>
+
+    <!-- Four controls: the two fade times, the two input gains -->
+    <div class="fade-knobs{{{cns}}}">
+
+        <div class="fade-knob{{{cns}}}">
+            <div class="fade-knob-body{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="fade_1_2"
+                 mod-widget-rotation="270"></div>
+            <div class="fade-knob-title{{{cns}}}">1&rarr;2</div>
+            <div class="fade-knob-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="fade_1_2"></div>
+        </div>
+
+        <div class="fade-knob{{{cns}}}">
+            <div class="fade-knob-body{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="fade_2_1"
+                 mod-widget-rotation="270"></div>
+            <div class="fade-knob-title{{{cns}}}">2&rarr;1</div>
+            <div class="fade-knob-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="fade_2_1"></div>
+        </div>
+
+        <div class="fade-knob{{{cns}}}">
+            <div class="fade-knob-body{{{cns}}} fade-knob-gain{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="gain_1"
+                 mod-widget-rotation="270"></div>
+            <div class="fade-knob-title{{{cns}}}">GAIN 1</div>
+            <div class="fade-knob-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="gain_1"></div>
+        </div>
+
+        <div class="fade-knob{{{cns}}}">
+            <div class="fade-knob-body{{{cns}}} fade-knob-gain{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="gain_2"
+                 mod-widget-rotation="270"></div>
+            <div class="fade-knob-title{{{cns}}}">GAIN 2</div>
+            <div class="fade-knob-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="gain_2"></div>
+        </div>
+
+    </div>
+
+    <!-- The two controls of the same state -->
+    <div class="fade-cmds{{{cns}}}">
+
+        <div class="fade-cmd{{{cns}}}">
+            <div class="fade-switch{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="toggle"
+                 mod-widget="switch"></div>
+            <div class="fade-cmd-title{{{cns}}}">TOGGLE</div>
+        </div>
+
+        <div class="fade-cmd{{{cns}}}">
+            <div class="fade-push{{{cns}}} fade-push"
+                 mod-role="input-control-port"
+                 mod-port-symbol="trigger"
+                 mod-widget="switch"></div>
+            <div class="fade-cmd-title{{{cns}}}">TRIGGER</div>
+        </div>
+
+    </div>
+
+    <div class="mod-footswitch" mod-role="bypass"></div>
+
+    <!-- Jacks: the loops cover EVERY declared audio port, so no input or
+         output can end up without a socket. -->
+    <div class="mod-pedal-input">
+        {{#effect.ports.audio.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.audio.input}}
+        {{#effect.ports.midi.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-midi-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.midi.input}}
+        {{#effect.ports.cv.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-cv-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.cv.input}}
+    </div>
+
+    <div class="mod-pedal-output">
+        {{#effect.ports.audio.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.audio.output}}
+        {{#effect.ports.midi.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-midi-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.midi.output}}
+        {{#effect.ports.cv.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-cv-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.cv.output}}
+    </div>
+
+</div>

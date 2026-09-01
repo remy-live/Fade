@@ -1,0 +1,239 @@
+/* Fade — pedal drawn entirely in CSS, no images.
+   The height is worked out by hand: mod-ui clips nothing, so anything
+   taller than the box draws over the pedalboard.
+   The jacks get ONLY their "top": their horizontal position comes from
+   pedals.css, and overriding it drags them into the middle of the pedal.
+   Every class carries {{{cns}}}, written plainly with no escaping, or
+   mustache substitutes nothing. */
+
+.mod-pedal-fade{{{cns}}} {
+    position: relative;
+    width: 260px;
+    height: 322px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    background:
+        radial-gradient(120% 80% at 50% -10%, rgba(90,190,220,.16) 0%, rgba(0,0,0,0) 60%),
+        linear-gradient(165deg, #33404e 0%, #1e252e 55%, #131920 100%);
+    border: 1px solid #0b0e12;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -18px 26px rgba(0,0,0,.35),
+        0 4px 12px rgba(0,0,0,.55);
+    font-family: Helvetica, Arial, sans-serif;
+    color: #d6e2ee;
+    overflow: visible;
+}
+
+.mod-pedal-fade{{{cns}}} .mod-drag-handle {
+    position: absolute; top: 0; left: 0;
+    width: 260px; height: 44px;
+    cursor: move;
+}
+
+/* ---------- header ---------- */
+
+.fade-head{{{cns}}} {
+    position: absolute; top: 9px; left: 0; width: 260px;
+    text-align: center;
+}
+.fade-brand{{{cns}}} {
+    display: block;
+    font-size: 9px; letter-spacing: 4px; color: #62788c;
+}
+.fade-name{{{cns}}} {
+    display: block; margin-top: 1px;
+    font-size: 21px; font-weight: bold; letter-spacing: 3px; color: #eef5fb;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+
+.fade-light{{{cns}}} {
+    position: absolute; top: 14px; right: 16px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #2c3742;
+    box-shadow: inset 0 0 2px #000;
+}
+/* "on" arrives when the plugin is RUNNING, not when it is bypassed. */
+.fade-light{{{cns}}}.on {
+    background: #4ce3a0;
+    box-shadow: 0 0 8px #4ce3a0;
+}
+
+/* ---------- fade bar ---------- */
+
+.fade-meter{{{cns}}} {
+    position: absolute; top: 58px; left: 26px; width: 208px;
+}
+
+.fade-ends{{{cns}}} {
+    position: relative; height: 12px;
+    font-size: 9px; letter-spacing: 1px; color: #6f8598;
+}
+.fade-ends{{{cns}}} span { position: absolute; top: 0; }
+.fade-end-1{{{cns}}} { left: 0; }
+.fade-end-2{{{cns}}} { right: 0; }
+.fade-end-1{{{cns}}}.vif, .fade-end-2{{{cns}}}.vif { color: #7fe6cc; }
+
+.fade-pct{{{cns}}} {
+    left: 50%; margin-left: -18px;
+    width: 36px; text-align: center;
+    color: #d9e8f4; font-weight: bold;
+}
+
+.fade-track{{{cns}}} {
+    position: relative;
+    height: 9px; margin-top: 3px;
+    border-radius: 5px;
+    background: #0d1218;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+}
+
+.fade-fill{{{cns}}} {
+    position: absolute; top: 0; left: 0; height: 9px; width: 0%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #2f7fbf 0%, #4cd0b4 100%);
+    box-shadow: 0 0 8px rgba(76,208,180,.45);
+}
+
+.fade-dot{{{cns}}} {
+    position: absolute; top: -4px; left: 0%;
+    margin-left: -8px;
+    width: 16px; height: 16px; border-radius: 50%;
+    box-sizing: border-box;
+    background: #eef5fb;
+    border: 2px solid #161c24;
+    box-shadow: 0 1px 4px rgba(0,0,0,.75);
+}
+
+/* ---------- four controls ---------- */
+
+.fade-knobs{{{cns}}} {
+    position: absolute; top: 92px; left: 0; width: 260px; height: 86px;
+}
+
+.fade-knob{{{cns}}} {
+    position: absolute; top: 0; width: 58px; text-align: center;
+}
+.fade-knob{{{cns}}}:nth-child(1) { left: 8px; }
+.fade-knob{{{cns}}}:nth-child(2) { left: 70px; }
+.fade-knob{{{cns}}}:nth-child(3) { left: 132px; }
+.fade-knob{{{cns}}}:nth-child(4) { left: 194px; }
+
+/* mod-widget-rotation rotates THIS element: the pointer is drawn inside
+   it and turns with it.  rotation = round(value * 270) - 135 degrees. */
+.fade-knob-body{{{cns}}} {
+    position: relative;
+    width: 42px; height: 42px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 28%, #5d6b78 0%, #38434f 55%, #1d242c 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 5px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor: ns-resize;
+}
+.fade-knob-body{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 4px; left: 50%;
+    margin-left: -1.5px;
+    width: 3px; height: 13px; border-radius: 2px;
+    background: #7fe6cc;
+    box-shadow: 0 0 5px rgba(127,230,204,.8);
+}
+.fade-knob-gain{{{cns}}}::after {
+    background: #f0c46a;
+    box-shadow: 0 0 5px rgba(240,196,106,.8);
+}
+
+.fade-knob-title{{{cns}}} {
+    margin-top: 6px;
+    font-size: 9px; letter-spacing: 1px; color: #7b8fa1;
+}
+.fade-knob-value{{{cns}}} {
+    margin-top: 1px;
+    font-size: 10px; color: #dce7f1;
+}
+
+/* ---------- the two controls ---------- */
+
+.fade-cmds{{{cns}}} {
+    position: absolute; top: 186px; left: 0; width: 260px; height: 54px;
+}
+.fade-cmd{{{cns}}} {
+    position: absolute; top: 0; width: 120px; text-align: center;
+}
+.fade-cmd{{{cns}}}:nth-child(1) { left: 6px; }
+.fade-cmd{{{cns}}}:nth-child(2) { left: 134px; }
+
+.fade-switch{{{cns}}} {
+    position: relative;
+    width: 52px; height: 25px;
+    margin: 0 auto;
+    border-radius: 13px;
+    background: #0d1218;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+    cursor: pointer;
+}
+.fade-switch{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 3px; left: 3px;
+    width: 19px; height: 19px; border-radius: 50%;
+    background: #8a98a5;
+    transition: left .13s ease, background .13s ease;
+}
+/* switchWidget sets the on / off classes */
+.fade-switch{{{cns}}}.on::after {
+    left: 30px;
+    background: #4cd0b4;
+    box-shadow: 0 0 7px rgba(76,208,180,.85);
+}
+
+.fade-push{{{cns}}} {
+    position: relative;
+    width: 42px; height: 25px;
+    margin: 0 auto;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #4a5866 0%, #2a333d 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor: pointer;
+}
+.fade-push{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    margin: -4px 0 0 -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6e808f;
+    transition: background .1s ease, box-shadow .1s ease;
+}
+/* "actif" is set by the script while the fade is running */
+.fade-push{{{cns}}}.actif::after {
+    background: #ffd166;
+    box-shadow: 0 0 8px rgba(255,209,102,.9);
+}
+.fade-push{{{cns}}}.on::after {
+    background: #ffd166;
+}
+
+.fade-cmd-title{{{cns}}} {
+    margin-top: 6px;
+    font-size: 9px; letter-spacing: 2px; color: #6f8598;
+}
+
+/* ---------- bypass footswitch ---------- */
+
+.mod-pedal-fade{{{cns}}} .mod-footswitch {
+    position: absolute; bottom: 14px; left: 50%;
+    margin-left: -25px;
+    width: 50px; height: 50px; border-radius: 50%;
+    background:
+        radial-gradient(circle at 38% 28%, #71808e 0%, #3d4956 60%, #1f272f 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 3px 7px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.16);
+    cursor: pointer;
+}
+
+/* ---------- jacks ---------- */
+/* Only the "top". pedals.css already places the column outside the box. */
+.mod-pedal-fade{{{cns}}} .mod-pedal-input  { top: 88px; }
+.mod-pedal-fade{{{cns}}} .mod-pedal-output { top: 102px; }
