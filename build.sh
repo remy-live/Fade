@@ -7,14 +7,17 @@ CFLAGS="-std=c99 -O3 -ffp-contract=fast -fPIC -shared -DNDEBUG -fvisibility=hidd
 LDFLAGS="-Wl,--no-undefined -Wl,-O1 -s"
 
 rapper -i turtle -c manifest.ttl >/dev/null 2>&1 || { echo "manifest.ttl is invalid"; exit 1; }
-rapper -i turtle -c fade.ttl    >/dev/null 2>&1 || { echo "fade.ttl is invalid";    exit 1; }
+rapper -i turtle -c fade.ttl        >/dev/null 2>&1 || { echo "fade.ttl is invalid";        exit 1; }
+rapper -i turtle -c fade_stereo.ttl >/dev/null 2>&1 || { echo "fade_stereo.ttl is invalid"; exit 1; }
 rapper -i turtle -c modgui.ttl   >/dev/null 2>&1 || { echo "modgui.ttl is invalid";   exit 1; }
-node check_modgui.js || { echo "web UI checks failed"; exit 1; }
+node check_modgui.js        || { echo "web UI checks failed (mono)"; exit 1; }
+node check_modgui.js stereo || { echo "web UI checks failed (stereo)"; exit 1; }
 python3 check_descriptor.py || { echo "descriptor checks failed"; exit 1; }
 
 rm -rf build-aarch64 fade-aarch64.tar.gz
 mkdir -p build-aarch64/fade.lv2/modgui
-cp fade.ttl manifest.ttl modgui.ttl build-aarch64/fade.lv2/
+python3 make_images.py > /dev/null
+cp fade.ttl fade_stereo.ttl manifest.ttl modgui.ttl build-aarch64/fade.lv2/
 cp modgui/* build-aarch64/fade.lv2/modgui/
 aarch64-linux-gnu-gcc $CFLAGS $LDFLAGS -I. -o build-aarch64/fade.lv2/fade.so fade.c
 ( cd build-aarch64 && tar czf ../fade-aarch64.tar.gz fade.lv2 )
@@ -31,3 +34,7 @@ aarch64-linux-gnu-objdump -T "$SO" | grep -o 'GLIBC_[0-9.]*' | sort -u | grep -v
   && { echo "symbol newer than GLIBC_2.17"; exit 1; }
 echo "aarch64 OK - ELF class $CLASSE - $(grep -ao 'FADE_BUILD[A-Za-z0-9_]*' "$SO")"
 aarch64-linux-gnu-objdump -p "$SO" | grep NEEDED
+
+# The installer page carries the bundle, so it is regenerated from the
+# tarball that was just built and verified - never edited by hand.
+python3 make_installer.py || { echo "installer page failed"; exit 1; }

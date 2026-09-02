@@ -369,6 +369,7 @@ static void essai_aleatoire(void)
         if (rand() % 40 == 0) b.g1  = (float)(rand() % 100) - 70.0f;
         if (rand() % 40 == 0) b.g2  = (float)(rand() % 100) - 70.0f;
         if (rand() % 15 == 0) b.decl = (float)(rand() % 2);
+        if (rand() % 25 == 0) b.prog = (float)(rand() % 140) - 20.0f;
         if (rand() % 300 == 0) { notif->unaddressed(b.h, 6);
                                  notif->addressed(b.h, 6, (LV2_HMI_Addressing)0xA1, &info); }
         b.d->run(b.h, 128);
@@ -534,6 +535,180 @@ static void essai_declencheur_temps(void)
     banc_fermer(&b);
 }
 
+
+/* ---- stereo variant ---- */
+
+/* The whole point of the stereo build: mod-ui classes a plugin by its audio
+   port counts, and 2 in / 1 out falls into kPluginIONull, next to the CV
+   plugins. 4 in / 2 out is what puts it with the stereo audio plugins. */
+static void test_stereo_ports(void)
+{
+    const LV2_Descriptor* d = lv2_descriptor(1);
+    verifie_vrai("a second descriptor exists", d != NULL);
+    if (!d) return;
+    verifie_vrai("second descriptor has the stereo URI",
+                 strstr(d->URI, "#stereo") != NULL);
+    verifie_vrai("mono and stereo have different URIs",
+                 strcmp(d->URI, lv2_descriptor(0)->URI) != 0);
+    verifie_vrai("no third descriptor", lv2_descriptor(2) == NULL);
+}
+
+/* Both channels must ride the SAME fade ramp: any drift would swing the
+   stereo image during the crossfade. */
+static void test_stereo_channels(void)
+{
+    const LV2_Descriptor* d = lv2_descriptor(1);
+    LV2_Handle h = d->instantiate(d, 48000.0, ".", NULL);
+    const uint32_t n = 64;
+    float in1l[64], in1r[64], in2l[64], in2r[64], outl[64], outr[64];
+    float sw = 0, t12 = 200, t21 = 200, prog = 0, position = 0, g1 = 0, g2 = 0,
+          decl = 0, state = 0;
+
+    for (uint32_t i = 0; i < n; ++i) {
+        in1l[i] = 1.0f; in1r[i] = 1.0f;      /* same signal both sides */
+        in2l[i] = 0.0f; in2r[i] = 0.0f;
+    }
+    d->connect_port(h, 0, in1l); d->connect_port(h, 1, in1r);
+    d->connect_port(h, 2, in2l); d->connect_port(h, 3, in2r);
+    d->connect_port(h, 4, outl); d->connect_port(h, 5, outr);
+    d->connect_port(h, 6, &sw);   d->connect_port(h, 7, &t12);
+    d->connect_port(h, 8, &t21);  d->connect_port(h, 9, &prog);
+    d->connect_port(h, 10, &position); d->connect_port(h, 11, &g1);
+    d->connect_port(h, 12, &g2);  d->connect_port(h, 13, &decl);
+    d->connect_port(h, 14, &state);
+    d->activate(h);
+
+    d->run(h, n);
+    verifie("stereo starts on input 1 (L)", outl[n-1], 1.0, 1e-6);
+    verifie("stereo starts on input 1 (R)", outr[n-1], 1.0, 1e-6);
+
+    sw = 1.0f;
+    double worst = 0.0;
+    /* 200 ms at 48 kHz is 9600 samples: 150 blocks of 64. Run 200 so the
+       fade has actually finished by the time we check the end point. */
+    for (int k = 0; k < 200; ++k) {
+        d->run(h, n);
+        for (uint32_t i = 0; i < n; ++i) {
+            double e = fabs(outl[i] - outr[i]);
+            if (e > worst) worst = e;
+        }
+    }
+    printf("    (largest L/R difference during the fade: %.9f)\n", worst);
+    verifie("both channels ride the same ramp", worst, 0.0, 1e-9);
+    verifie("stereo reaches input 2", outl[n-1], 0.0, 1e-6);
+
+    d->deactivate(h); d->cleanup(h);
+}
+
+/* Per-channel gains and independent left/right material. */
+static void test_stereo_independent(void)
+{
+    const LV2_Descriptor* d = lv2_descriptor(1);
+    LV2_Handle h = d->instantiate(d, 48000.0, ".", NULL);
+    const uint32_t n = 64;
+    float in1l[64], in1r[64], in2l[64], in2r[64], outl[64], outr[64];
+    float sw = 0, t12 = 0, t21 = 0, prog = 0, position = 0, g1 = 0, g2 = 0,
+          decl = 0, state = 0;
+
+    for (uint32_t i = 0; i < n; ++i) {
+        in1l[i] = 1.0f; in1r[i] = -1.0f;     /* left and right differ */
+        in2l[i] = 0.5f; in2r[i] = 0.25f;
+    }
+    d->connect_port(h, 0, in1l); d->connect_port(h, 1, in1r);
+    d->connect_port(h, 2, in2l); d->connect_port(h, 3, in2r);
+    d->connect_port(h, 4, outl); d->connect_port(h, 5, outr);
+    d->connect_port(h, 6, &sw);   d->connect_port(h, 7, &t12);
+    d->connect_port(h, 8, &t21);  d->connect_port(h, 9, &prog);
+    d->connect_port(h, 10, &position); d->connect_port(h, 11, &g1);
+    d->connect_port(h, 12, &g2);  d->connect_port(h, 13, &decl);
+    d->connect_port(h, 14, &state);
+    d->activate(h);
+
+    d->run(h, n);
+    verifie("L carries its own input", outl[n-1],  1.0, 1e-6);
+    verifie("R carries its own input", outr[n-1], -1.0, 1e-6);
+
+    sw = 1.0f;                       /* instant switch, t12 = 0 */
+    d->run(h, n); d->run(h, n);
+    verifie("L switched to its input 2", outl[n-1], 0.5,  1e-6);
+    verifie("R switched to its input 2", outr[n-1], 0.25, 1e-6);
+
+    g2 = -6.0f;                      /* GAIN 2 hits both channels */
+    d->run(h, n); d->run(h, n);
+    verifie("GAIN 2 applies to L", outl[n-1], 0.5  * 0.501187, 1e-4);
+    verifie("GAIN 2 applies to R", outr[n-1], 0.25 * 0.501187, 1e-4);
+
+    /* An unconnected output must stop us writing anything at all. */
+    d->connect_port(h, 5, NULL);
+    d->run(h, n);
+    printf("  %-46s %s\n", "unconnected stereo output does not crash", "OK");
+
+    d->deactivate(h); d->cleanup(h);
+}
+
+
+/* ---- manual crossfade ---- */
+
+/* The forum report that prompted this: PROGRESS was an input port the
+   plugin ignored, so turning it did nothing. Anyone will try to turn it. */
+static void test_manual_crossfade(void)
+{
+    Banc b; banc_ouvrir(&b, 48000.0, 64, 0);
+    b.t12 = 5000.0f; b.t21 = 5000.0f;    /* long fades: manual must not ramp */
+    for (uint32_t i = 0; i < 64; ++i) { b.in1[i] = 1.0f; b.in2[i] = 0.0f; }
+
+    b.d->run(b.h, 64);
+    verifie("starts on input 1", b.out[63], 1.0, 1e-6);
+
+    /* move MANUAL to 70 % : we should hear 30 % of input 1 */
+    b.prog = 70.0f;
+    b.d->run(b.h, 64);
+    verifie("MANUAL 70 % crossfades by hand", b.out[63], 0.30, 1e-6);
+
+    /* and it must STAY there, not be dragged back by the automatic ramp */
+    for (int k = 0; k < 200; ++k) b.d->run(b.h, 64);
+    verifie("manual position holds, no ramp back", b.out[63], 0.30, 1e-6);
+    verifie("POSITION output follows the hand", b.avance, 0.70, 1e-6);
+
+    /* anywhere in between works, in both directions */
+    b.prog = 12.5f;  b.d->run(b.h, 64);
+    verifie("MANUAL 12.5 %", b.out[63], 0.875, 1e-6);
+    b.prog = 100.0f; b.d->run(b.h, 64);
+    verifie("MANUAL 100 % = input 2 only", b.out[63], 0.0, 1e-6);
+    b.prog = 0.0f;   b.d->run(b.h, 64);
+    verifie("MANUAL 0 % = input 1 only", b.out[63], 1.0, 1e-6);
+
+    banc_fermer(&b);
+}
+
+/* The toggle and the trigger must take the fade back off the hand. */
+static void test_manual_released(void)
+{
+    Banc b; banc_ouvrir(&b, 48000.0, 64, 0);
+    b.t12 = 0.0f; b.t21 = 0.0f;          /* instant, so we read the state */
+    for (uint32_t i = 0; i < 64; ++i) { b.in1[i] = 1.0f; b.in2[i] = 0.0f; }
+
+    b.prog = 60.0f; b.d->run(b.h, 64);
+    verifie("hand takes over", b.out[63], 0.40, 1e-6);
+
+    /* past halfway, so the state reads as input 2: one pulse goes back to 1 */
+    b.decl = 1.0f; b.d->run(b.h, 64); b.decl = 0.0f;
+    verifie("trigger releases the hand and returns to input 1",
+            b.out[63], 1.0, 1e-6);
+
+    b.prog = 30.0f; b.d->run(b.h, 64);
+    verifie("hand takes over again", b.out[63], 0.70, 1e-6);
+    b.sw = 1.0f; b.d->run(b.h, 64);
+    verifie("toggle releases the hand", b.out[63], 0.0, 1e-6);
+
+    /* a stale MANUAL value must not fight the automatic fade afterwards */
+    b.sw = 0.0f; b.d->run(b.h, 64);
+    for (int k = 0; k < 50; ++k) b.d->run(b.h, 64);
+    verifie("stale MANUAL does not drag the fade back", b.out[63], 1.0, 1e-6);
+
+    banc_fermer(&b);
+}
+
 int main(void)
 {
     const double taux[]    = { 44100.0, 48000.0, 96000.0 };
@@ -561,7 +736,12 @@ int main(void)
     printf("Screen - unaddressing:\n");      essai_ecran_desassignation();
     printf("Without a screen:\n");                  essai_sans_ecran();
     printf("Robustness:\n");                  essai_robustesse();
+    printf("Manual crossfade:\n");         test_manual_crossfade();
+                                           test_manual_released();
     printf("Random:\n");                   essai_aleatoire();
+    printf("Stereo variant:\n");           test_stereo_ports();
+                                           test_stereo_channels();
+                                           test_stereo_independent();
 
     printf("\n%s\n", echec ? "*** SOME CHECKS FAILED ***" : "All checks pass.");
     return echec;

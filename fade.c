@@ -41,7 +41,15 @@
 
 #include "lv2-hmi.h"
 
-#define FADE_URI "http://remy-live.github.io/lv2/fade"
+#define FADE_URI        "http://remy-live.github.io/lv2/fade"
+#define FADE_STEREO_URI "http://remy-live.github.io/lv2/fade#stereo"
+
+/* Two variants share this code. The stereo one is not a convenience: with
+   2 audio inputs and 1 output, mod-ui's fill_iotype() classes the mono
+   plugin as kPluginIONull (stereo needs >=2 in AND >=2 out, mono needs
+   exactly 1 and 1), which lands it in the same drag-and-drop bucket as CV
+   plugins. 4 in / 2 out lands in kPluginIOAudioStereo, where it belongs. */
+#define MAX_CH 2
 
 /* Build stamp, readable on both ends with:
      grep -ao 'FONDU_BUILD[A-Za-z0-9_]*' fade.so
@@ -49,7 +57,7 @@
    same stamp for 32- and 64-bit binaries, so the check happily passed on
    a binary the device could not load. */
 __attribute__((used))
-static const volatile char build_tag[] = "FADE_BUILD1_AARCH64_20260901";
+static const volatile char build_tag[] = "FADE_BUILD4_AARCH64_20260901";
 
 #define TIME_MIN    0.0f
 #define TIME_MAX 10000.0f
@@ -122,28 +130,35 @@ static float gain_linear(float db)
    changes, so a plugin that only sends deltas leaves stale text behind. */
 #define FORGET_HZ    1
 
+/* Audio ports come first, then the controls in the same order for both
+   variants. n_audio tells the two apart: 3 for mono, 6 for stereo. */
+/* Control ports, numbered from the first one AFTER the audio ports.
+   Mono has 3 audio ports, stereo has 6, so the absolute index of a control
+   is n_audio + one of these. */
 typedef enum {
-    PORT_IN_1     = 0,
-    PORT_IN_2     = 1,
-    PORT_OUT      = 2,
-    PORT_TOGGLE  = 3,
-    PORT_TIME_1_2 = 4,
-    PORT_TIME_2_1 = 5,
-    PORT_PROGRESS  = 6,   /* input, meant for an encoder: this is where the
-                            bar and the percentage get drawn */
-    PORT_POSITION   = 7,   /* output: fade position, 0 to 1 */
-    PORT_GAIN_1   = 8,   /* gain of input 1, in dB */
-    PORT_GAIN_2   = 9,   /* gain of input 2, in dB */
-    PORT_TRIGGER = 10, /* input: every rising edge starts the fade */
-    PORT_STATE      = 11, /* output: the state actually in force */
-    PORT_COUNT     = 12
-} PortIndex;
+    CTL_TOGGLE    = 0,
+    CTL_TIME_1_2  = 1,
+    CTL_TIME_2_1  = 2,
+    CTL_PROGRESS  = 3,   /* input: manual crossfade position, 0..100 %.
+                            Also where the screen bar gets drawn. */
+    CTL_POSITION  = 4,   /* output: fade position, 0 to 1 */
+    CTL_GAIN_1    = 5,   /* gain of input 1, in dB */
+    CTL_GAIN_2    = 6,   /* gain of input 2, in dB */
+    CTL_TRIGGER   = 7,   /* input: every rising edge starts the fade */
+    CTL_STATE     = 8,   /* output: the state actually in force */
+    CTL_COUNT     = 9
+} ControlIndex;
+
+/* Widest port count of the two variants: 6 audio + 9 controls. */
+#define PORT_COUNT (6 + CTL_COUNT)
 
 typedef struct {
     /* --- ports --- */
-    const float* in1;
-    const float* in2;
-    float*       out;
+    uint32_t     n_ch;        /* 1 for mono, 2 for stereo */
+    uint32_t     n_audio;     /* 3 or 6: where the control ports start */
+    const float* in1[MAX_CH];
+    const float* in2[MAX_CH];
+    float*       out[MAX_CH];
     const float* toggle;
     const float* time_1_2;
     const float* time_2_1;
@@ -165,6 +180,13 @@ typedef struct {
     int    state;
     int    toggle_prev;    /* to spot a CHANGE of the toggle */
     int    trigger_prev;  /* to spot an EDGE of the trigger */
+
+    /* Manual crossfade. Moving PROGRESS takes the fade over by hand; the
+       toggle or the trigger takes it back. Without this the automatic
+       ramp would drag the position straight back to the current state,
+       and turning the control would appear to do nothing at all. */
+    int    manual;
+    float  progress_prev;
     double pos;          /* 0 = input 1, 1 = input 2.
                             Kept in double: accumulating a 1e-6 step in
                             float drifted by more than 1 % over a ten
@@ -248,12 +270,15 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-    (void)descriptor; (void)bundle_path;
+    (void)bundle_path;
 
     Fade* self = (Fade*)calloc(1, sizeof(Fade));
     if (!self) {
         return NULL;
     }
+
+    self->n_ch    = (descriptor && !strcmp(descriptor->URI, FADE_STEREO_URI)) ? 2u : 1u;
+    self->n_audio = self->n_ch * 3u;
 
     self->sample_rate = (rate > 0.0) ? rate : 48000.0;
     self->pos         = 0.0;
@@ -262,9 +287,11 @@ instantiate(const LV2_Descriptor*     descriptor,
     /* CONTROL ports point at the neutral cell until the host calls
        connect_port. AUDIO ports stay null: a single float cell cannot
        serve as a block buffer, neither for reading nor writing. */
-    self->in1      = NULL;
-    self->in2      = NULL;
-    self->out      = NULL;
+    for (uint32_t c = 0; c < MAX_CH; ++c) {
+        self->in1[c] = NULL;
+        self->in2[c] = NULL;
+        self->out[c] = NULL;
+    }
     self->position_out   = NULL;
     self->toggle  = &self->neutral;
     self->time_1_2 = &self->neutral;
@@ -309,19 +336,31 @@ connect_port(LV2_Handle instance, uint32_t port, void* data)
         return;
     }
 
-    switch ((PortIndex)port) {
-    case PORT_IN_1:     self->in1      = (const float*)data; break;
-    case PORT_IN_2:     self->in2      = (const float*)data; break;
-    case PORT_OUT:      self->out      = (float*)data;       break;
-    case PORT_POSITION:   self->position_out   = (float*)data;       break;
-    case PORT_TOGGLE:  self->toggle  = data ? (const float*)data : &self->neutral; break;
-    case PORT_TIME_1_2: self->time_1_2 = data ? (const float*)data : &self->neutral; break;
-    case PORT_TIME_2_1: self->time_2_1 = data ? (const float*)data : &self->neutral; break;
-    case PORT_PROGRESS:  self->progress  = data ? (const float*)data : &self->neutral; break;
-    case PORT_GAIN_1:   self->gain_1   = data ? (const float*)data : &self->neutral; break;
-    case PORT_GAIN_2:   self->gain_2   = data ? (const float*)data : &self->neutral; break;
-    case PORT_TRIGGER: self->trigger = data ? (const float*)data : &self->neutral; break;
-    case PORT_STATE:      self->state_out = (float*)data; break;
+    /* Audio first: IN 1 channels, then IN 2 channels, then the outputs.
+       Stereo therefore reads in_1_l, in_1_r, in_2_l, in_2_r, out_l, out_r. */
+    if (port < self->n_audio) {
+        const uint32_t n = self->n_ch;
+        if (port < n) {
+            self->in1[port] = (const float*)data;
+        } else if (port < 2u * n) {
+            self->in2[port - n] = (const float*)data;
+        } else {
+            self->out[port - 2u * n] = (float*)data;
+        }
+        return;
+    }
+
+    const float* const neutral = &self->neutral;
+    switch ((ControlIndex)(port - self->n_audio)) {
+    case CTL_TOGGLE:   self->toggle   = data ? (const float*)data : neutral; break;
+    case CTL_TIME_1_2: self->time_1_2 = data ? (const float*)data : neutral; break;
+    case CTL_TIME_2_1: self->time_2_1 = data ? (const float*)data : neutral; break;
+    case CTL_PROGRESS: self->progress = data ? (const float*)data : neutral; break;
+    case CTL_GAIN_1:   self->gain_1   = data ? (const float*)data : neutral; break;
+    case CTL_GAIN_2:   self->gain_2   = data ? (const float*)data : neutral; break;
+    case CTL_TRIGGER:  self->trigger  = data ? (const float*)data : neutral; break;
+    case CTL_POSITION: self->position_out = (float*)data;                    break;
+    case CTL_STATE:    self->state_out    = (float*)data;                    break;
     default: break;
     }
 }
@@ -351,6 +390,8 @@ activate(LV2_Handle instance)
     self->toggle_prev   = self->state;
     self->trigger_prev = (*self->trigger > 0.5f) ? 1 : 0;
     self->pos = self->state ? 1.0 : 0.0;
+    self->manual        = 0;
+    self->progress_prev = *self->progress;
     /* On start we take the gains as they are, with no ramp. */
     self->g1_smooth = gain_linear(*self->gain_1);
     self->g2_smooth = gain_linear(*self->gain_2);
@@ -377,9 +418,9 @@ paint(Fade* self, int force)
     const int    percent = (int)(p * 100.0 + 0.5);
 
     /* --- progress encoder: bar + percentage + direction --- */
-    LV2_HMI_Addressing a = self->addr[PORT_PROGRESS];
+    LV2_HMI_Addressing a = self->addr[self->n_audio + CTL_PROGRESS];
     if (a) {
-        const uint32_t c = self->caps[PORT_PROGRESS];
+        const uint32_t c = self->caps[self->n_audio + CTL_PROGRESS];
 
         if (c & LV2_HMI_AddressingCapability_Indicator) {
             /* bar compared in hundredths: no send for a change the
@@ -419,7 +460,7 @@ paint(Fade* self, int force)
        The toggle and the trigger show the same thing: they are two
        handles on a single state. */
     for (int k = 0; k < 2; ++k) {
-    const int idx = k ? PORT_TRIGGER : PORT_TOGGLE;
+    const uint32_t idx = self->n_audio + (uint32_t)(k ? CTL_TRIGGER : CTL_TOGGLE);
     a = self->addr[idx];
     if (a) {
         const uint32_t c = self->caps[idx];
@@ -487,13 +528,15 @@ static void
 run(LV2_Handle instance, uint32_t n_samples)
 {
     Fade* self = (Fade*)instance;
-    if (!self || !self->out) {
-        return;   /* output not connected: we write nowhere */
+    if (!self) {
+        return;
     }
-
-    const float* const in1 = self->in1;
-    const float* const in2 = self->in2;
-    float* const       out = self->out;
+    /* Every output must point somewhere before we write a whole block. */
+    for (uint32_t c = 0; c < self->n_ch; ++c) {
+        if (!self->out[c]) {
+            return;
+        }
+    }
 
     /* Both controls act on the SAME internal state.
        - the toggle: we follow its CHANGES, not its absolute value, or it
@@ -506,15 +549,37 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (toggle_now != self->toggle_prev) {
         self->state = toggle_now;
         self->toggle_prev = toggle_now;
+        self->manual = 0;          /* the toggle takes the fade back */
     }
 
     const int trigger_now = (*self->trigger > 0.5f) ? 1 : 0;
     if (trigger_now && !self->trigger_prev) {
         self->state = !self->state;
+        self->manual = 0;          /* so does the trigger */
     }
     self->trigger_prev = trigger_now;
 
-    const double target = self->state ? 1.0 : 0.0;
+    /* PROGRESS moved? Then the player is crossfading by hand. We follow
+       its CHANGES, not its value: the plugin cannot write back into an
+       input port, so its value goes stale as soon as the automatic fade
+       moves on, and reading it absolutely would fight the ramp. */
+    float progress_now = *self->progress;
+    if (!(progress_now >= 0.0f)) { progress_now = 0.0f; }   /* also NaN */
+    if (progress_now > 100.0f)   { progress_now = 100.0f; }
+
+    if (progress_now > self->progress_prev + 0.01f ||
+        progress_now < self->progress_prev - 0.01f) {
+        self->manual = 1;
+        self->pos    = (double)progress_now * 0.01;
+        /* Keep the state consistent, so the next press goes the way the
+           player expects rather than back where they just came from. */
+        self->state  = (self->pos >= 0.5) ? 1 : 0;
+    }
+    self->progress_prev = progress_now;
+
+    /* In manual mode the target is wherever the hand left it: no ramp. */
+    const double target = self->manual ? self->pos
+                                       : (self->state ? 1.0 : 0.0);
 
     /* Two times: the way out and the way back are set separately. */
     float ms = self->state ? *self->time_1_2 : *self->time_2_1;
@@ -546,28 +611,45 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float g1_step = (n_samples > 0u) ? (g1_target - g1) / (float)n_samples : 0.0f;
     const float g2_step = (n_samples > 0u) ? (g2_target - g2) / (float)n_samples : 0.0f;
 
-    double pos = self->pos;
+    /* The fade position and the gains are shared by both channels: the
+       image must not drift between left and right. So each channel walks
+       the same ramp, and we only keep the values reached once. */
+    double pos_end = self->pos;
 
-    for (uint32_t i = 0; i < n_samples; ++i) {
-        if (pos < target) {
-            pos += step;
-            if (pos > target) { pos = target; }
-        } else if (pos > target) {
-            pos -= step;
-            if (pos < target) { pos = target; }
+    for (uint32_t c = 0; c < self->n_ch; ++c) {
+        const float* const in1 = self->in1[c];
+        const float* const in2 = self->in2[c];
+        float* const       out = self->out[c];
+
+        double pos = self->pos;
+        float  gc1 = g1;
+        float  gc2 = g2;
+
+        for (uint32_t i = 0; i < n_samples; ++i) {
+            if (pos < target) {
+                pos += step;
+                if (pos > target) { pos = target; }
+            } else if (pos > target) {
+                pos -= step;
+                if (pos < target) { pos = target; }
+            }
+            const float g = (float)pos;
+
+            gc1 += g1_step;
+            gc2 += g2_step;
+
+            /* Read both inputs BEFORE writing: in place, out may be the same
+               buffer as in1 or in2. An unconnected input counts as silence
+               and never makes us follow a null pointer. */
+            const float a = (in1 ? in1[i] : 0.0f) * gc1;
+            const float b = (in2 ? in2[i] : 0.0f) * gc2;
+            out[i] = a * (1.0f - g) + b * g;
         }
-        const float g = (float)pos;
 
-        /* Read both inputs BEFORE writing: in place, out may be the same
-           buffer as in1 or in2. An unconnected input counts as silence
-           and never makes us follow a null pointer. */
-        g1 += g1_step;
-        g2 += g2_step;
-
-        const float a = (in1 ? in1[i] : 0.0f) * g1;
-        const float b = (in2 ? in2[i] : 0.0f) * g2;
-        out[i] = a * (1.0f - g) + b * g;
+        pos_end = pos;
     }
+
+    const double pos = pos_end;
 
     self->pos = pos;
     /* Restart from the target exactly, not from the ramp's accumulation:
@@ -634,8 +716,19 @@ extension_data(const char* uri)
     return NULL;
 }
 
-static const LV2_Descriptor descriptor = {
+static const LV2_Descriptor descriptor_mono = {
     FADE_URI,
+    instantiate,
+    connect_port,
+    activate,
+    run,
+    deactivate,
+    cleanup,
+    extension_data
+};
+
+static const LV2_Descriptor descriptor_stereo = {
+    FADE_STEREO_URI,
     instantiate,
     connect_port,
     activate,
@@ -649,5 +742,9 @@ LV2_SYMBOL_EXPORT
 const LV2_Descriptor*
 lv2_descriptor(uint32_t index)
 {
-    return (index == 0) ? &descriptor : NULL;
+    switch (index) {
+    case 0:  return &descriptor_mono;
+    case 1:  return &descriptor_stereo;
+    default: return NULL;
+    }
 }

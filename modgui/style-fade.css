@@ -83,6 +83,7 @@
 .fade-track{{{cns}}} {
     position: relative;
     height: 9px; margin-top: 3px;
+    cursor: ew-resize;
     border-radius: 5px;
     background: #0d1218;
     box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
@@ -95,6 +96,12 @@
     box-shadow: 0 0 8px rgba(76,208,180,.45);
 }
 
+.fade-track{{{cns}}}::before {
+    content: "";
+    position: absolute; left: -6px; right: -6px; top: -9px; bottom: -9px;
+    /* invisible grab area: a 9px rail is too thin to catch with a mouse */
+}
+
 .fade-dot{{{cns}}} {
     position: absolute; top: -4px; left: 0%;
     margin-left: -8px;
@@ -102,6 +109,7 @@
     box-sizing: border-box;
     background: #eef5fb;
     border: 2px solid #161c24;
+    cursor: ew-resize;
     box-shadow: 0 1px 4px rgba(0,0,0,.75);
 }
 
