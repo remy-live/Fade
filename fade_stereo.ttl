@@ -7,17 +7,17 @@
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 
-<http://remy-live.github.io/lv2/fade>
+<http://remy-live.github.io/lv2/fade#stereo>
     a lv2:Plugin , lv2:UtilityPlugin ;
 
-    doap:name "Fade" ;
+    doap:name "Fade Stereo" ;
     doap:license <http://opensource.org/licenses/isc> ;
     doap:maintainer [ foaf:name "Remy" ] ;
 
     mod:brand "REMY" ;
-    mod:label "FADE" ;
+    mod:label "FADE ST" ;
 
-    rdfs:comment "Crossfades between two audio inputs. Switch off: input 1. Switch on: input 2. The way out and the way back have their own times, and each input has its own gain. Made for switching a delay or reverb chain in and out without chopping the tail." ;
+    rdfs:comment "Crossfades between two audio inputs. Switch off: input 1. Switch on: input 2. The way out and the way back have their own times, and each input has its own gain. Stereo version: IN 1 and IN 2 are both stereo pairs. Made for switching a delay or reverb chain in and out without chopping the tail." ;
 
     lv2:minorVersion 2 ;
     lv2:microVersion 0 ;
@@ -28,23 +28,40 @@
     lv2:port [
         a lv2:AudioPort , lv2:InputPort ;
         lv2:index 0 ;
-        lv2:symbol "in_1" ;
-        lv2:name "IN 1" ;
-        rdfs:comment "Input 1, usually the dry signal. Heard when the toggle is off."
+        lv2:symbol "in_1_l" ;
+        lv2:name "IN 1 L" ;
+        rdfs:comment "Input 1 left, usually the dry signal."
     ] , [
         a lv2:AudioPort , lv2:InputPort ;
         lv2:index 1 ;
-        lv2:symbol "in_2" ;
-        lv2:name "IN 2" ;
-        rdfs:comment "Input 2, usually the effect chain output. Heard when the toggle is on."
+        lv2:symbol "in_1_r" ;
+        lv2:name "IN 1 R" ;
+        rdfs:comment "Input 1 right, usually the dry signal."
+    ] , [
+        a lv2:AudioPort , lv2:InputPort ;
+        lv2:index 2 ;
+        lv2:symbol "in_2_l" ;
+        lv2:name "IN 2 L" ;
+        rdfs:comment "Input 2 left, usually the effect chain output."
+    ] , [
+        a lv2:AudioPort , lv2:InputPort ;
+        lv2:index 3 ;
+        lv2:symbol "in_2_r" ;
+        lv2:name "IN 2 R" ;
+        rdfs:comment "Input 2 right, usually the effect chain output."
     ] , [
         a lv2:AudioPort , lv2:OutputPort ;
-        lv2:index 2 ;
-        lv2:symbol "out" ;
-        lv2:name "OUT"
+        lv2:index 4 ;
+        lv2:symbol "out_l" ;
+        lv2:name "OUT L"
+    ] , [
+        a lv2:AudioPort , lv2:OutputPort ;
+        lv2:index 5 ;
+        lv2:symbol "out_r" ;
+        lv2:name "OUT R"
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 3 ;
+        lv2:index 6 ;
         lv2:symbol "toggle" ;
         lv2:name "TOGGLE" ;
         lv2:portProperty lv2:toggled ;
@@ -54,7 +71,7 @@
         rdfs:comment "Off: input 1 is heard. On: input 2 is heard. Meant for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 4 ;
+        lv2:index 7 ;
         lv2:symbol "fade_1_2" ;
         lv2:name "FADE 1>2" ;
         lv2:default 1000.0 ;
@@ -64,7 +81,7 @@
         rdfs:comment "Fade time when going from input 1 to input 2. At zero the switch is instant."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 5 ;
+        lv2:index 8 ;
         lv2:symbol "fade_2_1" ;
         lv2:name "FADE 2>1" ;
         lv2:default 1000.0 ;
@@ -74,7 +91,7 @@
         rdfs:comment "Fade time when coming back from input 2 to input 1. At zero the switch is instant."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 6 ;
+        lv2:index 9 ;
         lv2:symbol "progress" ;
         lv2:name "MANUAL" ;
         lv2:default 0.0 ;
@@ -84,7 +101,7 @@
         rdfs:comment "Manual crossfade position. Move it and you cross by hand, wherever you stop. The toggle or the trigger takes the fade back. Address it to an encoder to get the fade bar on the device screen."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 7 ;
+        lv2:index 10 ;
         lv2:symbol "position" ;
         lv2:name "POSITION" ;
         lv2:default 0.0 ;
@@ -93,7 +110,7 @@
         rdfs:comment "Fade position, 0 to 1. Read by the web UI."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 8 ;
+        lv2:index 11 ;
         lv2:symbol "gain_1" ;
         lv2:name "GAIN 1" ;
         lv2:default 0.0 ;
@@ -103,7 +120,7 @@
         rdfs:comment "Gain applied to input 1, before the crossfade. At -60 dB the input is muted."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 9 ;
+        lv2:index 12 ;
         lv2:symbol "gain_2" ;
         lv2:name "GAIN 2" ;
         lv2:default 0.0 ;
@@ -113,7 +130,7 @@
         rdfs:comment "Gain applied to input 2, before the crossfade. At -60 dB the input is muted."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 10 ;
+        lv2:index 13 ;
         lv2:symbol "trigger" ;
         lv2:name "TRIGGER" ;
         lv2:portProperty lv2:toggled , pprops:trigger ;
@@ -123,7 +140,7 @@
         rdfs:comment "Each pulse starts the fade the other way. Meant for MIDI: a port can only take one addressing, so this control doubles the toggle rather than replacing it."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 11 ;
+        lv2:index 14 ;
         lv2:symbol "state" ;
         lv2:name "STATE" ;
         lv2:portProperty lv2:toggled ;

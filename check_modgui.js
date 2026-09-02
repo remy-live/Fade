@@ -21,7 +21,9 @@ function say(what, ok, detail) {
 }
 
 /* --- ports read from the descriptor, not retyped by hand --- */
-const ttl = fs.readFileSync('fade.ttl', 'utf8');
+const which = process.argv[2] === 'stereo' ? 'fade_stereo.ttl' : 'fade.ttl';
+const ttl = fs.readFileSync(which, 'utf8');
+console.log('  rendering with ' + which);
 const blocks = ttl.split('] , [');
 const ports = [];
 for (const b of blocks) {
@@ -70,6 +72,7 @@ try {
 say('no mustache braces left', !/\{\{|\}\}/.test(rendered));
 
 const dom = new JSDOM('<body>' + rendered + '</body>');
+global.document = dom.window.document;   /* the drag code listens on document */
 const doc = dom.window.document;
 const racine = doc.querySelector('.mod-pedal');
 say('a .mod-pedal root exists', racine !== null);
@@ -124,26 +127,58 @@ try {
 
 /* --- and does it actually run on this DOM? --- */
 if (typeof fn === 'function') {
-    /* fake jQuery: only what the script uses */
+    /* fake jQuery: only what the script uses, but enough to actually RUN
+       the drag code rather than skip over it. */
+    const handlers = {};
+    const store = {};
     const fakeJq = (sel) => {
         const els = [...doc.querySelectorAll(sel)];
-        return {
-            css: () => fakeJq(sel),
-            text: () => fakeJq(sel),
-            toggleClass: () => fakeJq(sel),
+        const api = {
+            css: () => api,
+            text: () => api,
+            toggleClass: () => api,
+            data: (k, v) => (v === undefined ? store[sel + k] : (store[sel + k] = v, api)),
+            on: (ev, fn) => { (handlers[sel + ev] = handlers[sel + ev] || []).push(fn); return api; },
             length: els.length,
+            0: {
+                getBoundingClientRect: () => ({ left: 100, top: 50, width: 208, height: 9,
+                                                right: 308, bottom: 59 }),
+            },
         };
+        return api;
     };
     const icon = { find: fakeJq };
     try {
-        fn({ type: 'start', icon: icon, ports: [{ symbol: 'avancement', value: 0.42 }] });
-        fn({ type: 'change', icon: icon, symbol: 'avancement', value: 0.75 });
-        fn({ type: 'change', icon: icon, symbol: 'etat', value: 1 });
-        fn({ type: 'change', icon: icon, symbol: 'avancement', value: NaN });
-        fn({ type: 'change', icon: icon, symbol: 'avancement', value: 99 });
-        fn({ type: 'change', icon: icon, symbol: 'inconnu', value: 3 });
-        fn({ type: 'start', icon: icon });          /* with no ports */
+        /* Symbols must match the descriptor: with the old names this block
+           exercised nothing at all and still reported success. */
+        let wrote = null;
+        const funcs = { set_port_value: (sym, v) => { wrote = [sym, v]; } };
+        fn({ type: 'start', icon: icon, ports: [{ symbol: 'position', value: 0.42 }] }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'position', value: 0.75 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'state', value: 1 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'position', value: NaN }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'position', value: 99 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'unknown', value: 3 }, funcs);
+        fn({ type: 'start', icon: icon }, funcs);          /* with no ports */
         say('script survives start, change, NaN, out of range', true);
+
+        /* Exercise the drag: mousedown at 25 % of the rail must write
+           'progress' at about 25. This is the control the forum reported
+           as doing nothing. */
+        const md = handlers['.fade-track' + 'mousedown'];
+        say('the rail has a mousedown handler', !!md && md.length > 0);
+        if (md && md.length) {
+            wrote = null;
+            const md2 = handlers['.fade-track' + 'mousedown'];
+            md2[md2.length - 1].call(null, {
+                clientX: 152, preventDefault() {}, stopPropagation() {},
+            });
+            say('dragging writes the progress port',
+                wrote !== null && wrote[0] === 'progress',
+                wrote ? wrote[0] + ' = ' + wrote[1].toFixed(1) : 'nothing written');
+            say('written value matches the grab position',
+                wrote !== null && Math.abs(wrote[1] - 25) < 1.0);
+        }
     } catch (e) {
         say('script survives start, change, NaN, out of range', false, e.message);
     }

@@ -1,0 +1,14 @@
+# Build artifacts. Binaries do not belong in git history: every version is
+# stored whole and for ever, and clones carry all of them. They go to a
+# GitHub release instead - see the README.
+fade-aarch64.tar.gz
+install.html
+build-aarch64/
+test_fade
+*.o
+*.so
+
+# macOS resource forks. If one of these reaches the bundle, lilv mistakes
+# it for a bundle directory and the plugin refuses to load.
+._*
+.DS_Store
