@@ -3,6 +3,11 @@
 Two LV2 crossfade plugins for the [MOD Dwarf](https://mod.audio): **Fade**
 (mono) and **Fade Stereo**. One bundle, one install.
 
+A second and separate bundle lives in [`voice/`](voice/): **Voice**, a
+vocal channel strip and effects rack with no pitch detection anywhere in
+it. It builds and installs on its own — see [its
+README](voice/README.md).
+
 ## Why
 
 Switching off an echo or a delay with a normal bypass cuts the sound dead:
@@ -159,6 +164,26 @@ code ever runs, and that is where the bugs live.
   would put a bump in the middle.
 - Screen writes are capped at 25 passes per second, with a full cache flush
   once a second so the display survives the firmware's repaints.
+
+## Also in this repository: Voice
+
+[`voice/`](voice/) is a separate bundle with its own build, its own
+descriptors and its own test bench: **Voice** and **Voice Stereo**, a
+vocal channel strip and effects rack — gate, compressor, de-esser, low
+cut, three tone bands, drive, doubler, chorus, tap delay and reverb. It
+replaces what a VoiceLive does to a voice, minus the pitch tracking, which
+is the half that fails on stage.
+
+It shares this repository's rules rather than its code: libc only, one
+allocation, screen support written against `lv2-hmi.h`, and a build that
+refuses to make an archive unless every check passes. The one piece of
+code the two do share is the idea behind Fade itself — Voice's FX switch
+cuts the *send* to the delay and the reverb, never the return, so the
+tails ring out instead of being chopped.
+
+```sh
+voice/build.sh
+```
 
 ## Licence
 

@@ -1,0 +1,300 @@
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix hmi:    <http://moddevices.com/ns/hmi#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix mod:    <http://moddevices.com/ns/mod#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix units:  <http://lv2plug.in/ns/extensions/units#> .
+
+<http://remy-live.github.io/lv2/voice>
+    a lv2:Plugin , lv2:DynamicsPlugin ;
+
+    doap:name "Voice" ;
+    doap:license <http://opensource.org/licenses/isc> ;
+    doap:maintainer [ foaf:name "Remy" ] ;
+
+    mod:brand "REMY" ;
+    mod:label "VOICE" ;
+
+    rdfs:comment "A vocal channel strip and effects rack, with no pitch detection anywhere in it: gate, compressor, de-esser, low cut, three tone bands, drive, doubler, modulation, tap delay and reverb. One switch feeds the effects or stops feeding them, and it stops the send, not the return, so the delay and the reverb ring out instead of being chopped." ;
+
+    lv2:minorVersion 1 ;
+    lv2:microVersion 0 ;
+
+    lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl ;
+    lv2:extensionData hmi:PluginNotification ;
+
+    lv2:port [
+        a lv2:AudioPort , lv2:InputPort ;
+        lv2:index 0 ;
+        lv2:symbol "in" ;
+        lv2:name "IN" ;
+        rdfs:comment "The microphone, or whatever else is being sung through."
+    ] , [
+        a lv2:AudioPort , lv2:OutputPort ;
+        lv2:index 1 ;
+        lv2:symbol "out" ;
+        lv2:name "OUT"
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 2 ;
+        lv2:symbol "in_gain" ;
+        lv2:name "IN GAIN" ;
+        lv2:default 0.0 ;
+        lv2:minimum -20.0 ;
+        lv2:maximum 40.0 ;
+        units:unit units:db ;
+        rdfs:comment "Gain applied to the input, before everything else. A dynamic microphone straight into the Dwarf usually wants +20 to +30 dB here."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 3 ;
+        lv2:symbol "low_cut" ;
+        lv2:name "LOW CUT" ;
+        lv2:default 90.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 400.0 ;
+        units:unit units:hz ;
+        rdfs:comment "High-pass filter on the way in, 6 dB per octave. Takes out stage rumble, handling noise and plosives before they reach the gate. At 0 Hz it is off."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 4 ;
+        lv2:symbol "gate" ;
+        lv2:name "GATE" ;
+        lv2:default -80.0 ;
+        lv2:minimum -80.0 ;
+        lv2:maximum -20.0 ;
+        units:unit units:db ;
+        rdfs:comment "Gate threshold. Below it the channel closes over about 120 ms, with 6 dB of hysteresis and an 80 ms hold so a held note does not chatter. At -80 dB the gate is off."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 5 ;
+        lv2:symbol "comp" ;
+        lv2:name "COMP" ;
+        lv2:default 30.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Compression amount. One control: it lowers the threshold and raises the ratio together, from off to -40 dB at 6:1, and adds back most of what it takes off. The GR output says how hard it is working."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 6 ;
+        lv2:symbol "de_ess" ;
+        lv2:name "DE-ESS" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Tames sibilance by compressing the band above 5.5 kHz alone, so an S loses its edge without the whole word going dull."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 7 ;
+        lv2:symbol "body" ;
+        lv2:name "BODY" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "Low band, below about 240 Hz. Up for weight, down when the microphone is close and the proximity effect has already added it."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 8 ;
+        lv2:symbol "presence" ;
+        lv2:name "PRESENCE" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "Middle band, roughly 1 to 4.5 kHz. This is where a voice cuts through a band, and where it gets honky if pushed too far."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 9 ;
+        lv2:symbol "air" ;
+        lv2:name "AIR" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "Top band, above about 6 kHz. Breath and detail. Use the de-esser if adding air also brings the sibilance up."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 10 ;
+        lv2:symbol "drive" ;
+        lv2:name "DRIVE" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Soft saturation. Adds harmonics and levels out what the compressor left, from clean through to an overdriven-preamp sound."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 11 ;
+        lv2:symbol "doubler" ;
+        lv2:name "DOUBLE" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Two copies of the voice a few tens of milliseconds late, each drifting on its own slow LFO. The drift is what makes it a second take rather than a copy. In the stereo build one copy goes left and the other right."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 12 ;
+        lv2:symbol "modulation" ;
+        lv2:name "MOD" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Chorus. Sets the depth and the amount together. In the stereo build the two sides move a quarter cycle apart, which is where the width comes from."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 13 ;
+        lv2:symbol "mod_speed" ;
+        lv2:name "MOD SPEED" ;
+        lv2:portProperty pprops:logarithmic ;
+        lv2:default 0.6 ;
+        lv2:minimum 0.05 ;
+        lv2:maximum 8.0 ;
+        units:unit units:hz ;
+        rdfs:comment "Speed of the chorus. Slow is a drift, fast is a vibrato."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 14 ;
+        lv2:symbol "delay_time" ;
+        lv2:name "DELAY" ;
+        lv2:portProperty pprops:logarithmic ;
+        lv2:default 400.0 ;
+        lv2:minimum 20.0 ;
+        lv2:maximum 2000.0 ;
+        units:unit units:ms ;
+        rdfs:comment "Delay time. Two presses of TAP override it; moving this control takes it back. TIME publishes the value actually in force."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 15 ;
+        lv2:symbol "delay_repeats" ;
+        lv2:name "REPEATS" ;
+        lv2:default 30.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 95.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Delay feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice instead of fighting it."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 16 ;
+        lv2:symbol "delay_mix" ;
+        lv2:name "DELAY MIX" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "How much delay is heard. The delay also feeds the reverb, so repeats are in the room rather than in front of it."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 17 ;
+        lv2:symbol "reverb" ;
+        lv2:name "REVERB" ;
+        lv2:default 40.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "Tail length. Moves the size of the room and its damping together, from a small dry box to a long hall."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 18 ;
+        lv2:symbol "reverb_mix" ;
+        lv2:name "REVERB MIX" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "How much reverb is heard."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 19 ;
+        lv2:symbol "fx" ;
+        lv2:name "FX" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "On: the doubler, chorus, delay and reverb are fed. Off: the send is cut over 40 ms and the tails ring out instead of being chopped. Meant for a footswitch."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 20 ;
+        lv2:symbol "fx_trigger" ;
+        lv2:name "FX TRIGGER" ;
+        lv2:portProperty lv2:toggled , pprops:trigger ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Each pulse flips the FX state. Meant for MIDI: a port can only take one addressing, so this doubles the toggle rather than replacing it."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 21 ;
+        lv2:symbol "tap" ;
+        lv2:name "TAP" ;
+        lv2:portProperty lv2:toggled , pprops:trigger ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Tap tempo for the delay. Two presses set the time, from 20 to 2000 ms. Longer than that is treated as a fresh start, not a tempo."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 22 ;
+        lv2:symbol "output" ;
+        lv2:name "OUTPUT" ;
+        lv2:default 0.0 ;
+        lv2:minimum -60.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "Output level, after everything. At -60 dB the plugin is silent."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 23 ;
+        lv2:symbol "gr" ;
+        lv2:name "GR" ;
+        lv2:default 0.0 ;
+        lv2:minimum -24.0 ;
+        lv2:maximum 0.0 ;
+        units:unit units:db ;
+        rdfs:comment "Output. Compressor gain reduction in dB, at its worst over the last block. 0 means the compressor is doing nothing."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 24 ;
+        lv2:symbol "level" ;
+        lv2:name "LEVEL" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Output. Peak level leaving the plugin, 0 to 1, with a 300 ms fall so a peak stays visible."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 25 ;
+        lv2:symbol "gate_open" ;
+        lv2:name "GATE OPEN" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Output. 1 while the gate is open."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 26 ;
+        lv2:symbol "fx_state" ;
+        lv2:name "FX STATE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Output. The FX state actually in force. It exists because the trigger and the toggle drive one state, and a plugin must not write back into either."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 27 ;
+        lv2:symbol "time_out" ;
+        lv2:name "TIME" ;
+        lv2:default 400.0 ;
+        lv2:minimum 20.0 ;
+        lv2:maximum 2000.0 ;
+        units:unit units:ms ;
+        rdfs:comment "Output. The delay time in force, in milliseconds, whether it came from the knob or from the tap."
+    ] .

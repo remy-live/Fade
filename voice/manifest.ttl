@@ -1,0 +1,73 @@
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://remy-live.github.io/lv2/voice>
+    a lv2:Plugin ;
+    lv2:binary <voice.so> ;
+    rdfs:seeAlso <voice.ttl> .
+
+<http://remy-live.github.io/lv2/voice#stereo>
+    a lv2:Plugin ;
+    lv2:binary <voice.so> ;
+    rdfs:seeAlso <voice_stereo.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_speech>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_stage>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_ballad>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_rock>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_wide>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_cathedral>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_speech_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_stage_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_ballad_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_rock_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_wide_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_cathedral_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .

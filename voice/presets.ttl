@@ -1,0 +1,759 @@
+@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
+@prefix pset:  <http://lv2plug.in/ns/ext/presets#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://remy-live.github.io/lv2/voice#preset_speech>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Speech" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 120.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -45.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_stage>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Stage Dry" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -42.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value -2.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_ballad>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Ballad" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 90.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -48.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 420.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_rock>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Rock" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 130.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -40.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 65.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 5.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 120.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 16.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_wide>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Wide" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 90.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -48.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.4
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 60.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_cathedral>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:label "Cathedral" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 110.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -46.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 600.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_speech_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Speech" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 120.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -45.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_stage_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Stage Dry" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -42.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value -2.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_ballad_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Ballad" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 90.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -48.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 420.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_rock_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Rock" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 130.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -40.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 65.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 5.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 120.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 16.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_wide_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Wide" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 90.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -48.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.4
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 400.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 30.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 60.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .
+
+<http://remy-live.github.io/lv2/voice#preset_cathedral_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:label "Cathedral" ;
+    lv2:port [
+        lv2:symbol "in_gain" ;
+        pset:value 18.0
+    ] , [
+        lv2:symbol "low_cut" ;
+        pset:value 110.0
+    ] , [
+        lv2:symbol "gate" ;
+        pset:value -46.0
+    ] , [
+        lv2:symbol "comp" ;
+        pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess" ;
+        pset:value 35.0
+    ] , [
+        lv2:symbol "body" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "presence" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "air" ;
+        pset:value 3.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "modulation" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mod_speed" ;
+        pset:value 0.6
+    ] , [
+        lv2:symbol "delay_time" ;
+        pset:value 600.0
+    ] , [
+        lv2:symbol "delay_repeats" ;
+        pset:value 45.0
+    ] , [
+        lv2:symbol "delay_mix" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "reverb_mix" ;
+        pset:value 55.0
+    ] , [
+        lv2:symbol "fx" ;
+        pset:value 1.0
+    ] , [
+        lv2:symbol "output" ;
+        pset:value 0.0
+    ] .

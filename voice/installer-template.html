@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice — install on MOD Dwarf</title>
+<style>
+ :root { color-scheme: dark; }
+ body { margin:0; padding:28px 20px 60px; background:#151a20; color:#dfe8f0;
+        font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+ .wrap { max-width: 620px; margin: 0 auto; }
+ h1 { font-size:26px; margin:0 0 2px; letter-spacing:1px; }
+ .tag { color:#7f95a8; font-size:13px; margin:0 0 22px; }
+ p { margin: 0 0 14px; }
+ .card { background:#1d242c; border:1px solid #2a343e; border-radius:12px;
+         padding:20px; margin:0 0 20px; }
+ button { font-size:17px; font-weight:600; padding:14px 24px; border:0;
+          border-radius:9px; background:#3fcfa8; color:#06231c; cursor:pointer; }
+ button:disabled { background:#39434d; color:#7a8794; cursor:default; }
+ #log { margin-top:16px; padding:12px 14px; border-radius:8px; background:#0d1116;
+        white-space:pre-wrap; font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
+        color:#9fb3c4; }
+ .ok { color:#5fdcae; } .ko { color:#ff8080; }
+ ol, ul { padding-left:20px; color:#b9c8d6; font-size:14.5px; }
+ li { margin-bottom:6px; }
+ pre { background:#0d1116; border:1px solid #232c35; border-radius:8px;
+       padding:12px 14px; overflow-x:auto;
+       font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; color:#c3d2e0; }
+ h2 { font-size:16px; margin:26px 0 10px; color:#e8f1f8; letter-spacing:.5px; }
+ code { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+ .note { font-size:13.5px; color:#8ba0b2; }
+</style>
+<div class="wrap">
+
+<h1>Voice</h1>
+<p class="tag">A vocal channel strip and effects rack with no pitch detection in
+it: gate, compressor, de-esser, tone, drive, doubler, chorus, tap delay and
+reverb. Installs both the mono and the stereo plugin. __BUILD_STAMP__ &middot; aarch64 &middot; __SIZE__ bytes</p>
+
+<div class="card">
+  <button id="go">Install on the Dwarf</button>
+  <div id="log">Ready.</div>
+</div>
+
+<p class="note"><strong>This page must be opened from the Dwarf itself</strong>,
+through the device's File Manager. Opened from your own disk the browser will
+block the request.</p>
+
+<h2>Before you press it</h2>
+<ol>
+  <li>Remove any existing Voice block from your pedalboard. mod-ui caches a failed load.</li>
+  <li>Press the button. Expected answer: <code>{"ok": true}</code>.</li>
+  <li>Add the block back and redo your control assignments.</li>
+</ol>
+
+<h2>Prefer the terminal?</h2>
+<p>Check what you downloaded first. The browser may have renamed or unpacked the
+archive, and that failure looks exactly like a broken plugin:</p>
+<pre>rm -rf /tmp/voice-inst &amp;&amp; mkdir -p /tmp/voice-inst
+tar xf voice-aarch64.tar.gz -C /tmp/voice-inst
+od -An -tx1 -N1 -j4 /tmp/voice-inst/voice.lv2/voice.so
+grep -ao 'VOICE_BUILD[A-Za-z0-9_]*' /tmp/voice-inst/voice.lv2/voice.so</pre>
+<p class="note">The first must print <code>02</code> — the ELF class byte, meaning
+64-bit. The Dwarf refuses a 32-bit binary with <code>wrong ELF class:
+ELFCLASS32</code>.</p>
+
+<p>Then send it. On macOS, <code>COPYFILE_DISABLE</code> is not optional: without
+it the archive carries <code>._*</code> resource-fork files, lilv mistakes them
+for bundle directories, and the plugin fails to load.</p>
+<pre>cd /tmp/voice-inst
+COPYFILE_DISABLE=1 tar czf - --exclude='._*' voice.lv2 \
+  | ssh root@192.168.51.1 'rm -rf /root/.lv2/voice.lv2 \
+      &amp;&amp; tar xzf - -C /root/.lv2 \
+      &amp;&amp; systemctl restart mod-ui'</pre>
+
+<p>Confirm what actually landed on the device:</p>
+<pre>ssh root@192.168.51.1 "grep -ao 'VOICE_BUILD[A-Za-z0-9_]*' /root/.lv2/voice.lv2/voice.so"</pre>
+
+<h2>Where it lands</h2>
+<p class="note">Both variants live in one bundle at
+<code>/root/.lv2/voice.lv2</code>: <strong>Voice</strong> (1 in, 1 out) and
+<strong>Voice Stereo</strong> (2 in, 2 out). There is no web UI in the bundle,
+so mod-ui draws its own from the descriptor - every control is there, and there
+is no template to go wrong.</p>
+
+</div>
+
+<script>
+var PKG = "__PAYLOAD_BASE64__";
+var log = document.getElementById('log');
+function say(t, cls) { log.textContent = t; log.className = cls || ''; }
+
+document.getElementById('go').onclick = function () {
+  var btn = this;
+  btn.disabled = true;
+  say('Sending...');
+
+  // mod-ui expects the BASE64 of the tarball as the file body, not raw bytes.
+  var fd = new FormData();
+  fd.append('package', new Blob([PKG], {type: 'application/octet-stream'}),
+            'voice-aarch64.tar.gz');
+
+  fetch('/sdk/install', {method: 'POST', body: fd})
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      if (t.indexOf('true') >= 0) {
+        say('Installed.\n' + t + '\n\nAdd the Voice block to your pedalboard.', 'ok');
+      } else {
+        say('Unexpected answer:\n' + t, 'ko');
+        btn.disabled = false;
+      }
+    })
+    .catch(function (e) {
+      say('Failed: ' + e + '\n\nThis page must be OPENED FROM THE DWARF\n' +
+          '(File Manager), not from your own disk.', 'ko');
+      btn.disabled = false;
+    });
+};
+</script>
+</html>

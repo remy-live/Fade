@@ -5,6 +5,10 @@ fade-aarch64.tar.gz
 install.html
 build-aarch64/
 test_fade
+voice/voice-aarch64.tar.gz
+voice/install-voice.html
+voice/test_voice
+voice/test_voice.log
 *.o
 *.so
 
