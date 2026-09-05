@@ -381,7 +381,7 @@ typedef struct {
 
 static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
-    { "program",        0.0f,   20.0f,     0.0f },
+    { "program",        0.0f,   36.0f,     0.0f },
     { "user_slot",      1.0f,    6.0f,     1.0f },
     { "save",           0.0f,    1.0f,     0.0f },
     { "in_gain",      -20.0f,   40.0f,     0.0f },

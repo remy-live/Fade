@@ -60,7 +60,7 @@ COMMENT = ("A vocal channel strip and effects rack, with no pitch detection "
 SWITCH = ["lv2:toggled"]
 LIST = ["lv2:integer", "lv2:enumeration", "pprops:hasStrictBounds"]
 CONTROLS = [
- ("program", "PROGRAM", 0.0, 20.0, 0.0, None, LIST,
+ ("program", "PROGRAM", 0.0, 36.0, 0.0, None, LIST,
   "Picks a sound from the list: MANUAL, the built-in programs, then four "
   "slots of your own. MANUAL means the controls below are yours; anything "
   "else overrides them for as long as it is selected, and IN GAIN, OUTPUT "
@@ -348,6 +348,129 @@ PRESETS = [
         "modulation": 25.0, "mod_on": 0.0,
         "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 8.0,
         "delay_on": 0.0, "reverb": 30.0, "reverb_mix": 12.0}),
+    ("hygiaphone", "Hygiaphone", "HYGIAPH", {
+        "low_cut": 320.0, "gate": -42.0, "comp": 45.0, "de_ess": 20.0,
+        "body": -12.0, "mid_freq": 1800.0, "presence": 9.0, "air": -12.0,
+        "drive": 40.0, "doubler": 15.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 180.0, "delay_repeats": 15.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 15.0, "reverb_mix": 10.0}),
+    ("telephone", "Telephone", "PHONE", {
+        "low_cut": 400.0, "gate": -40.0, "comp": 58.0, "de_ess": 25.0,
+        "body": -12.0, "mid_freq": 2400.0, "presence": 6.0, "air": -12.0,
+        "drive": 20.0, "doubler": 15.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 200.0, "delay_repeats": 15.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 15.0, "reverb_mix": 8.0, "reverb_on": 0.0}),
+    ("megaphone", "Megaphone", "MEGAPHON", {
+        "low_cut": 380.0, "gate": -38.0, "comp": 34.0, "de_ess": 20.0,
+        "body": -10.0, "mid_freq": 1500.0, "presence": 10.0, "air": -10.0,
+        "drive": 40.0, "doubler": 15.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 120.0, "delay_repeats": 20.0, "delay_mix": 10.0,
+        "reverb": 25.0, "reverb_mix": 12.0}),
+    ("walkie", "Walkie Talkie", "WALKIE", {
+        "low_cut": 400.0, "gate": -34.0, "comp": 34.0, "de_ess": 20.0,
+        "body": -12.0, "mid_freq": 2000.0, "presence": 8.0, "air": -12.0,
+        "drive": 44.0, "doubler": 15.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 100.0, "delay_repeats": 10.0, "delay_mix": 6.0,
+        "delay_on": 0.0, "reverb": 12.0, "reverb_mix": 6.0, "reverb_on": 0.0}),
+    ("solo", "Guitar Solo", "SOLO", {
+        "low_cut": 95.0, "gate": -38.0, "comp": 8.0, "de_ess": 15.0,
+        "mid_freq": 2600.0, "presence": 4.0, "air": 1.0, "drive": 42.0,
+        "feedback": 70.0,
+        "doubler": 25.0, "voices": 2.0, "spread": 35.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 380.0, "delay_repeats": 30.0, "delay_mix": 14.0,
+        "reverb": 45.0, "reverb_mix": 16.0}),
+    ("crunch", "Guitar Crunch", "CRUNCH", {
+        "low_cut": 110.0, "gate": -36.0, "comp": 18.0, "de_ess": 10.0,
+        "body": -2.0, "mid_freq": 1400.0, "presence": 2.0, "drive": 45.0,
+        "feedback": 45.0,
+        "doubler": 20.0, "voices": 2.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 25.0, "reverb_mix": 10.0}),
+    ("clean", "Guitar Clean", "CLEAN", {
+        "low_cut": 90.0, "gate": -44.0, "comp": 25.0, "de_ess": 10.0,
+        "mid_freq": 1200.0, "presence": -2.0, "air": 3.0, "drive": 12.0,
+        "drive_on": 0.0, "feedback": 35.0,
+        "doubler": 30.0, "voices": 2.0, "spread": 60.0,
+        "modulation": 35.0, "mod_speed": 0.5,
+        "delay_time": 420.0, "delay_repeats": 25.0, "delay_mix": 12.0,
+        "reverb": 50.0, "reverb_mix": 18.0}),
+    ("whisper", "Whisper", "WHISPER", {
+        "low_cut": 140.0, "gate": -52.0, "comp": 45.0, "de_ess": 45.0,
+        "body": -3.0, "mid_freq": 3200.0, "presence": 2.0, "air": 5.0,
+        "drive": 15.0, "drive_on": 0.0,
+        "doubler": 30.0, "voices": 2.0, "spread": 40.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 320.0, "delay_repeats": 20.0, "delay_mix": 10.0,
+        "delay_on": 0.0, "reverb": 45.0, "reverb_mix": 20.0}),
+    ("podcast", "Podcast", "PODCAST", {
+        "low_cut": 110.0, "gate": -44.0, "comp": 38.0, "de_ess": 45.0,
+        "body": 1.0, "mid_freq": 2400.0, "presence": 2.0, "air": 2.0,
+        "drive": 12.0, "drive_on": 0.0,
+        "doubler": 15.0, "doubler_on": 0.0, "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 250.0, "delay_repeats": 15.0, "delay_mix": 6.0,
+        "delay_on": 0.0, "reverb": 20.0, "reverb_mix": 6.0, "reverb_on": 0.0}),
+    ("gospel", "Gospel Choir", "GOSPEL", {
+        "low_cut": 95.0, "gate": -46.0, "comp": 24.0, "de_ess": 30.0,
+        "body": 2.0, "mid_freq": 2000.0, "presence": 2.0, "air": 3.0,
+        "drive": 15.0, "drive_on": 0.0,
+        "doubler": 60.0, "voices": 4.0, "spread": 85.0,
+        "modulation": 30.0, "mod_speed": 0.35,
+        "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 65.0, "reverb_mix": 16.0}),
+    ("tight", "Tight Double", "TIGHT", {
+        "low_cut": 95.0, "gate": -46.0, "comp": 32.0, "de_ess": 35.0,
+        "mid_freq": 2600.0, "presence": 2.0, "air": 2.0,
+        "drive": 15.0, "drive_on": 0.0,
+        "doubler": 45.0, "voices": 2.0, "spread": 15.0,
+        "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 30.0, "reverb_mix": 10.0}),
+    ("arena", "Arena", "ARENA", {
+        "low_cut": 105.0, "gate": -44.0, "comp": 34.0, "de_ess": 35.0,
+        "mid_freq": 2800.0, "presence": 3.0, "air": 2.0,
+        "drive": 18.0, "drive_on": 0.0,
+        "doubler": 30.0, "voices": 3.0, "spread": 60.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 500.0, "delay_repeats": 30.0, "delay_mix": 12.0,
+        "reverb": 75.0, "reverb_mix": 20.0}),
+    ("dub", "Dub", "DUB", {
+        "low_cut": 100.0, "gate": -44.0, "comp": 30.0, "de_ess": 30.0,
+        "body": 2.0, "mid_freq": 1800.0, "air": 1.0,
+        "drive": 25.0, "doubler": 20.0, "doubler_on": 0.0,
+        "modulation": 30.0, "mod_speed": 0.3,
+        "delay_time": 480.0, "delay_repeats": 75.0, "delay_mix": 18.0,
+        "reverb": 60.0, "reverb_mix": 16.0}),
+    ("monster", "Monster", "MONSTER", {
+        "low_cut": 70.0, "gate": -40.0, "comp": 28.0, "de_ess": 20.0,
+        "body": 5.0, "mid_freq": 900.0, "presence": -3.0, "air": -6.0,
+        "pitch": -8.0, "pitch_mix": 100.0, "drive": 30.0,
+        "doubler": 25.0, "voices": 2.0, "spread": 70.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 450.0, "delay_repeats": 25.0, "delay_mix": 10.0,
+        "delay_on": 0.0, "reverb": 55.0, "reverb_mix": 18.0}),
+    ("robot", "Robot", "ROBOT", {
+        "low_cut": 200.0, "gate": -38.0, "comp": 40.0, "de_ess": 20.0,
+        "body": -6.0, "mid_freq": 1600.0, "presence": 6.0, "air": -6.0,
+        "drive": 55.0, "pitch": -5.0, "pitch_mix": 60.0,
+        "doubler": 40.0, "voices": 3.0, "spread": 10.0,
+        "modulation": 55.0, "mod_speed": 6.0,
+        "delay_time": 90.0, "delay_repeats": 30.0, "delay_mix": 10.0,
+        "reverb": 20.0, "reverb_mix": 8.0}),
+    ("angel", "Angel Choir", "ANGEL", {
+        "low_cut": 110.0, "gate": -48.0, "comp": 26.0, "de_ess": 35.0,
+        "air": 4.0, "mid_freq": 3000.0, "presence": 1.0,
+        "drive": 15.0, "drive_on": 0.0,
+        "pitch": 12.0, "pitch_mix": 22.0,
+        "doubler": 65.0, "voices": 4.0, "spread": 95.0,
+        "modulation": 35.0, "mod_speed": 0.3,
+        "delay_time": 550.0, "delay_repeats": 35.0, "delay_mix": 12.0,
+        "reverb": 90.0, "reverb_mix": 24.0}),
 ]
 
 # Scale points: the lists a knob walks through on the device.
