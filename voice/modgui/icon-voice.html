@@ -1,0 +1,359 @@
+<div class="mod-pedal mod-pedal-voice{{{cns}}}">
+
+    <div mod-role="drag-handle" class="mod-drag-handle"></div>
+
+    <div class="voice-head{{{cns}}}">
+        <span class="voice-brand{{{cns}}}">{{brand}}</span>
+        <span class="voice-name{{{cns}}}">{{label}}</span>
+    </div>
+    <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
+
+    <!-- ---------------- the program list ---------------- -->
+    <div class="voice-prog{{{cns}}}">
+        <div class="voice-prog-nav{{{cns}}} voice-prev" title="Previous sound">&#9664;</div>
+
+        <div class="voice-prog-box{{{cns}}}">
+            <div class="voice-prog-label{{{cns}}}">PROGRAM</div>
+            <div class="voice-prog-value{{{cns}}} voice-prog-value"
+                 mod-role="input-control-value"
+                 mod-port-symbol="program"></div>
+            <input class="voice-prog-rename{{{cns}}} voice-prog-rename" type="text"
+                   maxlength="16" placeholder="name this slot"
+                   title="Your name for this USER slot. Kept in this browser.">
+        </div>
+
+        <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
+
+        <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"
+             title="Store the knobs into the selected USER slot">SAVE</div>
+
+        <div class="voice-prog-dial{{{cns}}}"
+             mod-role="input-control-port"
+             mod-port-symbol="program"
+             mod-widget-rotation="270"></div>
+    </div>
+
+    <!-- ---------------- the channel strip ---------------- -->
+    <div class="voice-row{{{cns}}} voice-row-strip{{{cns}}}">
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">GATE</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="gate_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="gate" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">THRESH</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="gate"></div>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">COMP</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="comp_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="comp" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="comp"></div>
+            </div>
+            <div class="voice-meter{{{cns}}} voice-meter-gr{{{cns}}}">
+                <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
+                <span class="voice-meter-cap{{{cns}}}">GR</span>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">DE-ESS</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="de_ess_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="de_ess" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="de_ess"></div>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}} voice-section-wide{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">EQ</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="eq_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="body" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">BODY</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="body"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="mid_freq" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MID Hz</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="mid_freq"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="presence" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MID dB</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="presence"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="air" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">AIR</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="air"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------- character ---------------- -->
+    <div class="voice-row{{{cns}}} voice-row-char{{{cns}}}">
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">DRIVE</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="drive_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="drive" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="drive"></div>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">PITCH</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="pitch_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="pitch" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">SEMI</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="pitch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="pitch_mix" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="pitch_mix"></div>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">DOUBLE</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="doubler_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="doubler" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="doubler"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="voices" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">VOICES</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="voices"></div>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">MOD</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="mod_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="modulation" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">DEPTH</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="modulation"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="mod_speed" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">SPEED</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="mod_speed"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------- time ---------------- -->
+    <div class="voice-row{{{cns}}} voice-row-time{{{cns}}}">
+        <div class="voice-section{{{cns}}} voice-section-wide{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">DELAY</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="delay_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="delay_time" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">TIME</div>
+                <div class="voice-knob-value{{{cns}}} voice-time-value"
+                     mod-role="input-control-value" mod-port-symbol="delay_time"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="delay_repeats" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">REPEATS</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="delay_repeats"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="delay_mix" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="delay_mix"></div>
+            </div>
+            <div class="voice-tap{{{cns}}} voice-tap" mod-port-symbol="tap"
+                 title="Tap twice to set the time">TAP</div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">REVERB</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="reverb_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="reverb" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">DECAY</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="reverb"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="reverb_mix" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="reverb_mix"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------- levels and the master switches ---------------- -->
+    <div class="voice-row{{{cns}}} voice-row-out{{{cns}}}">
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">LEVELS</span>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="in_gain" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">IN</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="in_gain"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="low_cut" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">LOW CUT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="low_cut"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="output" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">OUT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="output"></div>
+            </div>
+            <div class="voice-meter{{{cns}}} voice-meter-out{{{cns}}}">
+                <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
+                <span class="voice-meter-cap{{{cns}}}">OUT</span>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}} voice-section-fx{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">FX</span>
+            </div>
+            <div class="voice-fx{{{cns}}}">
+                <div class="voice-fx-sw{{{cns}}} voice-fx-a" mod-role="input-control-port"
+                     mod-port-symbol="fx" mod-widget="switch"></div>
+                <div class="voice-knob-title{{{cns}}}">FX</div>
+            </div>
+            <div class="voice-fx{{{cns}}}">
+                <div class="voice-fx-sw{{{cns}}} voice-fx-b" mod-role="input-control-port"
+                     mod-port-symbol="fx_2" mod-widget="switch"></div>
+                <div class="voice-knob-title{{{cns}}}">FX 2</div>
+            </div>
+            <div class="voice-state{{{cns}}} voice-state">FX ON</div>
+        </div>
+    </div>
+
+    <div class="mod-footswitch" mod-role="bypass"></div>
+
+    <div class="mod-pedal-input">
+        {{#effect.ports.audio.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.audio.input}}
+        {{#effect.ports.midi.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-midi-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.midi.input}}
+        {{#effect.ports.cv.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}"
+             mod-role="input-cv-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.cv.input}}
+    </div>
+
+    <div class="mod-pedal-output">
+        {{#effect.ports.audio.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.audio.output}}
+        {{#effect.ports.midi.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-midi-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.midi.output}}
+        {{#effect.ports.cv.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}"
+             mod-role="output-cv-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.cv.output}}
+    </div>
+
+</div>

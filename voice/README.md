@@ -18,16 +18,21 @@ level and time alone, which is why none of it needs to know what note is
 being sung, and why it behaves the same on a spoken word, a scream, two
 people on one microphone, or a saxophone.
 
-What you give up is real: no harmonies, no correction, no octave.
-What you get back is everything else a VoiceLive does to a voice, running
-on hardware you already own, with the effects fed by a switch that lets
-the tails ring out.
+There is a **pitch shifter** in here, and it is not a contradiction:
+shifting is not detecting. The signal is read out of a delay line at
+another rate, which *is* a transposition, and nothing has to know what
+note it was. Baritone, tenor, helium and an octave down all come out of
+that one trick. What you give up is the thing that genuinely needs
+detection: harmonies in a key, and correction. What you get back is
+everything else a VoiceLive does to a voice, running on hardware you
+already own, with the effects fed by a switch that lets the tails ring
+out.
 
 ## The chain
 
 ```
         [on] [on]  [on]    [on]                    [on]
-IN GAIN → LOW CUT → GATE → COMP → DE-ESS → BODY/PRESENCE/AIR → DRIVE
+IN GAIN → LOW CUT → GATE → COMP → DE-ESS → EQ → DRIVE → PITCH
      ┬─→ (dry) ────────────────────────────────────────────────┬─→ OUTPUT
      ├─→ [on] DOUBLE ──────────────────────────────────────────┤
      ├─→ [on] MOD ─────────────────────────────────────────────┤
@@ -74,7 +79,8 @@ left it.
 
 | Control | What it does |
 |---|---|
-| **PROGRAM** | The list of built-in sounds. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
+| **PROGRAM** | The list: MANUAL, fourteen built-in sounds, then four USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
+| **SAVE** | Stores what the knobs say into the selected USER slot. |
 | **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. No preset and no program ever touches it. |
 | **LOW CUT** | 0–400 Hz, 6 dB/octave. Rumble, handling noise and plosives, before they reach the gate. At 0 it is off. |
 | **GATE** | Threshold, −80 to −20 dB. 6 dB of hysteresis and an 80 ms hold, so a held note does not chatter. At −80 dB it is off. |
@@ -91,6 +97,7 @@ left it.
 | **DELAY** / **REPEATS** / **DELAY MIX** | 20–2000 ms, up to 95 % feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice. |
 | **REVERB** / **REVERB MIX** | Tail length and how much is heard. At 100 % mix the tail sits at the same level as the dry voice — measured, not guessed. |
 | **FX** | The master switch: on, all four effects are fed; off, their send is cut over 40 ms and the tails ring out. It sits on top of the individual switches, not instead of them. Meant for a footswitch. |
+| **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -142,7 +149,7 @@ Three rules get them there, and they apply while you turn knobs too:
 
 ## Presets, and your own sounds
 
-Ten, on both variants, and they exist twice over: as entries in the PROGRAM
+Fourteen, on both variants, and they exist twice over: as entries in the PROGRAM
 list, and as LV2 presets in the plugin's own preset menu. Both come from one
 table in `make_ttl.py`, and the bench runs a phrase through both routes and
 subtracts — picking Ballad from the menu and selecting program 3 give the
@@ -160,6 +167,10 @@ same samples, or the build stops.
 | **Slapback** | 95 ms, one repeat, drive |
 | **Ambient** | a 700 ms delay into a long reverb |
 | **Radio** | narrow, driven, no wet at all |
+| **Baritone** | four semitones down, with the weight to match |
+| **Tenor** | three up, a little brighter |
+| **Helium** | nine up, and no apology |
+| **Octave** | twelve down at 35 %, under the real voice |
 
 Each writes every control it does not name at its default, so loading one
 lands somewhere known instead of on top of half of whatever was there
@@ -169,21 +180,64 @@ set a tempo as it loaded — and neither is IN GAIN.
 Every effect gets a usable amount even where its switch starts *off*, so the
 footswitch has something to bring in rather than turning on silence.
 
-### Your own, without snapshots
+### Your own, on the list
 
-Set **PROGRAM** to MANUAL, dial the sound you want, then use mod-ui's own
-**Save** on the plugin block. That writes a *plugin preset* — your settings,
-under your name, in the same menu as the ten above — and it is not a
-pedalboard snapshot: it belongs to the plugin, travels with it, and can be
-recalled without touching the board. On the device, that preset menu is
-addressable like any other control, so your own sounds land on an encoder
-next to the built-in ones.
+Four **USER** slots sit on the end of the PROGRAM list, and they are the
+answer to "custom sounds without pedalboard snapshots":
 
-The one thing a saved preset cannot do is join the **PROGRAM** list: that
-list is compiled into the plugin. If you want your sound *there* — on the
-encoder, with a name on the screen — add it to `PRESETS` in `make_ttl.py`
-and rebuild; it becomes a program and an LV2 preset at the same time, and
-the bench will hold it to the same loudness as the rest.
+1. **PROGRAM** on MANUAL, dial the sound you want.
+2. Turn to an empty USER slot. An empty slot leaves the knobs in charge,
+   so nothing changes as you select it.
+3. Press **SAVE** — the button in the web UI, or the port on a footswitch.
+
+The slot then holds that sound. Selecting it recalls it; the knobs stop
+acting while it is selected, and MANUAL hands them back. SAVE stores what
+the **knobs** say, not what is being heard, because the knobs are what the
+interface shows you — so overwriting a slot is: recall it, look at the
+knobs, change what you want, press SAVE again.
+
+The slots travel with the pedalboard: the plugin implements the LV2 State
+extension and writes them out with it. They are not snapshots, they are
+not tied to a board's layout, and they are on the same encoder as the
+built-in sounds.
+
+**Naming** is the one part that is split. A control port carries a number,
+not text, so the plugin has no way to receive a name: the name you type in
+the web UI is kept **in that browser**, while the sound itself lives in the
+plugin. On the device screen a slot reads `USER 1` to `USER 4`. If you want
+a sound named everywhere, add it to `PRESETS` in `make_ttl.py` and rebuild
+— it becomes a program *and* an LV2 preset, with its name on the screen.
+
+mod-ui's own **Save** on the plugin block is the other route: it writes a
+plugin preset — your settings, under your name, in the same menu as the
+built-in ones, not a pedalboard snapshot. Use that when you want a long
+name and a long list; use the USER slots when you want it under your foot.
+
+## The web UI
+
+![the web interface](modgui/screenshot-voice.png)
+
+Every effect is a box with its switch in the corner, and **ON is a lit
+green track with a white knob and a glow**, next to a plain grey OFF — the
+first version of this plugin shipped without a custom interface at all, and
+mod-ui's default one drew switch states in a violet you could not see. The
+section a switch belongs to lights its border too.
+
+The bar across the top is the program list: arrows to walk it, the name of
+what is selected, a text box that names a USER slot, and SAVE. The
+compressor box carries a gain-reduction meter and the levels box an output
+meter, both fed by the plugin's own outputs. TAP is a button as well as a
+port.
+
+The interface is checked the way the rest of the plugin is:
+`check_modgui.js` renders the template with mustache — the engine mod-ui
+itself uses — then walks the DOM: every control port must be reachable, every
+audio port must have its jack, the script must evaluate *and run*, throwing a
+switch must really light its section, and the two constants the script cannot
+work out for itself must match `programs.h`. `make_screenshot.js` then
+photographs the result through Chromium, and refuses to write the image if
+anything overflows the pedal — which is also where the screenshot in this
+README comes from.
 
 ## Install
 
@@ -256,7 +310,7 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-182 checks: the approximations against libm, every block of the chain
+209 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
 click it must not make, every preset for the level it lands on, the delay
 against a clock at three sample rates, and a simulated HMI screen. Without a simulated screen none of the
@@ -304,6 +358,21 @@ display code ever runs, and that is where the bugs live.
   found a real bug on its first run: `activate()` worked out which program
   was in force halfway down, after the smoothed values had already been
   initialised from the knobs.
+- **The pitch shifter has no detector in it.** Two read pointers walk a
+  delay line half a window apart at the rate the shift asks for, each
+  crossfaded with a raised cosine that reaches zero exactly where that
+  pointer wraps, so the join is never heard. Formants move with the note,
+  which is why down sounds like a bigger singer and up sounds like helium
+  rather than like a harmony. Measured: a 220 Hz tone comes out at 440,
+  330, 165 or 110 Hz with forty decibels between the new note and the old,
+  and the level holds to a tenth of a decibel. At 0 semitones the block
+  steps aside rather than sitting there combing the signal with two static
+  taps.
+- **The USER slots go out through LV2 State as plain floats**, not as the
+  struct they live in: a struct has padding, and padding is not something
+  to write into somebody's saved session. A state of the wrong size is
+  refused rather than believed, and a slot that was never filled stays
+  empty rather than coming back full of zeros.
 - **Every switch is a 40 ms ramp**, never a branch. The bench throws all
   eight while a note is playing and fails if the biggest sample-to-sample
   step during the throw is more than half again the biggest step while
@@ -330,17 +399,18 @@ display code ever runs, and that is where the bugs live.
 
 ## What it does not do
 
-- No pitch detection, and therefore no harmony, no correction, no octave.
-  That is the point, not an omission.
+- No pitch *detection*, and therefore no harmony in a key and no
+  correction. That is the point, not an omission. Pitch *shifting* by a
+  fixed interval needs no detection and is in here.
 - No MIDI input: every switch, the program list and the tap take a control
   port each, which
   is what the Dwarf addresses to a footswitch or to a MIDI CC.
 - LOW CUT and the three tone bands have no switch of their own. They have
   neutral positions — 0 Hz and 0 dB — and a switch that only duplicates a
   knob position is a control that can disagree with itself.
-- No custom web UI. mod-ui draws its own from the descriptor, which shows
-  every control and cannot be broken by a template bug. The device screen
-  is where the work went instead.
+- The name of a USER slot lives in the browser that typed it, because a
+  control port carries a number and not a string. The sound travels; the
+  name does not follow it to another machine.
 - The tone controls are three broad parallel bands, not a surgical EQ, and
   the reverb is a Freeverb — a good room, not a convolution.
 

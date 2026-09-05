@@ -390,12 +390,14 @@ MANIFEST_HEAD = """@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 <http://remy-live.github.io/lv2/voice>
     a lv2:Plugin ;
     lv2:binary <voice.so> ;
-    rdfs:seeAlso <voice.ttl> .
+    rdfs:seeAlso <voice.ttl> ,
+                 <modgui.ttl> .
 
 <http://remy-live.github.io/lv2/voice#stereo>
     a lv2:Plugin ;
     lv2:binary <voice.so> ;
-    rdfs:seeAlso <voice_stereo.ttl> .
+    rdfs:seeAlso <voice_stereo.ttl> ,
+                 <modgui.ttl> .
 """
 
 

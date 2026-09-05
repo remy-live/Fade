@@ -21,7 +21,11 @@ TEMPLATE = 'installer-template.html'
 OUTPUT = 'install-voice.html'
 BINARY = 'voice.lv2/voice.so'
 REQUIRED = ('voice.lv2/voice.ttl', 'voice.lv2/voice_stereo.ttl',
-            'voice.lv2/presets.ttl', 'voice.lv2/manifest.ttl', BINARY)
+            'voice.lv2/presets.ttl', 'voice.lv2/manifest.ttl',
+            'voice.lv2/modgui.ttl',
+            'voice.lv2/modgui/icon-voice.html',
+            'voice.lv2/modgui/style-voice.css',
+            'voice.lv2/modgui/script-voice.js', BINARY)
 
 
 def build():
@@ -68,6 +72,8 @@ def verify(data, stamp):
     for needed in REQUIRED:
         if needed not in names:
             sys.exit('%s missing from the embedded bundle' % needed)
+    if sum(1 for n in names if n.endswith('.png')) != 4:
+        sys.exit('expected four bank images in the embedded bundle')
 
     # The page is served BY the device, so the request must be relative.
     # A hard-coded address only ever worked over USB.

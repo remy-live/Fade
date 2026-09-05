@@ -1,0 +1,43 @@
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+
+<http://remy-live.github.io/lv2/voice>
+    modgui:gui [
+        a modgui:Gui ;
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/icon-voice.html> ;
+        modgui:stylesheet <modgui/style-voice.css> ;
+        modgui:javascript <modgui/script-voice.js> ;
+        modgui:screenshot <modgui/screenshot-voice.png> ;
+        modgui:thumbnail <modgui/thumbnail-voice.png> ;
+        modgui:brand "REMY" ;
+        modgui:label "VOICE" ;
+
+        # Correct form: nodes carrying lv2:symbol, not a bare string.
+        # A bare string here silently stops the outputs being monitored,
+        # and then the meters never move.
+        modgui:monitoredOutputs [ lv2:symbol "gr" ] ,
+                                [ lv2:symbol "level" ] ,
+                                [ lv2:symbol "gate_open" ] ,
+                                [ lv2:symbol "fx_state" ] ,
+                                [ lv2:symbol "time_out" ] ;
+    ] .
+
+<http://remy-live.github.io/lv2/voice#stereo>
+    modgui:gui [
+        a modgui:Gui ;
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/icon-voice.html> ;
+        modgui:stylesheet <modgui/style-voice.css> ;
+        modgui:javascript <modgui/script-voice.js> ;
+        modgui:screenshot <modgui/screenshot-voice-stereo.png> ;
+        modgui:thumbnail <modgui/thumbnail-voice-stereo.png> ;
+        modgui:brand "REMY" ;
+        modgui:label "VOICE ST" ;
+
+        modgui:monitoredOutputs [ lv2:symbol "gr" ] ,
+                                [ lv2:symbol "level" ] ,
+                                [ lv2:symbol "gate_open" ] ,
+                                [ lv2:symbol "fx_state" ] ,
+                                [ lv2:symbol "time_out" ] ;
+    ] .

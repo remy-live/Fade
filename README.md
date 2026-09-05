@@ -171,8 +171,10 @@ code ever runs, and that is where the bugs live.
 descriptors and its own test bench: **Voice** and **Voice Stereo**, a
 vocal channel strip and effects rack — gate, compressor, de-esser, low
 cut, three tone bands, drive, a two-to-four-voice doubler, chorus, tap
-delay and reverb, each with its own footswitchable on/off, and ten
-built-in sounds on a list you can walk from the device. It replaces what a
+delay, reverb and a pitch shifter that needs no pitch detection, each with
+its own footswitchable on/off, fourteen built-in sounds on a list you can
+walk from the device, four slots to save your own, and a web interface
+built and photographed by its own build. It replaces what a
 VoiceLive does to a voice, minus the pitch tracking, which is the half
 that fails on stage.
 

@@ -298,6 +298,18 @@ dire("presets leave PROGRAM on MANUAL, so the ports rule when one is loaded",
      all(re.search(r'lv2:symbol "program" ;\s*\n\s*pset:value 0', b[3]) is not None
          for b in blocs), "a preset that selected a program would fight itself")
 
+# --- the web UI is checked by check_modgui.js; here, only that the
+#     bundle will actually carry it ---
+dire("modgui.ttl referenced by the manifest", 'modgui.ttl' in mani)
+mg = open('modgui.ttl').read()
+for f in ('modgui/icon-voice.html', 'modgui/style-voice.css',
+          'modgui/script-voice.js', 'modgui/thumbnail-voice.png',
+          'modgui/screenshot-voice.png', 'modgui/thumbnail-voice-stereo.png',
+          'modgui/screenshot-voice-stereo.png'):
+    dire("web UI file present: " + f, os.path.exists(f))
+dire("mono and stereo get different bank images",
+     mg.count('screenshot-voice.png') == 1 and mg.count('screenshot-voice-stereo.png') == 1)
+
 # --- source rules that the compiler cannot check ---
 libm = re.findall(r'\b(sinf?|cosf?|tanf?|powf?|expf?|logf?|log2f?|log10f?|sqrtf?|'
                   r'fabsf?|tanhf?|floorf?|ceilf?|roundf?|fmodf?)\s*\(', code)

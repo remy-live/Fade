@@ -1,0 +1,280 @@
+/* Voice — web UI.
+ *
+ * Every class carries {{{cns}}}, written plainly with no escaping, or
+ * mustache substitutes nothing and the whole sheet applies to no element.
+ *
+ * The palette is deliberately lighter than a stage pedal usually is. The
+ * first version of this plugin had no web UI at all and mod-ui drew its
+ * default one: near-black, with switches whose ON state was a faint
+ * violet nobody could see across a room. Here ON is a bright green track
+ * with a glow, the section it belongs to lights its border, and the OFF
+ * state is a plain grey that cannot be mistaken for it.
+ */
+
+.mod-pedal-voice{{{cns}}} {
+    position: relative;
+    width: 720px;
+    height: 606px;
+    box-sizing: border-box;
+    border-radius: 14px;
+    padding: 0 14px;
+    background:
+        radial-gradient(130% 70% at 50% -12%, rgba(120,205,235,.20) 0%, rgba(0,0,0,0) 62%),
+        linear-gradient(168deg, #4a5666 0%, #38414f 48%, #2b323d 100%);
+    border: 1px solid #171c23;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 10px 22px rgba(0,0,0,.45);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #e9f0f7;
+    overflow: hidden;
+}
+
+.mod-pedal-voice{{{cns}}} .mod-drag-handle {
+    /* left and right rather than a width: absolute positioning measures
+       from the padding box, so a width equal to the pedal's own overflows
+       it by the border. */
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 40px;
+    cursor: move;
+}
+
+/* ---------- header ---------- */
+
+.voice-head{{{cns}}} {
+    position: relative; height: 44px; padding-top: 7px;
+    text-align: center;
+}
+.voice-brand{{{cns}}} {
+    display: block; font-size: 9px; letter-spacing: 5px; color: #9fb6c9;
+}
+.voice-name{{{cns}}} {
+    display: block; margin-top: 1px;
+    font-size: 21px; font-weight: 700; letter-spacing: 4px; color: #f4f9ff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.voice-light{{{cns}}} {
+    position: absolute; top: 15px; right: 18px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #39434f; box-shadow: inset 0 0 2px #000;
+}
+.voice-light{{{cns}}}.on {
+    background: #46e08a; box-shadow: 0 0 9px rgba(70,224,138,.95);
+}
+
+/* ---------- the program list ---------- */
+
+.voice-prog{{{cns}}} {
+    display: flex; align-items: center; gap: 9px;
+    height: 52px; margin-bottom: 8px;
+    padding: 0 10px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+    border: 1px solid rgba(255,255,255,.14);
+}
+.voice-prog-nav{{{cns}}} {
+    width: 26px; height: 26px; line-height: 26px; text-align: center;
+    border-radius: 6px; cursor: pointer; font-size: 11px; color: #dbe6f0;
+    background: linear-gradient(180deg, #66748a 0%, #414c5c 100%);
+    border: 1px solid #1b212a;
+    user-select: none;
+}
+.voice-prog-nav{{{cns}}}:hover { background: linear-gradient(180deg, #7c8ca3 0%, #4d596b 100%); }
+
+.voice-prog-box{{{cns}}} {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 4px 10px; border-radius: 6px;
+    background: #1d232c;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.7);
+    min-width: 0;
+}
+.voice-prog-label{{{cns}}} { font-size: 9px; letter-spacing: 2px; color: #8fa6ba; }
+.voice-prog-value{{{cns}}} {
+    font-size: 15px; font-weight: 600; letter-spacing: 1px; color: #7fe3c4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 92px;
+}
+.voice-prog-rename{{{cns}}} {
+    flex: 1; min-width: 0;
+    background: #2a333e; color: #e9f0f7;
+    border: 1px solid rgba(255,255,255,.16); border-radius: 5px;
+    padding: 3px 7px; font-size: 12px;
+    font-family: inherit;
+}
+.voice-prog-rename{{{cns}}}::placeholder { color: #7c8b9b; }
+.voice-prog-rename{{{cns}}}:disabled { opacity: .35; }
+
+.voice-save{{{cns}}} {
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #10251c;
+    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+    border: 1px solid #12351f;
+    user-select: none;
+}
+.voice-save{{{cns}}}:hover { filter: brightness(1.12); }
+.voice-save{{{cns}}}.flash {
+    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
+}
+.voice-save{{{cns}}}.off { opacity: .35; cursor: default; }
+
+.voice-prog-dial{{{cns}}} {
+    width: 34px; height: 34px; border-radius: 50%; cursor: ns-resize;
+    background: radial-gradient(circle at 50% 34%, #6e7c90 0%, #3b4552 72%);
+    border: 1px solid #171c23;
+    box-shadow: 0 2px 4px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.18);
+    position: relative;
+}
+.voice-prog-dial{{{cns}}}::after {
+    content: ""; position: absolute; left: 50%; top: 4px;
+    width: 2px; height: 11px; margin-left: -1px; border-radius: 1px;
+    background: #7fe3c4;
+}
+
+/* ---------- rows and sections ---------- */
+
+.voice-row{{{cns}}} { display: flex; gap: 8px; margin-bottom: 8px; }
+/* the last row leaves the bottom-right corner to the bypass footswitch */
+.voice-row-out{{{cns}}} { padding-right: 76px; }
+
+.voice-section{{{cns}}} {
+    flex: 1;
+    display: flex; flex-wrap: wrap; align-items: flex-start;
+    gap: 4px 2px;
+    padding: 5px 6px 7px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(0,0,0,.10));
+    border: 1px solid rgba(255,255,255,.11);
+}
+.voice-section-wide{{{cns}}} { flex: 2.7; }
+.voice-section{{{cns}}}.actif {
+    border-color: rgba(70,224,138,.55);
+    box-shadow: 0 0 10px rgba(70,224,138,.18) inset;
+}
+
+.voice-section-head{{{cns}}} {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1px;
+}
+.voice-section-name{{{cns}}} {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #b7cadb;
+}
+.voice-section{{{cns}}}.actif .voice-section-name{{{cns}}} { color: #8df3bd; }
+
+/* ---------- switches: the point of this whole stylesheet ---------- */
+
+.voice-sw{{{cns}}} {
+    position: relative;
+    width: 42px; height: 20px; border-radius: 10px; cursor: pointer;
+    background: #232a33;
+    border: 1px solid #10151b;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.8);
+    transition: background .12s ease, box-shadow .12s ease;
+}
+.voice-sw{{{cns}}}::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #8c9aa8;
+    transition: left .12s ease, background .12s ease;
+}
+/* switchWidget sets .on and .off. ON is a lit green track, a white knob
+   and a glow: visible from the other side of a stage. */
+.voice-sw{{{cns}}}.on {
+    background: linear-gradient(180deg, #35c47c 0%, #1d8f58 100%);
+    box-shadow: 0 0 10px rgba(70,224,138,.55), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.voice-sw{{{cns}}}.on::after {
+    left: 24px; background: #ffffff;
+    box-shadow: 0 0 6px rgba(255,255,255,.8);
+}
+
+/* ---------- knobs ---------- */
+
+.voice-knob{{{cns}}} {
+    width: 58px; text-align: center;
+}
+.voice-knob-body{{{cns}}} {
+    width: 36px; height: 36px; margin: 0 auto; border-radius: 50%;
+    cursor: ns-resize; position: relative;
+    background: radial-gradient(circle at 50% 32%, #7a8899 0%, #414b59 70%, #333c48 100%);
+    border: 1px solid #161b22;
+    box-shadow: 0 2px 5px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.20);
+}
+.voice-knob-body{{{cns}}}::after {
+    content: ""; position: absolute; left: 50%; top: 4px;
+    width: 3px; height: 13px; margin-left: -1.5px; border-radius: 2px;
+    background: #ffcf5c;
+    box-shadow: 0 0 5px rgba(255,207,92,.65);
+}
+.voice-knob-title{{{cns}}} {
+    margin-top: 3px; font-size: 8.5px; letter-spacing: 1.4px; color: #a9bccd;
+}
+.voice-knob-value{{{cns}}} {
+    font-size: 10.5px; font-weight: 600; color: #f2f8ff;
+}
+
+/* ---------- meters ---------- */
+
+.voice-meter{{{cns}}} {
+    position: relative; width: 100%; height: 9px; margin-top: 4px;
+    border-radius: 5px; background: #1b212a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.8);
+    overflow: hidden;
+}
+.voice-meter-fill{{{cns}}} {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: linear-gradient(90deg, #46e08a 0%, #7fe3c4 70%, #ffcf5c 100%);
+    transition: width .08s linear;
+}
+.voice-meter-cap{{{cns}}} {
+    position: absolute; right: 5px; top: -1px;
+    font-size: 7px; letter-spacing: 1px; color: #93a7ba;
+}
+
+/* ---------- tap, fx, state ---------- */
+
+.voice-tap{{{cns}}} {
+    align-self: center; margin-left: 4px;
+    padding: 7px 12px; border-radius: 6px; cursor: pointer;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #f3f8ff;
+    background: linear-gradient(180deg, #66748a 0%, #414c5c 100%);
+    border: 1px solid #1b212a;
+    user-select: none;
+}
+.voice-tap{{{cns}}}.flash {
+    background: linear-gradient(180deg, #ffd98a 0%, #e0a52f 100%);
+    color: #2a1c00;
+}
+
+.voice-section-fx{{{cns}}} { flex: .8; align-items: center; }
+.voice-fx{{{cns}}} { width: 58px; text-align: center; }
+.voice-fx-sw{{{cns}}} {
+    position: relative; width: 46px; height: 22px; margin: 0 auto;
+    border-radius: 11px; cursor: pointer;
+    background: #232a33; border: 1px solid #10151b;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.8);
+}
+.voice-fx-sw{{{cns}}}::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%; background: #8c9aa8;
+    transition: left .12s ease, background .12s ease;
+}
+.voice-fx-sw{{{cns}}}.on { background: linear-gradient(180deg, #35c47c 0%, #1d8f58 100%); }
+.voice-fx-sw{{{cns}}}.on::after { left: 26px; background: #fff; }
+
+.voice-state{{{cns}}} {
+    width: 100%; text-align: center; margin-top: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    color: #6d7d8d;
+}
+.voice-state{{{cns}}}.actif { color: #8df3bd; text-shadow: 0 0 8px rgba(70,224,138,.5); }
+
+/* ---------- the jacks and the bypass switch ----------
+   The jacks get ONLY their "top": their horizontal position comes from
+   pedals.css, and overriding it drags them into the middle of the pedal. */
+
+.mod-pedal-voice{{{cns}}} .mod-input  { top: 150px; }
+.mod-pedal-voice{{{cns}}} .mod-input:nth-of-type(2) { top: 200px; }
+.mod-pedal-voice{{{cns}}} .mod-output { top: 150px; }
+.mod-pedal-voice{{{cns}}} .mod-output:nth-of-type(2) { top: 200px; }
+
+.mod-pedal-voice{{{cns}}} .mod-footswitch {
+    position: absolute; bottom: 10px; right: 18px;
+}

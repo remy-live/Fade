@@ -12,7 +12,12 @@ LDFLAGS="-Wl,--no-undefined -Wl,-O1 -s"
 rapper -i turtle -c manifest.ttl      >/dev/null 2>&1 || { echo "manifest.ttl is invalid";      exit 1; }
 rapper -i turtle -c voice.ttl         >/dev/null 2>&1 || { echo "voice.ttl is invalid";         exit 1; }
 rapper -i turtle -c voice_stereo.ttl  >/dev/null 2>&1 || { echo "voice_stereo.ttl is invalid";  exit 1; }
+rapper -i turtle -c presets.ttl       >/dev/null 2>&1 || { echo "presets.ttl is invalid";       exit 1; }
+rapper -i turtle -c modgui.ttl        >/dev/null 2>&1 || { echo "modgui.ttl is invalid";        exit 1; }
 python3 check_descriptor.py || { echo "descriptor checks failed"; exit 1; }
+python3 make_images.py > /dev/null || { echo "bank images failed"; exit 1; }
+node check_modgui.js        || { echo "web UI checks failed (mono)"; exit 1; }
+node check_modgui.js stereo || { echo "web UI checks failed (stereo)"; exit 1; }
 
 # The bench runs on the SAME source that is about to be cross-compiled, and
 # the build stops if it fails. Every approximation that stands in for a libm
@@ -24,8 +29,9 @@ gcc -std=c99 -O1 -g -I.. -I. -o test_voice test_voice.c -lm \
 echo "tests: $(grep -c OK test_voice.log) checks pass"
 
 rm -rf build-aarch64 voice-aarch64.tar.gz
-mkdir -p build-aarch64/voice.lv2
-cp voice.ttl voice_stereo.ttl presets.ttl manifest.ttl build-aarch64/voice.lv2/
+mkdir -p build-aarch64/voice.lv2/modgui
+cp voice.ttl voice_stereo.ttl presets.ttl manifest.ttl modgui.ttl build-aarch64/voice.lv2/
+cp modgui/* build-aarch64/voice.lv2/modgui/
 aarch64-linux-gnu-gcc $CFLAGS $LDFLAGS -I.. -I. -o build-aarch64/voice.lv2/voice.so voice.c
 ( cd build-aarch64 && tar czf ../voice-aarch64.tar.gz voice.lv2 )
 
