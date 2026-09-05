@@ -67,7 +67,11 @@ try {
 }
 say('no mustache braces left', !/\{\{|\}\}/.test(rendered));
 
-const dom = new JSDOM('<body>' + rendered + '</body>');
+/* A URL, so the document has a real origin: without one jsdom refuses
+   localStorage, and the USER slots the script keeps there would look
+   broken here while working in a browser. */
+const dom = new JSDOM('<body>' + rendered + '</body>',
+                      { url: 'https://mod.local/voice' });
 global.document = dom.window.document;
 global.window = dom.window;
 const doc = dom.window.document;
@@ -182,9 +186,24 @@ if (typeof fn === 'function') {
     try {
         ecrits = [];
         doc.querySelector('.voice-next').dispatchEvent(new dom.window.Event('click'));
+        /* It writes the program AND the sound: an LV2 plugin may not
+           move its own knobs, so if the web UI does not write them,
+           picking a sound leaves every control showing the one before. */
+        const rangee = /var PROGRAMMES = \[\s*\n\s*null,[^\n]*\n\s*\[([^\]]*)\]/
+                       .exec(script);
+        const attendu = rangee ? rangee[1].split(',').map(Number) : [];
+        const symboles = /var SYMBOLES = \[([^\]]*)\]/.exec(script)[1]
+                         .split(',').map(t => t.trim().replace(/"/g, ''));
+        const ecritsApres = ecrits.slice(1);
         say('the next button walks the program list',
-            ecrits.length === 1 && ecrits[0][0] === 'program' && ecrits[0][1] === 1,
-            JSON.stringify(ecrits));
+            ecrits.length === 1 + symboles.length
+            && ecrits[0][0] === 'program' && ecrits[0][1] === 1,
+            JSON.stringify(ecrits[0]) + ' + ' + ecritsApres.length + ' controls');
+        say('and moves every knob the program owns',
+            attendu.length === symboles.length
+            && ecritsApres.every((e, i) => e[0] === symboles[i]
+                                        && Math.abs(e[1] - attendu[i]) < 1e-6),
+            JSON.stringify(ecritsApres.slice(0, 3)));
         ecrits = [];
         doc.querySelector('.voice-tap').dispatchEvent(new dom.window.Event('click'));
         say('the tap button pulses the tap port',
@@ -192,8 +211,35 @@ if (typeof fn === 'function') {
         ecrits = [];
         doc.querySelector('.voice-save').dispatchEvent(new dom.window.Event('click'));
         say('SAVE pulses its port whatever program is selected',
-            ecrits.length === 1 && ecrits[0][0] === 'save' && ecrits[0][1] === 1,
+            ecrits.length >= 1 && ecrits[0][0] === 'save' && ecrits[0][1] === 1,
             JSON.stringify(ecrits));
+        /* and then goes to the slot it just wrote, so the save is
+           something you can see rather than something you hope for */
+        const premierUser = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10);
+        const versSlot = ecrits.filter(e => e[0] === 'program');
+        say('and then selects the slot it wrote to',
+            versSlot.length === 1 && versSlot[0][1] === premierUser,
+            JSON.stringify(versSlot));
+        /* The round trip the whole thing exists for: dial a sound, SAVE
+           it, go somewhere else, come back - and find the knobs where
+           you left them. The plugin keeps its own copy for the pedal;
+           this copy is what moves the screen. */
+        ecrits = [];
+        fn({ type: 'change', icon: icon, symbol: 'user_slot', value: 2 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'low_cut', value: 133 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'reverb_mix', value: 44 }, funcs);
+        ecrits = [];
+        doc.querySelector('.voice-save').dispatchEvent(new dom.window.Event('click'));
+        const slotDeux = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10) + 1;
+        ecrits = [];
+        fn({ type: 'change', icon: icon, symbol: 'program', value: 3 }, funcs);
+        ecrits = [];
+        fn({ type: 'change', icon: icon, symbol: 'program', value: slotDeux }, funcs);
+        const rendu = {};
+        ecrits.forEach(e => { rendu[e[0]] = e[1]; });
+        say('a saved USER slot puts the knobs back where they were',
+            rendu['low_cut'] === 133 && rendu['reverb_mix'] === 44,
+            JSON.stringify([rendu['low_cut'], rendu['reverb_mix']]));
     } catch (e) {
         say('the buttons that write ports work', false, e.message);
     }

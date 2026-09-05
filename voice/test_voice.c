@@ -1343,12 +1343,21 @@ static void essai_interrupteurs_effets(void)
     b.ctl[CTL_DE_ESS] = 0.0f;
     b.ctl[CTL_DE_ESS_ON] = 1.0f;
 
-    /* --- drive --- */
+    /* --- drive. Turning it on changes the colour and NOT the level:
+           the stage measures itself either side of the saturator and
+           corrects the difference, which is why a preset with the drive
+           at ninety does not arrive six decibels louder than the one
+           before it. --- */
     b.ctl[CTL_DRIVE] = 100.0f;
-    verifie_vrai("DRIVE ON: a quiet signal is lifted",
-                 gain_db(&b, 800.0, 0.02, 60, 60) > 5.0);
+    chauffer(&b, 1200.0);           /* the level match takes 400 ms */
+    /* Measured on the FUNDAMENTAL, which is why a decibel is allowed:
+       squaring a sine off moves energy into it - four over pi of the
+       peak, for a perfect square - while the stage matches the average
+       of the whole waveform. Before the level match this read +6 dB. */
+    verifie("DRIVE ON: the colour changes, the level does not",
+            gain_db(&b, 800.0, 0.02, 200, 60), 0.0, 1.2);
     b.ctl[CTL_DRIVE_ON] = 0.0f;
-    verifie("DRIVE OFF: unity again", gain_db(&b, 800.0, 0.02, 60, 60), 0.0, 0.1);
+    verifie("DRIVE OFF: unity again", gain_db(&b, 800.0, 0.02, 200, 60), 0.0, 0.1);
     b.ctl[CTL_DRIVE] = 0.0f;
     b.ctl[CTL_DRIVE_ON] = 1.0f;
 
@@ -1893,6 +1902,21 @@ static void essai_ecran_programme(void)
     verifie_vrai("and the name of whatever is picked",
                  !strcmp(ecran.dernier_value, "BALLAD"));
     verifie_vrai("under its own label", !strcmp(ecran.dernier_label, "PROGRAM"));
+
+    /* A save with nothing to show for it is a save nobody believes in.
+       For a second after the press, both the PROGRAM readout and the SAVE
+       footswitch say where it went. */
+    b.ctl[CTL_USER_SLOT] = 3.0f;
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f;
+    memset(&ecran, 0, sizeof(ecran));
+    /* more than the 40 ms the screen is allowed to speak in */
+    for (int k = 0; k < 30; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and SAVED, with the slot, right after a save",
+                 !strcmp(ecran.dernier_value, "SAVED 3"));
+    for (int k = 0; k < 900; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("which goes away again",
+                 !strcmp(ecran.dernier_value, "BALLAD"));
 
     memset(&ecran, 0, sizeof(ecran));
     adresser(&b, CTL_VOICES, TOUTES_CAPS, (void*)0xE2);

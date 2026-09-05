@@ -11,6 +11,7 @@ This is a generator, not a checker: check_descriptor.py reads the .ttl
 files back and compares them against the table in voice.c, which is a
 separate source. If this file and voice.c disagree, the check fails.
 """
+import re
 import sys
 
 HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
@@ -60,7 +61,7 @@ COMMENT = ("A vocal channel strip and effects rack, with no pitch detection "
 SWITCH = ["lv2:toggled"]
 LIST = ["lv2:integer", "lv2:enumeration", "pprops:hasStrictBounds"]
 CONTROLS = [
- ("program", "PROGRAM", 0.0, 72.0, 0.0, None, LIST,
+ ("program", "PROGRAM", 0.0, 0.0, 0.0, None, LIST,   # max set below
   "Picks a sound from the list: MANUAL, the built-in programs, then four "
   "slots of your own. MANUAL means the controls below are yours; anything "
   "else overrides them for as long as it is selected, and IN GAIN, OUTPUT "
@@ -521,7 +522,7 @@ PRESETS = [
         "delay_time": 450.0, "delay_repeats": 25.0, "delay_mix": 10.0,
         "delay_on": 0.0, "reverb": 55.0, "reverb_mix": 18.0}),
     ("robot", "Robot", "ROBOT", {
-        "low_cut": 200.0, "gate": -38.0, "comp": 40.0, "de_ess": 20.0,
+        "low_cut": 200.0, "gate": -38.0, "comp": 75.0, "de_ess": 20.0,
         "body": -6.0, "mid_freq": 1600.0, "presence": 6.0, "air": -6.0,
         "drive": 55.0, "pitch": -5.0, "pitch_mix": 60.0, "doubler": 40.0,
         "voices": 3.0, "spread": 10.0, "modulation": 55.0,
@@ -560,7 +561,7 @@ PRESETS = [
         "delay_repeats": 20.0, "delay_mix": 10.0, "reverb": 25.0,
         "reverb_mix": 12.0}),
     ("walkie", "Walkie Talkie", "WALKIE", {
-        "low_cut": 400.0, "gate": -34.0, "comp": 34.0, "de_ess": 20.0,
+        "low_cut": 400.0, "gate": -34.0, "comp": 55.0, "de_ess": 20.0,
         "body": -12.0, "mid_freq": 2000.0, "presence": 8.0, "air": -12.0,
         "drive": 44.0, "doubler": 15.0, "doubler_on": 0.0,
         "modulation": 20.0, "mod_on": 0.0, "delay_time": 100.0,
@@ -679,13 +680,29 @@ PRESETS = [
         "delay_time": 380.0, "delay_repeats": 30.0, "delay_mix": 14.0,
         "reverb": 45.0, "reverb_mix": 16.0}),
     ("lead_solo", "Lead Solo", "LEADSOLO", {
-        "low_cut": 150.0, "gate": -34.0, "comp": 18.0, "de_ess_on": 0.0,
+        "low_cut": 150.0, "gate": -34.0, "comp": 50.0, "de_ess_on": 0.0,
         "de_ess": 30.0, "body": -5.0, "mid_freq": 2400.0, "presence": 5.0,
         "air": -4.0, "drive": 60.0, "feedback_on": 1.0, "feedback": 70.0,
         "doubler_on": 0.0, "doubler": 25.0, "voices": 2.0, "spread": 30.0,
         "mod_on": 0.0, "modulation": 25.0, "mod_speed": 0.5,
         "delay_time": 420.0, "delay_repeats": 32.0, "delay_mix": 16.0,
         "reverb": 45.0, "reverb_mix": 12.0}),
+    ("fuzz", "Fuzz Lead", "FUZZ", {
+        "low_cut": 180.0, "gate": -30.0, "comp": 55.0, "de_ess": 35.0,
+        "body": -7.0, "mid_freq": 1600.0, "presence": 7.0, "air": -7.0,
+        "drive": 90.0, "drive_on": 1.0, "feedback": 90.0, "feedback_on": 1.0,
+        "doubler": 25.0, "voices": 2.0, "spread": 30.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0, "delay_time": 380.0,
+        "delay_repeats": 25.0, "delay_mix": 12.0, "reverb": 35.0,
+        "reverb_mix": 10.0}),
+    ("highgain", "High Gain", "HIGHGAIN", {
+        "low_cut": 150.0, "gate": -32.0, "comp": 54.0, "de_ess": 30.0,
+        "body": -5.0, "mid_freq": 2000.0, "presence": 5.0, "air": -4.0,
+        "drive": 75.0, "drive_on": 1.0, "feedback": 80.0, "feedback_on": 1.0,
+        "doubler": 25.0, "voices": 2.0, "spread": 30.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0, "delay_time": 420.0,
+        "delay_repeats": 30.0, "delay_mix": 14.0, "reverb": 40.0,
+        "reverb_mix": 12.0}),
     ("crunch", "Guitar Crunch", "CRUNCH", {
         "low_cut": 110.0, "gate": -36.0, "comp": 18.0, "de_ess": 10.0,
         "body": -2.0, "mid_freq": 1400.0, "presence": 2.0, "drive": 45.0,
@@ -765,6 +782,17 @@ SCALE = {
 
 # Triggers are left out on purpose: a preset that presses TAP would set a
 # tempo the moment it loads.
+# The PROGRAM range is not a constant, it is however long the list is:
+# MANUAL, every preset, then the USER slots. Written here so that adding a
+# preset cannot leave the descriptor claiming a shorter list than exists.
+for _i, _c in enumerate(CONTROLS):
+    if _c[0] == "program":
+        CONTROLS[_i] = _c[:3] + (float(len(PRESETS) + N_USER),) + _c[4:]
+        break
+else:
+    raise SystemExit("no PROGRAM control to bound")
+
+
 # What a preset must NOT write. The two triggers, because a preset that
 # pressed TAP would set a tempo as it loaded; IN GAIN and OUTPUT, because
 # they are rig levels and not part of a sound - a preset that reset the
@@ -954,6 +982,71 @@ static const uint8_t program_switch[N_PROGRAM][%(n_switch)d] = {
 """
 
 
+def write_bounds(c_path, js_path):
+    """Keeps the two hand-written copies of "how long is the list" honest.
+
+    The PROGRAM port runs from MANUAL to the last USER slot, and several
+    files have to agree about where that is: voice.ttl and presets.ttl,
+    which this script writes; voice.c's own table of ranges; and the web
+    UI, which needs to know where the USER slots begin. The last two used
+    to be edited by hand, which worked right up until the list grew."""
+    haut = len(PRESETS) + N_USER
+    src = open(c_path).read()
+    neuf, n = re.subn(r'(\{ "program",\s+0\.0f,\s+)[\d.]+f',
+                      r'\g<1>%d.0f' % haut, src, count=1)
+    if n != 1:
+        raise SystemExit("voice.c: no PROGRAM row in ctl_spec to bound")
+    open(c_path, "w").write(neuf)
+
+    src = open(js_path).read()
+    neuf, a = re.subn(r'var PREMIER_USER = \d+;',
+                      'var PREMIER_USER = %d;' % (len(PRESETS) + 1), src, count=1)
+    neuf, b = re.subn(r'var DERNIER = \d+;', 'var DERNIER = %d;' % haut, neuf,
+                      count=1)
+    if a != 1 or b != 1:
+        raise SystemExit("script-voice.js: no PREMIER_USER / DERNIER to set")
+    open(js_path, "w").write(neuf)
+    return haut
+
+
+def write_modgui_programs(path):
+    """Writes the program table into the web UI's script.
+
+    The plugin has the same table in programs.h, and needs it: it must
+    work with no browser anywhere near it. The web UI needs its own copy
+    for a different reason - an LV2 plugin may not write its own control
+    INPUT ports, so nothing the plugin does can move a knob on the screen.
+    Without this, picking a sound left every knob showing the sound
+    before it, which is what made the whole preset list look broken."""
+    cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
+    syms = [c[0] for c in cont] + list(SWITCHES)
+
+    def row(values):
+        out = []
+        for c in cont:
+            symbol, _n, _mn, _mx, default, _u, _p, _cm = c
+            out.append(fmt(values.get(symbol, default)))
+        for symbol in SWITCHES:
+            out.append("%d" % int(values.get(symbol, 1.0)))
+        return "[" + ",".join(out) + "]"
+
+    lignes = ["    /* PROGRAMMES-DEBUT - written by make_ttl.py, do not edit */",
+              "    var SYMBOLES = [%s];"
+              % ", ".join('"%s"' % s for s in syms),
+              "    var PROGRAMMES = [",
+              "        null,          /* MANUAL: a program that changes nothing */"]
+    for _k, label, _short, v in PRESETS:
+        lignes.append("        %s,  /* %s */" % (row(v), label))
+    lignes.append("    ];")
+    lignes.append("    /* PROGRAMMES-FIN */")
+
+    src = open(path).read()
+    deb = src.index("    /* PROGRAMMES-DEBUT")
+    fin = src.index("/* PROGRAMMES-FIN */") + len("/* PROGRAMMES-FIN */")
+    open(path, "w").write(src[:deb] + "\n".join(lignes) + src[fin:])
+    return len(syms)
+
+
 def write_programs(path):
     cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
     col = {}
@@ -1011,9 +1104,11 @@ if __name__ == "__main__":
     p = write_presets("presets.ttl")
     write_manifest("manifest.ttl")
     c = write_programs("programs.h")
+    j = write_modgui_programs("modgui/script-voice.js")
+    h = write_bounds("voice.c", "modgui/script-voice.js")
     print("voice.ttl: %d ports, voice_stereo.ttl: %d ports, presets.ttl: %d,"
           " programs.h: %d programs x %d controls"
           % (n, m, p, len(PRESETS) + 1, c))
-    print("PROGRAM must run 0..%d in voice.c's ctl_spec"
-          % (len(PRESETS) + N_USER))
+    print("modgui/script-voice.js: %d programs x %d columns" % (len(PRESETS) + 1, j))
+    print("PROGRAM runs 0..%d, in voice.ttl, voice.c and the web UI" % h)
     sys.exit(0)

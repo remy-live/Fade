@@ -381,7 +381,7 @@ typedef struct {
 
 static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
-    { "program",        0.0f,   72.0f,     0.0f },
+    { "program",        0.0f,   74.0f,     0.0f },
     { "user_slot",      1.0f,    6.0f,     1.0f },
     { "save",           0.0f,    1.0f,     0.0f },
     { "in_gain",      -20.0f,   40.0f,     0.0f },
@@ -824,6 +824,9 @@ typedef struct {
     float    knob_ms_prev;
     float    delay_ms;        /* the time in force, glided towards its target */
     float    spread_entry;    /* SPREAD as the entry times have reached it */
+    float    drive_in;        /* what goes into the saturator, slowly */
+    float    drive_out;       /* and what comes out, so the two can match */
+    float    drive_fix;       /* the ratio, held across the block */
 
     /* --- the anti-Larsen hunter. It listens to the mono sum, once, and
            the notches it places are applied to every channel: a howl is a
@@ -868,6 +871,7 @@ typedef struct {
         uint8_t filled;
     } user[N_USER];
     int save_prev;
+    uint32_t save_flash;      /* samples left to say SAVED on the screen */
     int fx2_prev;
 
     LV2_URID_Map* map;
@@ -1456,6 +1460,9 @@ activate(LV2_Handle instance)
     self->sm[SM_AIR]        = db_to_lin(param_read(self, CTL_AIR)) - 1.0f;
     self->sm[SM_DRIVE_PRE]  = drive_pre_of(param_read(self, CTL_DRIVE));
     self->sm[SM_DRIVE_POST] = drive_post_of(self->sm[SM_DRIVE_PRE]);
+    self->drive_in          = 0.0f;
+    self->drive_out         = 0.0f;
+    self->drive_fix         = 1.0f;
     self->sm[SM_DRIVE_MIX]  = param_read(self, CTL_DRIVE) * 0.01f;
     self->sm[SM_PITCH]      = param_read(self, CTL_PITCH_MIX)  * 0.01f;
     self->sm[SM_DOUBLER]    = param_read(self, CTL_DOUBLER)    * 0.01f;
@@ -1512,6 +1519,7 @@ activate(LV2_Handle instance)
     self->fx_toggle_prev  = self->fx_state;
     self->fx2_prev        = (ctl_read(self, CTL_FX_2) > 0.5f) ? 1 : 0;
     self->save_prev       = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
+    self->save_flash      = 0u;
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
@@ -1683,12 +1691,17 @@ paint(Voice* self, int force)
 
         case SLOT_SAVE: {
             /* On a footswitch, this says WHERE it would save - which is
-               USER SLOT's business now, not the program's. */
+               USER SLOT's business now, not the program's - and for a
+               second after the press, that it went there. */
             const int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f);
             label = "SAVE";
-            copy_bounded(vbuf, sizeof(vbuf), "USER ");
-            write_int(vbuf + 5, sizeof(vbuf) - 5, u);
+            copy_bounded(vbuf, sizeof(vbuf),
+                         self->save_flash ? "SAVED " : "USER ");
+            write_int(vbuf + (self->save_flash ? 6 : 5),
+                      sizeof(vbuf) - (self->save_flash ? 6u : 5u), u);
             value = vbuf;
+            led   = self->save_flash ? LV2_HMI_LED_Colour_Green
+                                     : LV2_HMI_LED_Colour_Off;
             break;
         }
 
@@ -1731,7 +1744,12 @@ paint(Voice* self, int force)
         case SLOT_PROGRAM:
             /* The list, on an encoder: turn it and the name changes. */
             label = "PROGRAM";
-            if (self->program >= N_PROGRAM) {
+            if (self->save_flash) {
+                const int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f);
+                copy_bounded(vbuf, sizeof(vbuf), "SAVED ");
+                write_int(vbuf + 6, sizeof(vbuf) - 6, u);
+                value = vbuf;
+            } else if (self->program >= N_PROGRAM) {
                 copy_bounded(vbuf, sizeof(vbuf), "USER ");
                 write_int(vbuf + 5, sizeof(vbuf) - 5,
                           self->program - N_PROGRAM + 1);
@@ -2009,8 +2027,15 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->user[u].sw[k] = (uint8_t)self->sw_state[k];
         }
         self->user[u].filled = 1u;
+        /* Say so. A save with no sign that it happened is a save nobody
+           believes in, and there is nothing else on the pedal to tell. */
+        self->save_flash = (uint32_t)(self->rate * 1.2f);
     }
     self->save_prev = save_now;
+    if (self->save_flash) {
+        self->save_flash = (self->save_flash > n_samples)
+                         ? self->save_flash - n_samples : 0u;
+    }
 
     /* ---------------- the FX switch: one state, two ways in ----------
        Same reasoning as fade.c. The toggle is followed by its CHANGES so
@@ -2232,6 +2257,18 @@ run(LV2_Handle instance, uint32_t n_samples)
        mutually prime so the three never line up: a doubler whose copies
        move together is one copy with a wobble. */
     const float inc_m = mod_speed / rate;
+
+    /* The correction is worked out once a block, from where the two
+       averages have got to, and clamped: it is a level match, not a
+       compressor, and it must never become a gate or an amplifier. */
+    const float dr_c = env_coef(400.0f, rate);
+    float drive_fix = 1.0f;
+    if (self->drive_out > 1.0e-5f && self->drive_in > 1.0e-5f) {
+        drive_fix = self->drive_in / self->drive_out;
+        if (drive_fix > 1.5f)  { drive_fix = 1.5f; }
+        if (drive_fix < 0.15f) { drive_fix = 0.15f; }
+    }
+    self->drive_fix = drive_fix;
 
     float gr_worst = 0.0f;
     float peak     = 0.0f;
@@ -2469,16 +2506,41 @@ run(LV2_Handle instance, uint32_t n_samples)
                stage that is bypassed by a branch instead steps the level
                of a loud passage by nearly two decibels the moment the
                control leaves zero. --- */
+        float dr_a = 0.0f, dr_b = 0.0f;
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
-            const float sat = softclip(x[c] * sm[SM_DRIVE_PRE]) * sm[SM_DRIVE_POST];
-            const float v   = x[c] + sm[SM_DRIVE_MIX] * self->sw[SW_DRIVE]
-                                     * (sat - x[c]);
+            /* The average is taken of what the saturator PRODUCES, not
+               of what leaves this stage: measuring after the correction
+               would make the correction its own input, and it would
+               flip about instead of settling. */
+            const float brut = softclip(x[c] * sm[SM_DRIVE_PRE])
+                             * sm[SM_DRIVE_POST];
+            const float sat  = brut * drive_fix;
+            const float v    = x[c] + sm[SM_DRIVE_MIX] * self->sw[SW_DRIVE]
+                                      * (sat - x[c]);
+            {
+                const float a = absf(x[c]), b = absf(brut);
+                if (a > dr_a) { dr_a = a; }
+                if (b > dr_b) { dr_b = b; }
+            }
             const float y = v - ch->dc_x + dc_r * ch->dc_y;
             ch->dc_x = v;
             ch->dc_y = flush(y);
             x[c] = y;
         }
+        /* --- and the one thing DRIVE must not do, which is change how
+               loud you are. Compensating the peak gain at one reference
+               level is not enough: saturation is compression, so on a
+               real phrase the average comes up even when the peaks do
+               not - measured at more than seven decibels at the top of
+               the knob, and more still on a quiet singer. Two slow
+               averages, one either side of the saturator, and the ratio
+               between them is the correction. Slow enough - two fifths
+               of a second - that it follows the passage and not the
+               syllable, so it evens the sound out rather than pumping
+               it. --- */
+        self->drive_in  = flush(self->drive_in  + dr_c * (dr_a - self->drive_in));
+        self->drive_out = flush(self->drive_out + dr_c * (dr_b - self->drive_out));
 
         /* --- pitch, in the chain rather than beside it: a baritone is
                the voice, not something added to it ---

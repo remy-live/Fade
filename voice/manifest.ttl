@@ -304,6 +304,16 @@
     lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
     rdfs:seeAlso <presets.ttl> .
 
+<http://remy-live.github.io/lv2/voice#preset_fuzz>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_highgain>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
 <http://remy-live.github.io/lv2/voice#preset_crunch>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
@@ -630,6 +640,16 @@
     rdfs:seeAlso <presets.ttl> .
 
 <http://remy-live.github.io/lv2/voice#preset_lead_solo_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_fuzz_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_highgain_stereo>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
     rdfs:seeAlso <presets.ttl> .

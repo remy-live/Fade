@@ -101,7 +101,7 @@ not from the program, so a board comes back exactly as you left it.
 | **BODY** | ±12 dB below ~240 Hz. |
 | **PRESENCE** | ±12 dB between ~1 and 4.5 kHz. Where a voice cuts through a band. |
 | **AIR** | ±12 dB above ~6 kHz. |
-| **DRIVE** | 0–100 %. Soft saturation, level-matched at −12 dBFS: the colour changes, how loud you are does not. |
+| **DRIVE** | 0–100 %. Soft saturation that measures itself either side of the saturator, twice a second, and corrects the difference: the colour changes, how loud you are does not — at any input level, which a fixed reference could not do. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
 | **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
@@ -379,13 +379,26 @@ ringing into the gap that follows it.
   were out of phase. A two-pole low pass, with the band taken as
   `input − lowpass`, gives 12 dB, because there the two halves really do
   sum back to the input.
-- **The drive and the compressor are both level-matched at −12 dBFS**,
-  which is about where a voice sits mid-chain. Both were compensated by a
-  formula first, and both were wrong the same way: the drive cost a loud
-  passage 10 dB, and the compressor *gave* nearly 12 dB at COMP 65 —
-  which, on top of a preset that also moved IN GAIN, is why the first
-  presets came out shouting. What is given back is now the reduction the
-  same curve applies at the reference level: measured, not derived.
+- **DRIVE is level-matched by measurement, not by formula.** Compensating
+  the peak gain at one reference level - which is what this did, at
+  −12 dBFS - is not enough, because saturation is compression: the peaks
+  stay where they were and the average comes up. Measured on a sung
+  phrase, the top of the knob was **+7.3 dB** louder, and **+11.9 dB** on
+  a quiet singer, which is most of the reason a preset with any drive in
+  it arrived shouting. The stage now keeps a slow average of what goes
+  into the saturator and of what comes out of it, and scales the wet
+  signal by the ratio - two fifths of a second, so it follows the passage
+  rather than the syllable. The same measurement now reads **−0.6 to
+  −2.0 dB** across a fifteen-decibel range of input level. The average is
+  taken of what the saturator produces rather than of what leaves the
+  stage: measure after the correction and the correction becomes its own
+  input, and it flips about instead of settling.
+- **The compressor is level-matched at −12 dBFS**,
+  which is about where a voice sits mid-chain. It was compensated by a
+  formula first, and the formula *gave* nearly 12 dB at COMP 65 — which,
+  on top of a preset that also moved IN GAIN, is why the first presets
+  came out shouting. What is given back is now the reduction the same
+  curve applies at the reference level: measured, not derived.
 - **The doubled voices are micro-shifters, not delay taps.** A delay whose
   length is wobbled by a sine has an average pitch offset of exactly zero
   and passes back through unison twice a cycle — at which moments it is a

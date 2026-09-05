@@ -58,7 +58,7 @@
         lv2:portProperty lv2:integer , lv2:enumeration , pprops:hasStrictBounds ;
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
-        lv2:maximum 72.0 ;
+        lv2:maximum 74.0 ;
         lv2:scalePoint
             [ rdfs:label "Manual" ; rdf:value 0.0 ] ,
             [ rdfs:label "Speech" ; rdf:value 1.0 ] ,
@@ -119,20 +119,22 @@
             [ rdfs:label "Shimmer" ; rdf:value 56.0 ] ,
             [ rdfs:label "Guitar Solo" ; rdf:value 57.0 ] ,
             [ rdfs:label "Lead Solo" ; rdf:value 58.0 ] ,
-            [ rdfs:label "Guitar Crunch" ; rdf:value 59.0 ] ,
-            [ rdfs:label "Guitar Clean" ; rdf:value 60.0 ] ,
-            [ rdfs:label "Clean Chime" ; rdf:value 61.0 ] ,
-            [ rdfs:label "Acoustic Piezo" ; rdf:value 62.0 ] ,
-            [ rdfs:label "Bass DI" ; rdf:value 63.0 ] ,
-            [ rdfs:label "Harmonica" ; rdf:value 64.0 ] ,
-            [ rdfs:label "Saxophone" ; rdf:value 65.0 ] ,
-            [ rdfs:label "Rotary Keys" ; rdf:value 66.0 ] ,
-            [ rdfs:label "User 1" ; rdf:value 67.0 ] ,
-            [ rdfs:label "User 2" ; rdf:value 68.0 ] ,
-            [ rdfs:label "User 3" ; rdf:value 69.0 ] ,
-            [ rdfs:label "User 4" ; rdf:value 70.0 ] ,
-            [ rdfs:label "User 5" ; rdf:value 71.0 ] ,
-            [ rdfs:label "User 6" ; rdf:value 72.0 ] ;
+            [ rdfs:label "Fuzz Lead" ; rdf:value 59.0 ] ,
+            [ rdfs:label "High Gain" ; rdf:value 60.0 ] ,
+            [ rdfs:label "Guitar Crunch" ; rdf:value 61.0 ] ,
+            [ rdfs:label "Guitar Clean" ; rdf:value 62.0 ] ,
+            [ rdfs:label "Clean Chime" ; rdf:value 63.0 ] ,
+            [ rdfs:label "Acoustic Piezo" ; rdf:value 64.0 ] ,
+            [ rdfs:label "Bass DI" ; rdf:value 65.0 ] ,
+            [ rdfs:label "Harmonica" ; rdf:value 66.0 ] ,
+            [ rdfs:label "Saxophone" ; rdf:value 67.0 ] ,
+            [ rdfs:label "Rotary Keys" ; rdf:value 68.0 ] ,
+            [ rdfs:label "User 1" ; rdf:value 69.0 ] ,
+            [ rdfs:label "User 2" ; rdf:value 70.0 ] ,
+            [ rdfs:label "User 3" ; rdf:value 71.0 ] ,
+            [ rdfs:label "User 4" ; rdf:value 72.0 ] ,
+            [ rdfs:label "User 5" ; rdf:value 73.0 ] ,
+            [ rdfs:label "User 6" ; rdf:value 74.0 ] ;
         rdfs:comment "Picks a sound from the list: MANUAL, the built-in programs, then four slots of your own. MANUAL means the controls below are yours; anything else overrides them for as long as it is selected, and IN GAIN, OUTPUT and every switch stay yours either way. Address it to an encoder to walk the list from the device."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
