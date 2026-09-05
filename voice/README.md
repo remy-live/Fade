@@ -159,7 +159,7 @@ Three rules get them there, and they apply while you turn knobs too:
 
 ## Presets, and your own sounds
 
-Fourteen, on both variants, and they exist twice over: as entries in the PROGRAM
+Thirty, on both variants, and they exist twice over: as entries in the PROGRAM
 list, and as LV2 presets in the plugin's own preset menu. Both come from one
 table in `make_ttl.py`, and the bench runs a phrase through both routes and
 subtracts — picking Ballad from the menu and selecting program 3 give the
@@ -167,20 +167,21 @@ same samples, or the build stops.
 
 | | |
 |---|---|
-| **Speech** | dry, tight, a firm low cut. Everything wet is dialled in but switched off. |
-| **Stage Dry** | a working monitor sound, a hint of room |
-| **Ballad** | doubler, a slow delay, a real tail |
-| **Rock** | drive, presence, a short slapback |
-| **Wide** | doubler and chorus, a big room |
-| **Cathedral** | the longest tail there is, with the delay feeding it |
-| **Choir** | four voices, chorus, a hall behind them |
-| **Slapback** | 95 ms, one repeat, drive |
-| **Ambient** | a 700 ms delay into a long reverb |
-| **Radio** | narrow, driven, no wet at all |
-| **Baritone** | four semitones down, with the weight to match |
-| **Tenor** | three up, a little brighter |
-| **Helium** | nine up, and no apology |
-| **Octave** | twelve down at 35 %, under the real voice |
+| **On a stage** | Speech · Stage Dry · Ballad · Rock · Wide · Arena · Tight Double |
+| **Rooms** | Cathedral · Ambient · Dub · Slapback |
+| **Other people's voices** | Baritone · Tenor · Helium · Octave · Monster · Robot |
+| **Through a grille** | **Hygiaphone** · Telephone · Megaphone · Walkie Talkie · Radio |
+| **Choirs** | Choir · Gospel Choir · Angel Choir |
+| **Spoken** | Podcast · Whisper |
+| **Guitar** | **Guitar Solo** · Guitar Crunch · Guitar Clean |
+
+Two of them answer questions that were asked out loud. **Hygiaphone** is
+the speaking grille at a bank counter: nothing below 320 Hz or above
+6 kHz, a hard bell at 1.8 kHz, and enough drive to make it buzz.
+**Guitar Solo** is an overdriven lead that does not howl — drive at 42,
+the noise gate tight at −38 dB for the space between phrases, and the
+anti-Larsen hunter at 70 for the part a gate can do nothing about, which
+is the howl that happens *while* you are playing.
 
 Each writes every control it does not name at its default, so loading one
 lands somewhere known instead of on top of half of whatever was there
