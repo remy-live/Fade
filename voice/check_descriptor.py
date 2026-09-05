@@ -246,6 +246,10 @@ dire("programs.h covers every control", len(h_col) == len(c_table),
 dire("every program name fits the screen",
      all(len(n) <= 8 and n == n.upper() for n in h_names),
      " ".join(n for n in h_names if len(n) > 8 or n != n.upper()))
+# Two programs under one name on the device is two programs you cannot
+# tell apart from the pedal, which is where the list is actually used.
+_vus = [n for i, n in enumerate(h_names) if h_names.index(n) != i]
+dire("and no two programs share it", not _vus, " ".join(sorted(set(_vus))))
 n_user = int(re.search(r'#define N_USER\s+(\d+)', hdr).group(1))
 dire("the PROGRAM control covers the programs AND the user slots",
      by_symbol['program']['max'] == n_prog - 1 + n_user,

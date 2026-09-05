@@ -448,7 +448,7 @@ PRESETS = [
         "spread": 85.0, "modulation": 30.0, "mod_speed": 0.35,
         "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 8.0,
         "delay_on": 0.0, "reverb": 65.0, "reverb_mix": 16.0}),
-    ("gospelstack", "Gospel Stack", "STACK", {
+    ("gospelstack", "Gospel Stack", "GOSPSTAK", {
         "low_cut": 110.0, "gate": -44.0, "comp": 24.0, "de_ess": 30.0,
         "body": 1.0, "mid_freq": 2000.0, "presence": 3.0, "air": 2.0,
         "drive": 20.0, "feedback": 40.0, "doubler": 58.0, "voices": 4.0,
@@ -678,7 +678,7 @@ PRESETS = [
         "doubler_on": 0.0, "modulation": 25.0, "mod_on": 0.0,
         "delay_time": 380.0, "delay_repeats": 30.0, "delay_mix": 14.0,
         "reverb": 45.0, "reverb_mix": 16.0}),
-    ("lead_solo", "Lead Solo", "SOLO", {
+    ("lead_solo", "Lead Solo", "LEADSOLO", {
         "low_cut": 150.0, "gate": -34.0, "comp": 18.0, "de_ess_on": 0.0,
         "de_ess": 30.0, "body": -5.0, "mid_freq": 2400.0, "presence": 5.0,
         "air": -4.0, "drive": 60.0, "feedback_on": 1.0, "feedback": 70.0,
