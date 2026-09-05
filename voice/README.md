@@ -229,6 +229,14 @@ compressor box carries a gain-reduction meter and the levels box an output
 meter, both fed by the plugin's own outputs. TAP is a button as well as a
 port.
 
+The jacks sit *outside* the panel, on a socket rail down each edge — which
+is why the stylesheet must never put `overflow: hidden` on the pedal. The
+first version of this interface did, and it looked immaculate right up
+until somebody went to plug a cable in and found there was nowhere to plug
+it: the sockets had been clipped away along with the corners. There is now
+a check for exactly that, and the shipped screenshot is framed wide enough
+to show them.
+
 The interface is checked the way the rest of the plugin is:
 `check_modgui.js` renders the template with mustache — the engine mod-ui
 itself uses — then walks the DOM: every control port must be reachable, every

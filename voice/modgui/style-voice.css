@@ -25,7 +25,12 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 10px 22px rgba(0,0,0,.45);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     color: #e9f0f7;
-    overflow: hidden;
+    /* NO overflow: hidden here, ever. The jacks are positioned OUTSIDE the
+       panel on purpose - that is where a cable goes - so clipping the box
+       does not tidy the corners, it deletes the sockets and with them any
+       way of patching the plugin into a pedalboard. Nothing else overflows:
+       make_screenshot.js measures every child and refuses to write an image
+       if one does. */
 }
 
 .mod-pedal-voice{{{cns}}} .mod-drag-handle {
@@ -270,10 +275,25 @@
    The jacks get ONLY their "top": their horizontal position comes from
    pedals.css, and overriding it drags them into the middle of the pedal. */
 
-.mod-pedal-voice{{{cns}}} .mod-input  { top: 150px; }
-.mod-pedal-voice{{{cns}}} .mod-input:nth-of-type(2) { top: 200px; }
-.mod-pedal-voice{{{cns}}} .mod-output { top: 150px; }
-.mod-pedal-voice{{{cns}}} .mod-output:nth-of-type(2) { top: 200px; }
+.mod-pedal-voice{{{cns}}} .mod-input  { top: 264px; }
+.mod-pedal-voice{{{cns}}} .mod-input:nth-of-type(2)  { top: 322px; }
+.mod-pedal-voice{{{cns}}} .mod-output { top: 264px; }
+.mod-pedal-voice{{{cns}}} .mod-output:nth-of-type(2) { top: 322px; }
+
+/* A socket plate behind each jack, so it is obvious where the cable goes
+   even before one is plugged in. Purely decoration: the jack itself is
+   mod-ui's element, sitting on top of this. */
+.mod-pedal-voice{{{cns}}}::before,
+.mod-pedal-voice{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 252px;
+    width: 13px; height: 96px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #2b323d 0%, #1b212a 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+}
+.mod-pedal-voice{{{cns}}}::before { left: 0; }
+.mod-pedal-voice{{{cns}}}::after  { right: 0; }
 
 .mod-pedal-voice{{{cns}}} .mod-footswitch {
     position: absolute; bottom: 10px; right: 18px;

@@ -105,7 +105,13 @@ document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}')
         process.exit(1);
     }
     const cible = 'modgui/screenshot-voice' + (stereo ? '-stereo' : '') + '.png';
-    await p.locator('.mod-pedal').screenshot({ path: cible });
+    /* a margin either side, so the jacks - which live OUTSIDE the panel -
+       are in the picture: the interface is also where somebody looks to
+       find out where the cable goes */
+    const box = await p.locator('.mod-pedal').boundingBox();
+    await p.screenshot({ path: cible, clip: {
+        x: Math.max(0, box.x - 34), y: box.y,
+        width: box.width + 68, height: box.height } });
     await browser.close();
     console.log(cible + ': ' + debord.w + 'x' + debord.h);
 })();

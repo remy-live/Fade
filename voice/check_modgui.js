@@ -226,6 +226,22 @@ const orphelines = [...styled].filter(c => !doc.querySelector('[class*="' + c + 
 say('no styled class missing from the template', orphelines.length === 0,
     orphelines.join(' '));
 
+/* --- the jacks live outside the panel, so the panel must not clip ---
+       This is the check that would have caught the interface shipping with
+       no visible sockets at all: overflow: hidden on the pedal deletes
+       them, and with them any way of patching the plugin in. */
+/* comments stripped first: the rule carries a comment saying not to put
+   overflow: hidden there, and a checker that reads its own warning as a
+   violation is a checker nobody trusts */
+const cssNu = renderedCss.replace(/\/\*[\s\S]*?\*\//g, ' ');
+const regleP = /\.mod-pedal-voice[^{]*\{([^}]*)\}/.exec(cssNu);
+say('the pedal does not clip what sticks out of it',
+    regleP !== null && !/overflow\s*:\s*hidden/.test(regleP[1]));
+for (const cote of ['mod-input', 'mod-output']) {
+    say('the ' + cote + ' jacks are placed by the stylesheet',
+        new RegExp('\\.' + cote + '[^{]*\\{[^}]*top\\s*:').test(cssNu));
+}
+
 /* --- bank images --- */
 for (const f of ['thumbnail-voice.png', 'screenshot-voice.png',
                  'thumbnail-voice-stereo.png', 'screenshot-voice-stereo.png']) {
