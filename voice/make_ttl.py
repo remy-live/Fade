@@ -37,7 +37,7 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 
     rdfs:comment "%(comment)s" ;
 
-    lv2:minorVersion 4 ;
+    lv2:minorVersion 5 ;
     lv2:microVersion 0 ;
 
     lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl , urid:map ;
@@ -60,17 +60,22 @@ COMMENT = ("A vocal channel strip and effects rack, with no pitch detection "
 SWITCH = ["lv2:toggled"]
 LIST = ["lv2:integer", "lv2:enumeration", "pprops:hasStrictBounds"]
 CONTROLS = [
- ("program", "PROGRAM", 0.0, 18.0, 0.0, None, LIST,
+ ("program", "PROGRAM", 0.0, 20.0, 0.0, None, LIST,
   "Picks a sound from the list: MANUAL, the built-in programs, then four "
   "slots of your own. MANUAL means the controls below are yours; anything "
   "else overrides them for as long as it is selected, and IN GAIN, OUTPUT "
   "and every switch stay yours either way. Address it to an encoder to walk "
   "the list from the device."),
+ ("user_slot", "USER SLOT", 1.0, 6.0, 1.0, None, LIST,
+  "Which of the six USER slots SAVE writes to. It is a separate list from "
+  "PROGRAM on purpose: it lets you pick a built-in sound, change what you "
+  "want, and store the result somewhere else without losing the original."),
  ("save", "SAVE", 0.0, 1.0, 0.0, None, ["lv2:toggled", "pprops:trigger"],
-  "Stores what the knobs say into the selected USER slot. Dial the sound in "
-  "MANUAL, pick a USER slot - an empty one leaves the knobs in charge, so "
-  "nothing changes as you select it - and press this. The slot is saved with "
-  "the pedalboard."),
+  "Stores WHAT YOU ARE HEARING into the slot USER SLOT points at - the "
+  "program you picked, plus every change you made to it. Turning any control "
+  "while a program is selected hands that control back to you, so a built-in "
+  "sound is a starting point rather than a cage. The slots are saved with the "
+  "pedalboard."),
  ("in_gain", "IN GAIN", -20.0, 40.0, 0.0, "db", [],
   "Gain applied to the input, before everything else. This is a rig "
   "setting, not a sound: no preset and no program touches it, so what you "
@@ -135,6 +140,10 @@ CONTROLS = [
   "How much of the doubled voices is heard. They arrive twenty to forty-six "
   "milliseconds late, each drifting a few cents on its own slow LFO and "
   "sitting slightly darker than the lead."),
+ ("spread", "SPREAD", 0.0, 100.0, 50.0, "pc", [],
+  "How far apart the doubled voices are: their detune, their drift and how "
+  "much their entries differ. Low is one singer twice, high is a group of "
+  "them who have never met."),
  ("voices", "VOICES", 2.0, 4.0, 3.0, None, LIST,
   "How many doubled voices: two for a straight double, three for a thicker "
   "one, four for a small choir. The level is held steady as the count "
@@ -147,6 +156,14 @@ CONTROLS = [
   "two sides move a quarter cycle apart, which is where the width comes from."),
  ("mod_speed", "MOD SPEED", 0.05, 8.0, 0.6, "hz", ["pprops:logarithmic"],
   "Speed of the chorus. Slow is a drift, fast is a vibrato."),
+ ("feedback_on", "FEEDBACK ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the anti-Larsen block in and out. Made for a footswitch."),
+ ("feedback", "FEEDBACK", 0.0, 100.0, 0.0, "pc", [],
+  "Hunts acoustic feedback and notches it out. A bank of filters watches for "
+  "a band that rises and then just sits there - which is what howling does "
+  "and singing does not - and drops a narrow notch on it. At 0 it is off; "
+  "turn it up for a loud stage or a distorted guitar in front of its own "
+  "monitor. NOTCHES says how many are in place."),
  ("delay_on", "DELAY ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the delay in and out. It cuts what goes IN, so switching off "
   "lets the repeats ring out instead of chopping them. Made for a footswitch."),
@@ -187,10 +204,10 @@ CONTROLS = [
 
 # What a program overrides, and what stays the player's whatever is
 # selected. IN GAIN and OUTPUT are rig levels, the switches are feet.
-LIVE = ("program", "save", "in_gain", "output", "fx", "fx_2", "tap")
+LIVE = ("program", "user_slot", "save", "in_gain", "output", "fx", "fx_2", "tap")
 SWITCHES = ("gate_on", "comp_on", "de_ess_on", "eq_on", "drive_on", "pitch_on",
-            "doubler_on", "mod_on", "delay_on", "reverb_on")
-N_USER = 4
+            "doubler_on", "mod_on", "feedback_on", "delay_on", "reverb_on")
+N_USER = 6
 
 OUTPUTS = [
  ("gr", "GR", -24.0, 0.0, 0.0, "db", [],
@@ -204,6 +221,9 @@ OUTPUTS = [
  ("fx_state", "FX STATE", 0.0, 1.0, 1.0, None, ["lv2:toggled"],
   "Output. The FX state actually in force. It exists because the trigger and "
   "the toggle drive one state, and a plugin must not write back into either."),
+ ("notches", "NOTCHES", 0.0, 4.0, 0.0, None, [],
+  "Output. How many anti-Larsen notches are in place right now. If this sits "
+  "at its maximum the stage is fighting you, not the plugin."),
  ("time_out", "TIME", 20.0, 2000.0, 400.0, "ms", [],
   "Output. The delay time in force, in milliseconds, whether it came from "
   "the knob or from the tap."),
@@ -333,6 +353,7 @@ PRESETS = [
 # Scale points: the lists a knob walks through on the device.
 SCALE = {
     "voices": [("2 voices", 2.0), ("3 voices", 3.0), ("4 voices", 4.0)],
+    "user_slot": [("User %d" % (i + 1), float(i + 1)) for i in range(N_USER)],
     "program": ([("Manual", 0.0)]
                 + [(p[1], float(i + 1)) for i, p in enumerate(PRESETS)]
                 + [("User %d" % (i + 1), float(len(PRESETS) + 1 + i))

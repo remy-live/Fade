@@ -1657,11 +1657,14 @@ static void essai_programme_interrupteurs(void)
     silence(&b); tourner(&b);
     b.ctl[CTL_DELAY_ON] = 1.0f;
     silence(&b); tourner(&b);
-    b.ctl[CTL_DELAY_TIME] = 200.0f;   /* ignored: the program owns the sound */
-    b.ctl[CTL_DELAY_MIX]  = 100.0f;   /* also ignored */
     chauffer(&b, 2000.0);
-    verifie("a program overrides the knobs it owns",
+    verifie("a program owns the knobs until one of them moves",
             (double)b.ctl[CTL_TIME_OUT], 300.0, 0.01);
+    b.ctl[CTL_DELAY_TIME] = 200.0f;   /* and then that one is the player's */
+    b.ctl[CTL_DELAY_MIX]  = 100.0f;
+    chauffer(&b, 200.0);
+    verifie("and hands one back the moment it does",
+            (double)b.ctl[CTL_TIME_OUT], 200.0, 0.01);
 
     /* MANUAL hands everything back */
     b.ctl[CTL_PROGRAM] = 0.0f;
@@ -1883,7 +1886,7 @@ static void essai_eq(void)
 static void essai_slots(void)
 {
     Banc b;
-    const int premier = N_PROGRAM;          /* USER 1 */
+    const int premier = N_PROGRAM;          /* USER 1 on the program list */
     ouvrir(&b, 0, 48000.0, 128, 0);
     neutre(&b);
 
@@ -1895,35 +1898,87 @@ static void essai_slots(void)
     verifie("an empty USER slot leaves the knobs alone",
             (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
 
-    /* store, then move the knobs: the slot must not follow them */
+    /* store into slot 1, then move the knobs: the slot must not follow */
+    b.ctl[CTL_USER_SLOT] = 1.0f;
     b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    /* a slot is a program like any other: the knob still takes over ... */
     b.ctl[CTL_DELAY_TIME] = 900.0f;
     silence(&b); tourner(&b);
-    verifie("once saved, the slot stops following the knobs",
-            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+    verifie("a saved slot can be edited like anything else",
+            (double)b.ctl[CTL_TIME_OUT], 900.0, 0.01);
 
-    /* MANUAL still answers to them */
     b.ctl[CTL_PROGRAM] = 0.0f;
     silence(&b); tourner(&b);
     verifie("MANUAL still answers to the knobs",
             (double)b.ctl[CTL_TIME_OUT], 900.0, 0.01);
 
-    /* and coming back recalls what was stored */
+    /* ... and what was stored is still what comes back */
     b.ctl[CTL_PROGRAM] = (float)premier;
     silence(&b); tourner(&b);
-    verifie("coming back recalls it", (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+    verifie("coming back recalls what was stored, not the knob",
+            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
 
-    /* saving with no slot selected must do nothing at all */
-    b.ctl[CTL_PROGRAM] = 0.0f;
+    /* a second slot, written from MANUAL, must not touch the first */
+    b.ctl[CTL_PROGRAM]    = 0.0f;
     b.ctl[CTL_DELAY_TIME] = 111.0f;
+    b.ctl[CTL_USER_SLOT]  = 4.0f;
     silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)(premier + 3);      /* USER 4 */
+    silence(&b); tourner(&b);
+    verifie("USER SLOT chooses where SAVE writes",
+            (double)b.ctl[CTL_TIME_OUT], 111.0, 0.01);
     b.ctl[CTL_PROGRAM] = (float)premier;
     silence(&b); tourner(&b);
-    verifie("SAVE outside a USER slot changes nothing",
+    verifie("and the other slot is untouched",
             (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+    fermer(&b);
+}
+
+/* The thing a preset list is for: pick a sound, change what you do not
+   like about it, keep the result. Every control a program owns has to go
+   back to the knob the moment the knob moves, or a built-in sound is a
+   cage rather than a starting point. */
+static void essai_retouche(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+
+    b.ctl[CTL_PROGRAM] = 3.0f;              /* Ballad: a 420 ms delay */
+    silence(&b); tourner(&b);
+    verifie("a program owns its controls to start with",
+            (double)b.ctl[CTL_TIME_OUT], 420.0, 0.01);
+
+    b.ctl[CTL_DELAY_TIME] = 180.0f;         /* the player turns the knob */
+    silence(&b); tourner(&b);
+    verifie("turning a knob takes that one control back",
+            (double)b.ctl[CTL_TIME_OUT], 180.0, 0.01);
+
+    /* ... and ONLY that one: the rest of the program is still in force */
+    b.ctl[CTL_REVERB_MIX] = 0.0f;           /* untouched so far */
+    verifie_vrai("the rest of the program is still in force",
+                 program_value[3][program_col[CTL_REVERB_MIX]] > 0.0f);
+
+    /* the edited sound is what SAVE keeps */
+    b.ctl[CTL_USER_SLOT] = 2.0f;
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM]    = 0.0f;           /* back to MANUAL */
+    b.ctl[CTL_DELAY_TIME] = 700.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);   /* USER 2 */
+    silence(&b); tourner(&b);
+    verifie("SAVE keeps the edit, not the knob it came from",
+            (double)b.ctl[CTL_TIME_OUT], 180.0, 0.01);
+
+    /* choosing another program hands everything back to it */
+    b.ctl[CTL_PROGRAM] = 4.0f;              /* Rock: 120 ms */
+    silence(&b); tourner(&b);
+    verifie("a new program takes every control back",
+            (double)b.ctl[CTL_TIME_OUT], 120.0, 0.01);
     fermer(&b);
 }
 
@@ -1969,7 +2024,7 @@ static void essai_etat(void)
     Banc a;
     ouvrir(&a, 0, 48000.0, 128, 0);
     neutre(&a);
-    a.ctl[CTL_PROGRAM]    = (float)N_PROGRAM + 2.0f;   /* USER 3 */
+    a.ctl[CTL_USER_SLOT]  = 3.0f;                      /* store into USER 3 */
     a.ctl[CTL_DELAY_TIME] = 333.0f;
     a.ctl[CTL_REVERB_MIX] = 44.0f;
     silence(&a); tourner(&a);
@@ -1987,7 +2042,7 @@ static void essai_etat(void)
     neutre(&b);
     verifie_vrai("state restores without complaining",
                  st->restore(b.h, f_retrieve, NULL, 0, NULL) == LV2_STATE_SUCCESS);
-    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 2.0f;
+    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 2.0f;      /* USER 3 */
     b.ctl[CTL_DELAY_TIME] = 800.0f;         /* the knobs are elsewhere */
     silence(&b); tourner(&b);
     verifie("a restored slot plays what was saved in it",
@@ -2004,6 +2059,202 @@ static void essai_etat(void)
     verifie_vrai("a state of the wrong size is refused",
                  st->restore(b.h, f_retrieve, NULL, 0, NULL) != LV2_STATE_SUCCESS);
     fermer(&b);
+}
+
+/* ================================================================== */
+/* The anti-Larsen hunter                                              */
+/* ================================================================== */
+
+/* A room, which is all a Larsen needs: the output comes back into the
+   input, late, through a resonance. With the loop gain over one it howls,
+   and with it under one it does not - so the same test rig proves both
+   that the hunter stops a howl and that it leaves a played note alone. */
+typedef struct { double b0, b1, b2, a1, a2, z1, z2; } Biquad;
+
+static void bq_bandpass(Biquad* f, double fc, double q, double sr, double gain)
+{
+    const double w = 2.0 * PI * fc / sr;
+    const double al = sin(w) / (2.0 * q);
+    const double c = cos(w), a0 = 1.0 + al;
+    f->b0 = gain * al / a0; f->b1 = 0.0; f->b2 = -gain * al / a0;
+    f->a1 = -2.0 * c / a0;  f->a2 = (1.0 - al) / a0;
+    f->z1 = f->z2 = 0.0;
+}
+
+static double bq_run(Biquad* f, double x)
+{
+    const double y = f->b0 * x + f->z1;
+    f->z1 = f->b1 * x - f->a1 * y + f->z2;
+    f->z2 = f->b2 * x - f->a2 * y;
+    return y;
+}
+
+typedef struct {
+    double pic_tot, pic_fin;
+    double notches;
+} Larsen;
+
+static Larsen larsen_essai(float hunt, double loop_gain, int note)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 64;
+    const size_t total = (size_t)(sr * 12.0);
+    Banc b;
+    ouvrir(&b, 0, sr, N, 0);
+    neutre(&b);
+    b.ctl[CTL_FEEDBACK] = hunt;
+
+    const int D = (int)(0.005 * sr);
+    const int len = D + (int)N;
+    float* line = (float*)calloc((size_t)len, sizeof(float));
+    Biquad room;
+    /* the resonance normalised by measurement, then scaled: a loop gain of
+       one is exactly on the edge of howling */
+    double norm = 0.0;
+    {
+        Biquad t; bq_bandpass(&t, 1200.0, 3.0, sr, 1.0);
+        double p = 0.0;
+        for (int i = 0; i < 20000; ++i) {
+            p += 2.0 * PI * 1200.0 / sr;
+            const double y = bq_run(&t, sin(p));
+            if (i > 10000 && fabs(y) > norm) { norm = fabs(y); }
+        }
+    }
+    bq_bandpass(&room, 1200.0, 3.0, sr, loop_gain / (norm > 0.0 ? norm : 1.0));
+
+    Larsen r = { 0.0, 0.0, 0.0 };
+    double ph = 0.0;
+    int w = 0;
+    size_t done = 0;
+    while (done + N <= total) {
+        for (uint32_t i = 0; i < N; ++i) {
+            const double t = (double)(done + i) / sr;
+            double src;
+            if (note) {
+                /* a sung note: harmonics, vibrato, and it breathes */
+                const double f = 440.0 * (1.0 + 0.03 * sin(2.0 * PI * 5.5 * t));
+                ph += 2.0 * PI * f / sr;
+                src = 0.22 * (sin(ph) + 0.55 * sin(2 * ph) + 0.30 * sin(3 * ph)
+                            + 0.15 * sin(4 * ph)) * (0.85 + 0.15 * sin(2.0 * PI * 0.7 * t));
+            } else {
+                ph += 2.0 * PI * 1200.0 / sr;
+                src = (t < 0.6 ? 0.20 : 0.004) * sin(ph);
+            }
+            int rd = w + (int)i - D;
+            while (rd < 0)    { rd += len; }
+            while (rd >= len) { rd -= len; }
+            double back = bq_run(&room, (double)line[rd]);
+            if (back >  2.0) { back =  2.0; }
+            if (back < -2.0) { back = -2.0; }
+            b.in[0][i] = (float)(src + back);
+        }
+        tourner(&b);
+        for (uint32_t i = 0; i < N; ++i) {
+            line[w] = b.out[0][i];
+            if (++w >= len) { w = 0; }
+            const double a = fabs((double)b.out[0][i]);
+            const double t = (double)(done + i) / sr;
+            if (t > 1.5 && a > r.pic_tot) { r.pic_tot = a; }
+            if (t > 9.0 && a > r.pic_fin) { r.pic_fin = a; }
+        }
+        r.notches = (double)b.ctl[CTL_NOTCHES];
+        done += N;
+    }
+    free(line);
+    fermer(&b);
+    return r;
+}
+
+static void essai_larsen(void)
+{
+    const Larsen libre  = larsen_essai(0.0f,  1.6, 0);
+    const Larsen chasse = larsen_essai(60.0f, 1.6, 0);
+    const Larsen dur    = larsen_essai(90.0f, 1.6, 0);
+    const Larsen chante = larsen_essai(90.0f, 0.0, 1);
+
+    verifie_vrai("without the hunter the room howls and stays there",
+                 libre.pic_fin > 0.5 && libre.notches == 0.0);
+    verifie_vrai("with it, the howl is hunted down",
+                 chasse.pic_fin < libre.pic_fin * 0.05 && chasse.notches > 0.0);
+    verifie_vrai("and hunting harder catches it sooner",
+                 dur.pic_tot < libre.pic_tot * 0.5);
+    verifie("a sung note with harmonics and vibrato is not notched",
+            chante.notches, 0.0, 0.001);
+    verifie_vrai("and it comes through untouched", chante.pic_fin > 0.2);
+}
+
+static void essai_larsen_relache(void)
+{
+    /* switching the block off must let the notches out rather than
+       leaving four holes in the tone for ever */
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_FEEDBACK] = 100.0f;
+    /* a pure steady tone is what a howl looks like, and there is no
+       harmless way to tell it apart - so it gets notched, which is what
+       makes this a fair way to place one on purpose */
+    for (int k = 0; k < 800; ++k) { sinus(&b, 1241.0, 0.4); tourner(&b); }
+    verifie_vrai("a steady pure tone does get notched", b.ctl[CTL_NOTCHES] > 0.0f);
+    const double avec = gain_db(&b, 1241.0, 0.4, 40, 60);
+
+    b.ctl[CTL_FEEDBACK_ON] = 0.0f;
+    chauffer(&b, 400.0);
+    verifie("switching the hunter off gives the notches back",
+            (double)b.ctl[CTL_NOTCHES], 0.0, 0.001);
+    verifie_vrai("and the frequency comes back with them",
+                 gain_db(&b, 1241.0, 0.4, 40, 60) > avec + 3.0);
+    fermer(&b);
+}
+
+/* ================================================================== */
+/* The choir                                                           */
+/* ================================================================== */
+
+static void essai_choeur(void)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const size_t total = (size_t)(sr * 8.0);
+    float* out = (float*)malloc(total * sizeof(float));
+    double cote[2] = { 0.0, 0.0 };
+    double centre[2] = { 0.0, 0.0 };
+
+    for (int cas = 0; cas < 2; ++cas) {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_DOUBLER] = 100.0f;
+        b.ctl[CTL_VOICES]  = 4.0f;
+        b.ctl[CTL_SPREAD]  = cas ? 100.0f : 0.0f;
+
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        size_t done = 0;
+        while (done + N <= total) {
+            for (uint32_t i = 0; i < N; ++i) {
+                b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+            }
+            ph += w * (double)N;
+            tourner(&b);
+            memcpy(out + done, b.out[0], N * sizeof(float));
+            done += N;
+        }
+        fermer(&b);
+
+        const size_t saute = (size_t)(sr * 2.0);
+        const size_t n = total - saute;
+        centre[cas] = energie_a(out + saute, n, 220.0, sr);
+        /* what a detuned voice puts either side of the lead */
+        cote[cas] = energie_a(out + saute, n, 216.0, sr)
+                  + energie_a(out + saute, n, 224.0, sr);
+    }
+    free(out);
+
+    verifie_vrai("SPREAD really does move the voices apart",
+                 cote[1] > cote[0] * 10.0);
+    verifie_vrai("and the lead is still the loudest thing there",
+                 centre[1] > cote[1] * 4.0);
 }
 
 /* ================================================================== */
@@ -2032,9 +2283,13 @@ int main(void)
     printf("The program list:\n");          essai_programme_egale_preset();
                                            essai_programme_interrupteurs();
     printf("Doubled voices:\n");            essai_voix();
+                                           essai_choeur();
+    printf("Anti-Larsen:\n");               essai_larsen();
+                                           essai_larsen_relache();
     printf("Pitch:\n");                     essai_pitch();
     printf("Tone controls:\n");             essai_eq();
     printf("USER slots:\n");                essai_slots();
+                                           essai_retouche();
                                            essai_etat();
     printf("Screen - the list:\n");         essai_ecran_programme();
     printf("Reverb:\n");                   essai_reverb();

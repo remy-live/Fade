@@ -14,7 +14,7 @@
 .mod-pedal-voice{{{cns}}} {
     position: relative;
     width: 720px;
-    height: 606px;
+    height: 648px;
     box-sizing: border-box;
     border-radius: 14px;
     padding: 0 14px;
@@ -106,6 +106,24 @@
 }
 .voice-prog-rename{{{cns}}}::placeholder { color: #7c8b9b; }
 .voice-prog-rename{{{cns}}}:disabled { opacity: .35; }
+
+.voice-slot{{{cns}}} { text-align: center; }
+.voice-slot-dial{{{cns}}} {
+    width: 26px; height: 26px; border-radius: 50%; margin: 0 auto;
+    cursor: ns-resize; position: relative;
+    background: radial-gradient(circle at 50% 34%, #6e7c90 0%, #3b4552 72%);
+    border: 1px solid #171c23;
+}
+.voice-slot-dial{{{cns}}}::after {
+    content: ""; position: absolute; left: 50%; top: 3px;
+    width: 2px; height: 8px; margin-left: -1px; background: #ffcf5c;
+}
+.voice-slot-value{{{cns}}} {
+    font-size: 9px; color: #cfe0ee; margin-top: 2px; white-space: nowrap;
+}
+.voice-slot-cap{{{cns}}} {
+    font-size: 7px; letter-spacing: 1px; color: #93a7ba;
+}
 
 .voice-save{{{cns}}} {
     padding: 6px 14px; border-radius: 6px; cursor: pointer;
@@ -231,6 +249,25 @@
 .voice-meter-cap{{{cns}}} {
     position: absolute; right: 5px; top: -1px;
     font-size: 7px; letter-spacing: 1px; color: #93a7ba;
+}
+
+/* ---------- the anti-Larsen readout ---------- */
+
+.voice-notches{{{cns}}} {
+    width: 100%; display: flex; align-items: center; gap: 4px;
+    margin-top: 6px;
+}
+.voice-notch{{{cns}}} {
+    width: 13px; height: 9px; border-radius: 2px;
+    background: #1b212a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.8);
+}
+.voice-notch{{{cns}}}.actif {
+    background: linear-gradient(180deg, #ffd98a 0%, #e0a52f 100%);
+    box-shadow: 0 0 7px rgba(224,165,47,.8);
+}
+.voice-notch-cap{{{cns}}} {
+    font-size: 7px; letter-spacing: 1px; color: #93a7ba; margin-left: 2px;
 }
 
 /* ---------- tap, fx, state ---------- */

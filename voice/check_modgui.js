@@ -191,7 +191,9 @@ if (typeof fn === 'function') {
             ecrits.length === 1 && ecrits[0][0] === 'tap' && ecrits[0][1] === 1);
         ecrits = [];
         doc.querySelector('.voice-save').dispatchEvent(new dom.window.Event('click'));
-        say('SAVE does nothing while no USER slot is selected', ecrits.length === 0);
+        say('SAVE pulses its port whatever program is selected',
+            ecrits.length === 1 && ecrits[0][0] === 'save' && ecrits[0][1] === 1,
+            JSON.stringify(ecrits));
     } catch (e) {
         say('the buttons that write ports work', false, e.message);
     }

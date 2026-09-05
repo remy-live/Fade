@@ -20,6 +20,7 @@
                                 [ lv2:symbol "level" ] ,
                                 [ lv2:symbol "gate_open" ] ,
                                 [ lv2:symbol "fx_state" ] ,
+                                [ lv2:symbol "notches" ] ,
                                 [ lv2:symbol "time_out" ] ;
     ] .
 
@@ -39,5 +40,6 @@
                                 [ lv2:symbol "level" ] ,
                                 [ lv2:symbol "gate_open" ] ,
                                 [ lv2:symbol "fx_state" ] ,
+                                [ lv2:symbol "notches" ] ,
                                 [ lv2:symbol "time_out" ] ;
     ] .

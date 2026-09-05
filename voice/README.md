@@ -32,7 +32,7 @@ out.
 
 ```
         [on] [on]  [on]    [on]                    [on]
-IN GAIN → LOW CUT → GATE → COMP → DE-ESS → EQ → DRIVE → PITCH
+IN GAIN → LOW CUT → NO HOWL → GATE → COMP → DE-ESS → EQ → DRIVE → PITCH
      ┬─→ (dry) ────────────────────────────────────────────────┬─→ OUTPUT
      ├─→ [on] DOUBLE ──────────────────────────────────────────┤
      ├─→ [on] MOD ─────────────────────────────────────────────┤
@@ -62,25 +62,33 @@ What a program takes over, and what stays yours, is a deliberate split:
 | The program owns | low cut, gate threshold, comp, de-ess, the three tone bands, drive, double, voices, mod, delay and reverb — everything that makes up *the sound* |
 | You always own | **IN GAIN** and **OUTPUT** (rig levels — a master volume that stops responding is a broken master volume), the **FX** master, **TAP**, and every effect switch |
 
-The switches are the subtle one. Selecting a program *adopts* its switch
+**A program is a starting point, not a cage.** Turn any control it owns and
+that one control comes back to you on the spot, while the rest of the
+program stays in force. Choosing another program hands everything back to
+it. The switches work the same way: selecting a program *adopts* its switch
 positions — pick Ballad and the doubler, delay and reverb come in with it —
-and then lets go: the moment you move a switch, that switch is yours again.
-A footswitch that stopped working because a program was chosen would be
-worse than no programs at all.
+and then lets go, because a footswitch that stopped working when a program
+was chosen would be worse than having no programs at all.
 
-Two consequences worth knowing. While a program is selected, turning a knob
-it owns does nothing — the device screen shows what is really in force, but
-the web UI knob will read whatever it last read, the same honest problem as
-the tapped tempo. And reloading a pedalboard takes the switch positions from
-the saved ports, not from the program, so a board comes back exactly as you
-left it.
+That is what makes the USER slots useful rather than decorative: pick
+Cathedral, decide it wants less reverb and a shorter delay, turn those two,
+point **USER SLOT** at slot 3 and press **SAVE**. What gets stored is what
+you were hearing — the program *plus* your changes — and Cathedral itself is
+untouched.
+
+Two consequences worth knowing. A knob you have not touched under a program
+reads whatever it last read in the web UI, though the device screen always
+shows what is really in force — the same honest problem as the tapped tempo.
+And reloading a pedalboard takes the switch positions from the saved ports,
+not from the program, so a board comes back exactly as you left it.
 
 ## Controls
 
 | Control | What it does |
 |---|---|
 | **PROGRAM** | The list: MANUAL, fourteen built-in sounds, then four USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
-| **SAVE** | Stores what the knobs say into the selected USER slot. |
+| **SAVE** | Stores **what you are hearing** into the slot USER SLOT points at — the program you picked plus every change you made to it. |
+| **USER SLOT** | Which of the six USER slots SAVE writes to. A list of its own, so a built-in sound can be changed and kept somewhere else without the original being touched. |
 | **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. No preset and no program ever touches it. |
 | **LOW CUT** | 0–400 Hz, 6 dB/octave. Rumble, handling noise and plosives, before they reach the gate. At 0 it is off. |
 | **GATE** | Threshold, −80 to −20 dB. 6 dB of hysteresis and an 80 ms hold, so a held note does not chatter. At −80 dB it is off. |
@@ -93,6 +101,8 @@ left it.
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 21 to 46 ms late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. |
 | **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
+| **SPREAD** | How far apart the voices stand: their detune, their drift and how staggered their entries are. Low is one singer twice; high is a group who have never met. |
+| **NO HOWL** / **HUNT** | The anti-Larsen hunter. Sixteen filters listen for a band that rises and then just *sits* there — which is what feedback does and singing does not — and drop a narrow notch on it. At 0 it is off and costs nothing. NOTCHES says how many are in place. |
 | **MOD** / **MOD SPEED** | Chorus depth and rate, 0.05–8 Hz. The two sides move a quarter cycle apart in the stereo build. |
 | **DELAY** / **REPEATS** / **DELAY MIX** | 20–2000 ms, up to 95 % feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice. |
 | **REVERB** / **REVERB MIX** | Tail length and how much is heard. At 100 % mix the tail sits at the same level as the dry voice — measured, not guessed. |
@@ -182,19 +192,20 @@ footswitch has something to bring in rather than turning on silence.
 
 ### Your own, on the list
 
-Four **USER** slots sit on the end of the PROGRAM list, and they are the
-answer to "custom sounds without pedalboard snapshots":
+Six **USER** slots sit on the end of the PROGRAM list, and they are the
+answer to "custom sounds without pedalboard snapshots". Two ways in:
 
-1. **PROGRAM** on MANUAL, dial the sound you want.
-2. Turn to an empty USER slot. An empty slot leaves the knobs in charge,
-   so nothing changes as you select it.
-3. Press **SAVE** — the button in the web UI, or the port on a footswitch.
+**From nothing.** PROGRAM on MANUAL, dial the sound, point USER SLOT at a
+slot, press SAVE.
 
-The slot then holds that sound. Selecting it recalls it; the knobs stop
-acting while it is selected, and MANUAL hands them back. SAVE stores what
-the **knobs** say, not what is being heard, because the knobs are what the
-interface shows you — so overwriting a slot is: recall it, look at the
-knobs, change what you want, press SAVE again.
+**From a built-in sound.** Pick one, change what you do not like about it —
+every control you touch comes back to you — point USER SLOT somewhere and
+press SAVE. What is stored is what you heard, and the sound you started
+from is untouched.
+
+Selecting a slot recalls it, and it behaves like any other program: turn a
+knob and that knob is yours again, so a saved sound can be edited and saved
+back.
 
 The slots travel with the pedalboard: the plugin implements the LV2 State
 extension and writes them out with it. They are not snapshots, they are
@@ -349,7 +360,20 @@ display code ever runs, and that is where the bugs live.
   which, on top of a preset that also moved IN GAIN, is why the first
   presets came out shouting. What is given back is now the reduction the
   same curve applies at the reference level: measured, not derived.
-- **The doubler runs two, three or four voices**, at 21, 29, 38 and 46 ms,
+- **The doubled voices are micro-shifters, not delay taps.** A delay whose
+  length is wobbled by a sine has an average pitch offset of exactly zero
+  and passes back through unison twice a cycle — at which moments it is a
+  plain delayed copy, which is a comb filter. That is why the first version
+  of this doubler sounded like an effect and not like people. Each voice now
+  runs its own grain pair at a *constant* detune, seven to twenty-three
+  cents at the middle of SPREAD, so it beats against the lead at a steady
+  rate and never returns to unison. No two detunes are symmetric or in a
+  small-integer ratio, or their beats lock into one pulsation and you hear a
+  tremolo instead of a group. On top of that each voice has its own slow
+  drift, its own small vibrato, its own entry time, its own window length
+  and its own filtering, top and bottom — identical spectra fuse back into
+  one object however far apart they are tuned.
+- **The old doubler ran two, three or four taps**, at 21, 29, 38 and 46 ms,
   drifting a few cents each on LFOs at 0.13, 0.19, 0.27 and 0.09 Hz — rates that share no
   common period, so they never line up into one wobble. Decorrelated copies
   add in power, so the level is divided by the root of the count — written
@@ -381,6 +405,28 @@ display code ever runs, and that is where the bugs live.
   to write into somebody's saved session. A state of the wrong size is
   refused rather than believed, and a slot that was never filled stays
   empty rather than coming back full of zeros.
+- **The anti-Larsen hunter tells a howl from a note by three tests, and the
+  third one is the one that matters.** Sixteen band-pass filters listen to
+  the mono sum *after* the notches, so a notch that is working makes its own
+  band go quiet and the hunter learns it can eventually let go. A band has
+  to be **loud** (dominating the broadband peak, which a chord or a strum
+  never does), **steady** (within a couple of decibels of its own 700 ms
+  average, which a plucked or bowed note never is)... and **harmonic-free**.
+  That last one is the answer to the hard question. A held, vibrato-ed sung
+  note passes the first two tests easily: vibrato moves the *pitch*, and
+  inside a third of an octave the *level* does not move at all. But a note
+  has an octave, and a room mode ringing on its own does not — so if the
+  band three up (an octave and a bit) has anything in it, the band is
+  vetoed. The bench holds it to that: a howling room is silenced, a sung
+  note with harmonics and vibrato collects no notches at all. The price is
+  written down honestly — a genuinely pure sustained tone with no harmonics,
+  a whistle or a sine pad, looks exactly like feedback and will be notched.
+- **Where the howl actually is** comes from fitting a parabola through the
+  three neighbouring band levels in the log domain, which places it inside a
+  third-octave band to a few percent and buys a notch narrow enough not to
+  be heard. Measured, not assumed: at a Q past about five the notch starts
+  missing and the howl simply walks to the next peak of the room, costing a
+  second notch.
 - **Every switch is a 40 ms ramp**, never a branch. The bench throws all
   eight while a note is playing and fails if the biggest sample-to-sample
   step during the throw is more than half again the biggest step while
@@ -410,7 +456,7 @@ display code ever runs, and that is where the bugs live.
 - No pitch *detection*, and therefore no harmony in a key and no
   correction. That is the point, not an omission. Pitch *shifting* by a
   fixed interval needs no detection and is in here.
-- No MIDI input: every switch, the program list and the tap take a control
+- No MIDI input: every switch, the two lists and the tap take a control
   port each, which
   is what the Dwarf addresses to a footswitch or to a MIDI CC.
 - LOW CUT and the three tone bands have no switch of their own. They have

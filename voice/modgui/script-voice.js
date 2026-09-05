@@ -20,7 +20,8 @@
 function (event, funcs) {
 
     var PREMIER_USER = 15;
-    var DERNIER = 18;
+    var DERNIER = 20;
+    var N_SLOT = 6;
 
     function nombre(v) {
         return (typeof v === 'number' && v === v) ? v : 0;
@@ -59,21 +60,20 @@ function (event, funcs) {
     }
 
     /* The name box only means anything on a USER slot. */
-    function majProgramme(icon, valeur) {
+    function majProgramme(icon, valeur, slotDest) {
         var p = Math.round(borner(valeur, 0, DERNIER));
         var estUser = p >= PREMIER_USER;
         var champ = icon.find('.voice-prog-rename');
-        var slot = p - PREMIER_USER + 1;
+        /* The box names the slot being LOOKED at when a USER program is
+           selected, and otherwise the slot SAVE would write to - which is
+           the one the player is about to name. */
+        var slot = estUser ? (p - PREMIER_USER + 1)
+                           : Math.round(borner(slotDest || 1, 1, N_SLOT));
 
-        champ.prop('disabled', !estUser);
-        icon.find('.voice-save').toggleClass('off', !estUser);
-
+        champ.prop('disabled', false);
+        champ.val(lireNom(slot));
         if (estUser) {
-            var nom = lireNom(slot);
-            champ.val(nom);
-            icon.find('.voice-prog-value').text(nom || ('USER ' + slot));
-        } else {
-            champ.val('');
+            icon.find('.voice-prog-value').text(lireNom(slot) || ('USER ' + slot));
         }
     }
 
@@ -89,6 +89,11 @@ function (event, funcs) {
             var actif = nombre(valeur) > 0.5;
             icon.find('.voice-state').text(actif ? 'FX ON' : 'FX OFF')
                                      .toggleClass('actif', actif);
+        } else if (symbol === 'notches') {
+            var n = Math.round(nombre(valeur));
+            for (var i = 0; i < 4; i++) {
+                icon.find('.voice-notch-' + i).toggleClass('actif', i < n);
+            }
         } else if (symbol === 'time_out') {
             icon.find('.voice-time-value').text(Math.round(nombre(valeur)) + ' ms');
         }
@@ -97,7 +102,8 @@ function (event, funcs) {
     /* A switch lights the whole section it sits in, which is the thing the
        default interface could not do. */
     var SECTIONS = ['gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'drive_on',
-                    'pitch_on', 'doubler_on', 'mod_on', 'delay_on', 'reverb_on'];
+                    'pitch_on', 'doubler_on', 'mod_on', 'feedback_on',
+                    'delay_on', 'reverb_on'];
 
     function majSection(icon, symbol, valeur) {
         if (SECTIONS.indexOf(symbol) < 0) { return; }
@@ -141,8 +147,7 @@ function (event, funcs) {
 
         icon.find('.voice-save').on('click', function (e) {
             if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
-            var d = etat(icon);
-            if (Math.round(d.program) < PREMIER_USER) { return; }
+            /* SAVE always has a destination now: USER SLOT says which. */
             pulse(icon, 'save', 'flash', icon.find('.voice-save'));
         });
 
@@ -158,11 +163,14 @@ function (event, funcs) {
         icon.find('.voice-prog-rename').on('change', function (e) {
             var d = etat(icon);
             var p = Math.round(d.program);
-            if (p < PREMIER_USER) { return; }
             var nom = (e && e.target && typeof e.target.value === 'string')
                     ? e.target.value : '';
-            ecrireNom(p - PREMIER_USER + 1, nom);
-            icon.find('.voice-prog-value').text(nom || ('USER ' + (p - PREMIER_USER + 1)));
+            var slot = (p >= PREMIER_USER) ? (p - PREMIER_USER + 1)
+                     : Math.round(borner(d.ports['user_slot'] || 1, 1, N_SLOT));
+            ecrireNom(slot, nom);
+            if (p >= PREMIER_USER) {
+                icon.find('.voice-prog-value').text(nom || ('USER ' + slot));
+            }
         });
     }
 
@@ -171,7 +179,9 @@ function (event, funcs) {
         d.ports[symbol] = valeur;
         if (symbol === 'program') {
             d.program = nombre(valeur);
-            majProgramme(icon, valeur);
+            majProgramme(icon, valeur, d.ports['user_slot']);
+        } else if (symbol === 'user_slot') {
+            majProgramme(icon, d.program, valeur);
         }
         majMetres(icon, symbol, valeur);
         majSection(icon, symbol, valeur);
@@ -183,7 +193,8 @@ function (event, funcs) {
         for (var i = 0; i < ports.length; i++) {
             changement(event.icon, ports[i].symbol, ports[i].value);
         }
-        majProgramme(event.icon, etat(event.icon).program);
+        majProgramme(event.icon, etat(event.icon).program,
+                     etat(event.icon).ports['user_slot']);
     } else if (event.type === 'change') {
         changement(event.icon, event.symbol, event.value);
     }

@@ -24,8 +24,19 @@
 
         <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
 
+        <div class="voice-slot{{{cns}}}">
+            <div class="voice-slot-dial{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="user_slot"
+                 mod-widget-rotation="270"></div>
+            <div class="voice-slot-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="user_slot"></div>
+            <div class="voice-slot-cap{{{cns}}}">SAVE TO</div>
+        </div>
+
         <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"
-             title="Store the knobs into the selected USER slot">SAVE</div>
+             title="Store what you are hearing into the USER slot on the left">SAVE</div>
 
         <div class="voice-prog-dial{{{cns}}}"
              mod-role="input-control-port"
@@ -160,7 +171,7 @@
             </div>
         </div>
 
-        <div class="voice-section{{{cns}}}">
+        <div class="voice-section{{{cns}}} voice-section-wide{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DOUBLE</span>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
@@ -179,6 +190,13 @@
                 <div class="voice-knob-title{{{cns}}}">VOICES</div>
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="voices"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="spread" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">SPREAD</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="spread"></div>
             </div>
         </div>
 
@@ -291,6 +309,28 @@
             <div class="voice-meter{{{cns}}} voice-meter-out{{{cns}}}">
                 <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
                 <span class="voice-meter-cap{{{cns}}}">OUT</span>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">NO HOWL</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="feedback_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="feedback" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">HUNT</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="feedback"></div>
+            </div>
+            <div class="voice-notches{{{cns}}} voice-notches">
+                <span class="voice-notch{{{cns}}} voice-notch-0"></span>
+                <span class="voice-notch{{{cns}}} voice-notch-1"></span>
+                <span class="voice-notch{{{cns}}} voice-notch-2"></span>
+                <span class="voice-notch{{{cns}}} voice-notch-3"></span>
+                <span class="voice-notch-cap{{{cns}}}">NOTCHES</span>
             </div>
         </div>
 
