@@ -244,7 +244,11 @@ came from: the arrows, the dial, a footswitch, or the pedal. For a USER
 slot it writes back a copy it kept in the browser at SAVE time. If you save
 a slot on the pedal and then open the board on a browser that has never
 seen it, the *sound* is right — that copy lives in the plugin — and the
-knobs will be the ones the board was saved with. The device screen never
+knobs will be the ones the board was saved with. The one case to know
+about: save a slot from the pedal, then select that slot in a browser
+that has an *older* copy of it, and the browser's copy wins, because
+selecting it writes the knobs. Save it again from the browser and the two
+agree. The device screen never
 had this problem: it always showed what was in force.
 
 **Naming** is the one part that is split. A control port carries a number,
