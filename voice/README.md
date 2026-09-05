@@ -220,10 +220,32 @@ Selecting a slot recalls it, and it behaves like any other program: turn a
 knob and that knob is yours again, so a saved sound can be edited and saved
 back.
 
+**What you should see when it works.** Press SAVE and the list jumps to the
+slot you wrote — the web UI goes there on its own, and on the pedal the
+screen says `SAVED 3` for a second. That feedback exists because the honest
+answer to "did it save?" used to be "yes, but nothing on the screen said
+so". Walk away to another sound and come back to the slot: the knobs move
+to what you stored.
+
 The slots travel with the pedalboard: the plugin implements the LV2 State
-extension and writes them out with it. They are not snapshots, they are
-not tied to a board's layout, and they are on the same encoder as the
-built-in sounds.
+extension and writes them out with it. That is *when the pedalboard is
+saved*, so a slot stored and never followed by a board save is gone at the
+next reboot — the same rule as everything else on a board.
+
+**Why the knobs used to lie.** An LV2 plugin is not allowed to write its
+own control input ports, so nothing the plugin does can move a knob on your
+screen: it can only change what you hear. Selecting a sound therefore
+changed the sound and left every control showing the one before it, which
+made the whole list — and the USER slots with it — look like it was doing
+nothing. The web UI now carries the program table itself, written into
+`modgui/script-voice.js` by the same `make_ttl.py` that writes the
+plugin's, and moves the knobs when the program changes, wherever the change
+came from: the arrows, the dial, a footswitch, or the pedal. For a USER
+slot it writes back a copy it kept in the browser at SAVE time. If you save
+a slot on the pedal and then open the board on a browser that has never
+seen it, the *sound* is right — that copy lives in the plugin — and the
+knobs will be the ones the board was saved with. The device screen never
+had this problem: it always showed what was in force.
 
 **Naming** is the one part that is split. A control port carries a number,
 not text, so the plugin has no way to receive a name: the name you type in
