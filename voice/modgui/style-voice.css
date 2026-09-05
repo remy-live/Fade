@@ -166,7 +166,12 @@
     background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(0,0,0,.10));
     border: 1px solid rgba(255,255,255,.11);
 }
-.voice-section-wide{{{cns}}} { flex: 2.7; }
+/* Width by how many knobs a section holds, so nothing wraps onto a
+   second row and drags the whole row down with it. */
+.voice-w1{{{cns}}} { flex: 1; }
+.voice-w2{{{cns}}} { flex: 1.85; }
+.voice-w3{{{cns}}} { flex: 2.7; }
+.voice-w4{{{cns}}} { flex: 3.6; }
 .voice-section{{{cns}}}.actif {
     border-color: rgba(70,224,138,.55);
     box-shadow: 0 0 10px rgba(70,224,138,.18) inset;
@@ -177,7 +182,8 @@
     margin-bottom: 1px;
 }
 .voice-section-name{{{cns}}} {
-    font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #b7cadb;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; color: #b7cadb;
+    white-space: nowrap;
 }
 .voice-section{{{cns}}}.actif .voice-section-name{{{cns}}} { color: #8df3bd; }
 
@@ -285,7 +291,7 @@
     color: #2a1c00;
 }
 
-.voice-section-fx{{{cns}}} { flex: .8; align-items: center; }
+.voice-section-fx{{{cns}}} { align-items: center; }
 .voice-fx{{{cns}}} { width: 58px; text-align: center; }
 .voice-fx-sw{{{cns}}} {
     position: relative; width: 46px; height: 22px; margin: 0 auto;

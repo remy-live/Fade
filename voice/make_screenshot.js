@@ -95,8 +95,15 @@ document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}')
             bas = Math.max(bas, r.bottom - box.bottom);
             droite = Math.max(droite, r.right - box.right);
         }
+        let fond = 0;
+        for (const el of pedal.children) {
+            if (el.className && String(el.className).indexOf('mod-pedal-') === 0) continue;
+            const r = el.getBoundingClientRect();
+            if (r.height > 0) fond = Math.max(fond, r.bottom - box.top);
+        }
         return { bas: Math.round(bas), droite: Math.round(droite),
-                 w: Math.round(box.width), h: Math.round(box.height) };
+                 w: Math.round(box.width), h: Math.round(box.height),
+                 contenu: Math.round(fond) };   /* CONTENT_HEIGHT */
     });
     if (debord.bas > 0 || debord.droite > 0) {
         console.error('the layout overflows the pedal by ' + debord.bas +
@@ -113,5 +120,6 @@ document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}')
         x: Math.max(0, box.x - 34), y: box.y,
         width: box.width + 68, height: box.height } });
     await browser.close();
-    console.log(cible + ': ' + debord.w + 'x' + debord.h);
+    console.log(cible + ': ' + debord.w + 'x' + debord.h
+                + ' (content ends at ' + debord.contenu + ')');
 })();
