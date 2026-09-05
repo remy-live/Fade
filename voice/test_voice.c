@@ -2183,6 +2183,31 @@ static void essai_larsen(void)
     verifie_vrai("and it comes through untouched", chante.pic_fin > 0.2);
 }
 
+/* A notch has to be GIVEN BACK, at every sample rate. The first version
+   never was: in silence a band and the broadband reference decay at the
+   same rate, so their ratio never changes and a band that was dominant
+   when the room went quiet looked dominant for ever. */
+static void essai_larsen_rendu(void)
+{
+    const double taux[] = { 44100.0, 48000.0, 96000.0 };
+    for (int t = 0; t < 3; ++t) {
+        Banc b;
+        char quoi[80];
+        ouvrir(&b, 0, taux[t], 128, 0);
+        neutre(&b);
+        b.ctl[CTL_FEEDBACK] = 100.0f;
+        const long blocs = (long)(taux[t] * 4.0 / 128.0);
+        for (long k = 0; k < blocs; ++k) { sinus(&b, 1241.0, 0.4); tourner(&b); }
+        snprintf(quoi, sizeof(quoi), "at %.0f Hz a steady tone is notched", taux[t]);
+        verifie_vrai(quoi, b.ctl[CTL_NOTCHES] > 0.0f);
+
+        chauffer(&b, 90000.0);          /* a minute and a half of nothing */
+        snprintf(quoi, sizeof(quoi), "  and given back when the room goes quiet");
+        verifie(quoi, (double)b.ctl[CTL_NOTCHES], 0.0, 0.001);
+        fermer(&b);
+    }
+}
+
 static void essai_larsen_relache(void)
 {
     /* switching the block off must let the notches out rather than
@@ -2286,6 +2311,7 @@ int main(void)
                                            essai_choeur();
     printf("Anti-Larsen:\n");               essai_larsen();
                                            essai_larsen_relache();
+                                           essai_larsen_rendu();
     printf("Pitch:\n");                     essai_pitch();
     printf("Tone controls:\n");             essai_eq();
     printf("USER slots:\n");                essai_slots();

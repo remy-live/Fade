@@ -830,7 +830,10 @@ typedef struct {
         float   hz;               /* where it actually sits, interpolated */
         float   depth;            /* ramped, 0 .. 0.87 = -18 dB */
         float   target;
-        uint16_t idle;            /* decisions since the band last howled */
+        uint32_t idle;            /* decisions since the band last howled.
+                                     32 bits: at 96 kHz a repeat offender's
+                                     patience passes what 16 would hold, and
+                                     the notch would never be given back */
     } notch[N_NOTCH];
     uint8_t  band_strikes[N_BAND];  /* how often this one has howled before */
     SVFCoef  notch_coef[N_NOTCH];
@@ -993,7 +996,7 @@ hunt_decide(Voice* self, float sensitivity)
     const float lent = (float)HUNT_PERIOD / (0.70f * self->rate);
     const uint16_t besoin = (uint16_t)((0.90f - 0.60f * sensitivity)
                                        * self->rate / (float)HUNT_PERIOD);
-    const uint16_t patience = (uint16_t)(20.0f * self->rate / (float)HUNT_PERIOD);
+    const uint32_t patience = (uint32_t)(20.0f * self->rate / (float)HUNT_PERIOD);
     /* how far out of the whole signal a band must stand: 0.40 of the peak
        when hunting hard, 0.60 when barely */
     const float domination = 0.60f - 0.20f * sensitivity;
@@ -1076,8 +1079,9 @@ hunt_decide(Voice* self, float sensitivity)
 
         /* a free notch, or the one that has been doing the least */
         int choix = -1;
-        uint16_t plus_vieux = 0u;
+        uint32_t plus_vieux = 0u;
         for (int i = 0; i < N_NOTCH; ++i) {
+            if (self->notch[i].pending >= 0) { continue; }   /* spoken for */
             if (!self->notch[i].active) { choix = i; break; }
             if (self->notch[i].idle >= plus_vieux) {
                 plus_vieux = self->notch[i].idle;
@@ -1117,8 +1121,14 @@ hunt_decide(Voice* self, float sensitivity)
     int compte = 0;
     for (int i = 0; i < N_NOTCH; ++i) {
         if (!self->notch[i].active) { continue; }
-        if (self->band_env[self->notch[i].band] <= self->total_env * domination) {
-            if (self->notch[i].idle < 0xFFFFu) { self->notch[i].idle++; }
+        /* Two ways to stop earning a notch: fall below the floor, or stop
+           dominating. The floor is not decoration - in silence the band
+           and the broadband reference decay at the SAME rate, so their
+           ratio never changes and a band that was dominant when the room
+           went quiet would look dominant for ever. */
+        const float e_band = self->band_env[self->notch[i].band];
+        if (e_band <= plancher || e_band <= self->total_env * domination) {
+            if (self->notch[i].idle < 0xFFFFFFu) { self->notch[i].idle++; }
         }
         /* A room mode that has howled once will howl again, so the
            second notch on the same band is kept two, three, four times
