@@ -8,16 +8,25 @@
     rdfs:label "Speech" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 12.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 120.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -45.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 35.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 40.0
@@ -31,32 +40,47 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "doubler" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
-        pset:value 400.0
+        pset:value 300.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "reverb_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "reverb" ;
-        pset:value 40.0
+        pset:value 25.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 0.0
+        pset:value 12.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -71,16 +95,25 @@
     rdfs:label "Stage Dry" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 100.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -42.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -94,32 +127,47 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "drive" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "doubler_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 30.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
-        pset:value 400.0
+        pset:value 350.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 25.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 0.0
+        pset:value 14.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
-        pset:value 40.0
+        pset:value 35.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 0.0
+        pset:value 12.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -134,16 +182,25 @@
     rdfs:label "Ballad" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 90.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -48.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -157,17 +214,29 @@
         lv2:symbol "air" ;
         pset:value 3.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 20.0
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 30.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 420.0
@@ -176,13 +245,16 @@
         pset:value 25.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 18.0
+        pset:value 16.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 55.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 35.0
+        pset:value 26.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -197,16 +269,25 @@
     rdfs:label "Rock" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 20.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 130.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -40.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
-        pset:value 65.0
+        pset:value 55.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 45.0
@@ -220,17 +301,29 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "drive" ;
         pset:value 35.0
     ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 120.0
@@ -239,13 +332,16 @@
         pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 12.0
+        pset:value 10.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 30.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 16.0
+        pset:value 14.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -260,16 +356,25 @@
     rdfs:label "Wide" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 90.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -48.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -283,11 +388,20 @@
         lv2:symbol "air" ;
         pset:value 4.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "doubler" ;
-        pset:value 55.0
+        pset:value 60.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "modulation" ;
         pset:value 40.0
@@ -295,20 +409,26 @@
         lv2:symbol "mod_speed" ;
         pset:value 0.4
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
         pset:value 400.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 0.0
+        pset:value 10.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 60.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 40.0
+        pset:value 26.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -323,16 +443,25 @@
     rdfs:label "Cathedral" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 110.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -46.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 35.0
@@ -346,17 +475,29 @@
         lv2:symbol "air" ;
         pset:value 3.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 25.0
+        pset:value 30.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 600.0
@@ -365,13 +506,16 @@
         pset:value 45.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 25.0
+        pset:value 20.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 100.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 55.0
+        pset:value 40.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -386,16 +530,25 @@
     rdfs:label "Speech" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 12.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 120.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -45.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 35.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 40.0
@@ -409,32 +562,47 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "doubler" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
-        pset:value 400.0
+        pset:value 300.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "reverb_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "reverb" ;
-        pset:value 40.0
+        pset:value 25.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 0.0
+        pset:value 12.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -449,16 +617,25 @@
     rdfs:label "Stage Dry" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 100.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -42.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -472,32 +649,47 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "drive" ;
+        pset:value 20.0
+    ] , [
+        lv2:symbol "doubler_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 30.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
-        pset:value 400.0
+        pset:value 350.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 25.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 0.0
+        pset:value 14.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
-        pset:value 40.0
+        pset:value 35.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 0.0
+        pset:value 12.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -512,16 +704,25 @@
     rdfs:label "Ballad" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 90.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -48.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 45.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -535,17 +736,29 @@
         lv2:symbol "air" ;
         pset:value 3.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 20.0
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 30.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 420.0
@@ -554,13 +767,16 @@
         pset:value 25.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 18.0
+        pset:value 16.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 55.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 35.0
+        pset:value 26.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -575,16 +791,25 @@
     rdfs:label "Rock" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 20.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 130.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -40.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
-        pset:value 65.0
+        pset:value 55.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 45.0
@@ -598,17 +823,29 @@
         lv2:symbol "air" ;
         pset:value 2.0
     ] , [
+        lv2:symbol "drive_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "drive" ;
         pset:value 35.0
     ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "doubler" ;
+        pset:value 25.0
+    ] , [
+        lv2:symbol "mod_on" ;
         pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 120.0
@@ -617,13 +854,16 @@
         pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 12.0
+        pset:value 10.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 30.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 16.0
+        pset:value 14.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -638,16 +878,25 @@
     rdfs:label "Wide" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 90.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -48.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 30.0
@@ -661,11 +910,20 @@
         lv2:symbol "air" ;
         pset:value 4.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "doubler" ;
-        pset:value 55.0
+        pset:value 60.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "modulation" ;
         pset:value 40.0
@@ -673,20 +931,26 @@
         lv2:symbol "mod_speed" ;
         pset:value 0.4
     ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "delay_time" ;
         pset:value 400.0
     ] , [
         lv2:symbol "delay_repeats" ;
-        pset:value 30.0
+        pset:value 20.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 0.0
+        pset:value 10.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 60.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 40.0
+        pset:value 26.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0
@@ -701,16 +965,25 @@
     rdfs:label "Cathedral" ;
     lv2:port [
         lv2:symbol "in_gain" ;
-        pset:value 18.0
+        pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
         pset:value 110.0
     ] , [
+        lv2:symbol "gate_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "gate" ;
         pset:value -46.0
     ] , [
+        lv2:symbol "comp_on" ;
+        pset:value 1.0
+    ] , [
         lv2:symbol "comp" ;
         pset:value 40.0
+    ] , [
+        lv2:symbol "de_ess_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "de_ess" ;
         pset:value 35.0
@@ -724,17 +997,29 @@
         lv2:symbol "air" ;
         pset:value 3.0
     ] , [
-        lv2:symbol "drive" ;
+        lv2:symbol "drive_on" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "drive" ;
+        pset:value 15.0
+    ] , [
+        lv2:symbol "doubler_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 25.0
+        pset:value 30.0
+    ] , [
+        lv2:symbol "mod_on" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "modulation" ;
-        pset:value 0.0
+        pset:value 25.0
     ] , [
         lv2:symbol "mod_speed" ;
         pset:value 0.6
+    ] , [
+        lv2:symbol "delay_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "delay_time" ;
         pset:value 600.0
@@ -743,13 +1028,16 @@
         pset:value 45.0
     ] , [
         lv2:symbol "delay_mix" ;
-        pset:value 25.0
+        pset:value 20.0
+    ] , [
+        lv2:symbol "reverb_on" ;
+        pset:value 1.0
     ] , [
         lv2:symbol "reverb" ;
         pset:value 100.0
     ] , [
         lv2:symbol "reverb_mix" ;
-        pset:value 55.0
+        pset:value 40.0
     ] , [
         lv2:symbol "fx" ;
         pset:value 1.0

@@ -34,7 +34,7 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 
     rdfs:comment "%(comment)s" ;
 
-    lv2:minorVersion 1 ;
+    lv2:minorVersion 2 ;
     lv2:microVersion 0 ;
 
     lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl ;
@@ -44,27 +44,39 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 
 COMMENT = ("A vocal channel strip and effects rack, with no pitch detection "
            "anywhere in it: gate, compressor, de-esser, low cut, three tone "
-           "bands, drive, doubler, modulation, tap delay and reverb. One "
-           "switch feeds the effects or stops feeding them, and it stops the "
-           "send, not the return, so the delay and the reverb ring out "
+           "bands, drive, three-voice doubler, chorus, tap delay and reverb. "
+           "Every effect has its own switch for a footswitch, and one master "
+           "switch feeds them all or stops feeding them. Switching off stops "
+           "the send, not the return, so the delay and the reverb ring out "
            "instead of being chopped.")
 
 # symbol, name, min, max, default, unit, properties, comment
+# The order IS the layout: mod-ui lists ports by index, so each effect's
+# switch sits immediately in front of the controls it switches.
+SWITCH = ["lv2:toggled"]
 CONTROLS = [
  ("in_gain", "IN GAIN", -20.0, 40.0, 0.0, "db", [],
-  "Gain applied to the input, before everything else. A dynamic microphone "
-  "straight into the Dwarf usually wants +20 to +30 dB here."),
+  "Gain applied to the input, before everything else. This is a rig "
+  "setting, not a sound: no preset touches it, so what you set here "
+  "survives changing preset."),
  ("low_cut", "LOW CUT", 0.0, 400.0, 90.0, "hz", [],
   "High-pass filter on the way in, 6 dB per octave. Takes out stage rumble, "
   "handling noise and plosives before they reach the gate. At 0 Hz it is off."),
+ ("gate_on", "GATE ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the gate in and out. Made for a footswitch."),
  ("gate", "GATE", -80.0, -20.0, -80.0, "db", [],
   "Gate threshold. Below it the channel closes over about 120 ms, with 6 dB "
   "of hysteresis and an 80 ms hold so a held note does not chatter. At -80 dB "
-  "the gate is off."),
+  "the gate does nothing whatever its switch says."),
+ ("comp_on", "COMP ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the compressor in and out. Made for a footswitch."),
  ("comp", "COMP", 0.0, 100.0, 30.0, "pc", [],
   "Compression amount. One control: it lowers the threshold and raises the "
-  "ratio together, from off to -40 dB at 6:1, and adds back most of what it "
-  "takes off. The GR output says how hard it is working."),
+  "ratio together, from off to -40 dB at 6:1. What it gives back is what it "
+  "takes off a voice at -12 dBFS, so turning it up changes the sound and not "
+  "how loud you are. The GR output says how hard it is working."),
+ ("de_ess_on", "DE-ESS ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the de-esser in and out. Made for a footswitch."),
  ("de_ess", "DE-ESS", 0.0, 100.0, 0.0, "pc", [],
   "Tames sibilance by compressing the band above 5.5 kHz alone, so an S loses "
   "its edge without the whole word going dull."),
@@ -77,18 +89,29 @@ CONTROLS = [
  ("air", "AIR", -12.0, 12.0, 0.0, "db", [],
   "Top band, above about 6 kHz. Breath and detail. Use the de-esser if adding "
   "air also brings the sibilance up."),
+ ("drive_on", "DRIVE ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the saturation in and out. Made for a footswitch."),
  ("drive", "DRIVE", 0.0, 100.0, 0.0, "pc", [],
-  "Soft saturation. Adds harmonics and levels out what the compressor left, "
-  "from clean through to an overdriven-preamp sound."),
+  "Soft saturation, level-matched at -12 dBFS like the compressor: it adds "
+  "harmonics and holds down what the compressor left, without making you "
+  "louder."),
+ ("doubler_on", "DOUBLE ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the doubler in and out. Made for a footswitch."),
  ("doubler", "DOUBLE", 0.0, 100.0, 0.0, "pc", [],
-  "Two copies of the voice a few tens of milliseconds late, each drifting on "
-  "its own slow LFO. The drift is what makes it a second take rather than a "
-  "copy. In the stereo build one copy goes left and the other right."),
+  "Three copies of the voice, twenty to forty milliseconds late, each "
+  "drifting a few cents on its own slow LFO and sitting slightly darker than "
+  "the lead. In the stereo build one goes left, one right and one up the "
+  "middle."),
+ ("mod_on", "MOD ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the chorus in and out. Made for a footswitch."),
  ("modulation", "MOD", 0.0, 100.0, 0.0, "pc", [],
   "Chorus. Sets the depth and the amount together. In the stereo build the "
   "two sides move a quarter cycle apart, which is where the width comes from."),
  ("mod_speed", "MOD SPEED", 0.05, 8.0, 0.6, "hz", ["pprops:logarithmic"],
   "Speed of the chorus. Slow is a drift, fast is a vibrato."),
+ ("delay_on", "DELAY ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the delay in and out. It cuts what goes IN, so switching off "
+  "lets the repeats ring out instead of chopping them. Made for a footswitch."),
  ("delay_time", "DELAY", 20.0, 2000.0, 400.0, "ms", ["pprops:logarithmic"],
   "Delay time. Two presses of TAP override it; moving this control takes it "
   "back. TIME publishes the value actually in force."),
@@ -98,15 +121,19 @@ CONTROLS = [
  ("delay_mix", "DELAY MIX", 0.0, 100.0, 0.0, "pc", [],
   "How much delay is heard. The delay also feeds the reverb, so repeats are "
   "in the room rather than in front of it."),
+ ("reverb_on", "REVERB ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the reverb in and out. Like the delay it cuts the send, so the "
+  "tail rings out. Made for a footswitch."),
  ("reverb", "REVERB", 0.0, 100.0, 40.0, "pc", [],
   "Tail length. Moves the size of the room and its damping together, from a "
   "small dry box to a long hall."),
  ("reverb_mix", "REVERB MIX", 0.0, 100.0, 0.0, "pc", [],
-  "How much reverb is heard."),
+  "How much reverb is heard. At 100 the tail sits at the same level as the "
+  "voice."),
  ("fx", "FX", 0.0, 1.0, 1.0, None, ["lv2:toggled"],
-  "On: the doubler, chorus, delay and reverb are fed. Off: the send is cut "
-  "over 40 ms and the tails ring out instead of being chopped. Meant for a "
-  "footswitch."),
+  "The master switch for all four effects at once. Off: their send is cut "
+  "over 40 ms and the tails ring out instead of being chopped. Each effect "
+  "also has its own switch; this one is on top of them."),
  ("fx_trigger", "FX TRIGGER", 0.0, 1.0, 0.0, None,
   ["lv2:toggled", "pprops:trigger"],
   "Each pulse flips the FX state. Meant for MIDI: a port can only take one "
@@ -137,36 +164,58 @@ OUTPUTS = [
 
 
 # Presets. A VoiceLive is used by picking a sound and then adjusting it, and
-# twenty-one controls at their defaults is not a sound. Each entry below only
+# a rack of controls at their defaults is not a sound. Each entry below only
 # names what it changes; everything else is written out at its default, so
 # loading a preset always lands somewhere known rather than on top of half of
 # whatever was there before.
+#
+# Two rules learned the hard way. IN GAIN is never written: it is how loud
+# the microphone is, not what the preset sounds like, and a preset that
+# moved it added twenty decibels on top of everything else. And every
+# effect gets a usable amount even when its switch starts OFF, so the
+# footswitch has something to bring in rather than turning on silence.
 PRESETS = [
     ("speech", "Speech", {
-        "in_gain": 12.0, "low_cut": 120.0, "gate": -45.0, "comp": 35.0,
-        "de_ess": 40.0, "presence": 4.0, "air": 2.0}),
+        "low_cut": 120.0, "gate": -45.0, "comp": 35.0, "de_ess": 40.0,
+        "presence": 4.0, "air": 2.0,
+        "doubler": 20.0, "doubler_on": 0.0, "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 12.0,
+        "delay_on": 0.0, "reverb": 25.0, "reverb_mix": 12.0, "reverb_on": 0.0,
+        "drive": 15.0, "drive_on": 0.0}),
     ("stage", "Stage Dry", {
-        "in_gain": 18.0, "low_cut": 100.0, "gate": -42.0, "comp": 45.0,
-        "de_ess": 30.0, "presence": 3.0, "air": 2.0, "body": -2.0}),
+        "low_cut": 100.0, "gate": -42.0, "comp": 45.0, "de_ess": 30.0,
+        "body": -2.0, "presence": 3.0, "air": 2.0,
+        "doubler": 25.0, "doubler_on": 0.0, "modulation": 30.0, "mod_on": 0.0,
+        "delay_time": 350.0, "delay_repeats": 25.0, "delay_mix": 14.0,
+        "delay_on": 0.0, "reverb": 35.0, "reverb_mix": 12.0,
+        "drive": 20.0, "drive_on": 0.0}),
     ("ballad", "Ballad", {
-        "in_gain": 18.0, "low_cut": 90.0, "gate": -48.0, "comp": 45.0,
-        "de_ess": 30.0, "body": 2.0, "air": 3.0, "doubler": 20.0,
-        "delay_time": 420.0, "delay_repeats": 25.0, "delay_mix": 18.0,
-        "reverb": 55.0, "reverb_mix": 35.0}),
+        "low_cut": 90.0, "gate": -48.0, "comp": 45.0, "de_ess": 30.0,
+        "body": 2.0, "air": 3.0,
+        "doubler": 25.0, "modulation": 30.0, "mod_on": 0.0,
+        "delay_time": 420.0, "delay_repeats": 25.0, "delay_mix": 16.0,
+        "reverb": 55.0, "reverb_mix": 26.0,
+        "drive": 15.0, "drive_on": 0.0}),
     ("rock", "Rock", {
-        "in_gain": 20.0, "low_cut": 130.0, "gate": -40.0, "comp": 65.0,
-        "de_ess": 45.0, "presence": 5.0, "air": 2.0, "drive": 35.0,
-        "delay_time": 120.0, "delay_repeats": 20.0, "delay_mix": 12.0,
-        "reverb": 30.0, "reverb_mix": 16.0}),
+        "low_cut": 130.0, "gate": -40.0, "comp": 55.0, "de_ess": 45.0,
+        "presence": 5.0, "air": 2.0, "drive": 35.0,
+        "doubler": 25.0, "doubler_on": 0.0, "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 120.0, "delay_repeats": 20.0, "delay_mix": 10.0,
+        "reverb": 30.0, "reverb_mix": 14.0}),
     ("wide", "Wide", {
-        "in_gain": 18.0, "low_cut": 90.0, "gate": -48.0, "comp": 40.0,
-        "de_ess": 30.0, "air": 4.0, "doubler": 55.0, "modulation": 40.0,
-        "mod_speed": 0.4, "reverb": 60.0, "reverb_mix": 40.0}),
+        "low_cut": 90.0, "gate": -48.0, "comp": 40.0, "de_ess": 30.0,
+        "air": 4.0,
+        "doubler": 60.0, "modulation": 40.0, "mod_speed": 0.4,
+        "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 10.0,
+        "delay_on": 0.0, "reverb": 60.0, "reverb_mix": 26.0,
+        "drive": 15.0, "drive_on": 0.0}),
     ("cathedral", "Cathedral", {
-        "in_gain": 18.0, "low_cut": 110.0, "gate": -46.0, "comp": 40.0,
-        "de_ess": 35.0, "air": 3.0, "doubler": 25.0,
-        "delay_time": 600.0, "delay_repeats": 45.0, "delay_mix": 25.0,
-        "reverb": 100.0, "reverb_mix": 55.0}),
+        "low_cut": 110.0, "gate": -46.0, "comp": 40.0, "de_ess": 35.0,
+        "air": 3.0, "doubler": 30.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 600.0, "delay_repeats": 45.0, "delay_mix": 20.0,
+        "reverb": 100.0, "reverb_mix": 40.0,
+        "drive": 15.0, "drive_on": 0.0}),
 ]
 
 # Triggers are left out on purpose: a preset that presses TAP would set a

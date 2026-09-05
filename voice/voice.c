@@ -68,7 +68,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD1_AARCH64_20260904";
+static const volatile char build_tag[] = "VOICE_BUILD2_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -233,6 +233,9 @@ static float softclip(float x)
    what saturation is for - and the OUTPUT control makes up the difference
    if a whole take wants it. */
 #define DRIVE_REF 0.25f
+/* -12 dBFS in decibels: where a voice sits after the compressor, and the
+   level at which both the compressor and the drive are matched. */
+#define REF_DB (-12.0f)
 
 static float drive_pre_of(float amount)
 {
@@ -243,6 +246,23 @@ static float drive_post_of(float pre)
 {
     const float y = softclip(pre * DRIVE_REF);
     return (y > 1.0e-6f) ? DRIVE_REF / y : 1.0f;
+}
+
+/* How many dB the compressor takes off a signal that is `over` dB past the
+   threshold. Shared by the loop and by the makeup calculation below, which
+   is the whole point: the gain given back is the reduction this same curve
+   applies at the reference level, not a guess derived from the threshold. */
+static float comp_reduction(float over, float slope, float knee)
+{
+    const float half = knee * 0.5f;
+    if (over >= half) {
+        return slope * over;
+    }
+    if (over > -half) {
+        const float t = over + half;
+        return slope * t * t / (2.0f * knee);
+    }
+    return 0.0f;
 }
 
 /* Output ceiling. Transparent below 0.85, and above it the excess is bent
@@ -271,33 +291,41 @@ static float ceiling(float x)
 /* ------------------------------------------------------------------ */
 
 typedef enum {
-    CTL_IN_GAIN     = 0,
-    CTL_LOW_CUT     = 1,
-    CTL_GATE        = 2,
-    CTL_COMP        = 3,
-    CTL_DE_ESS      = 4,
-    CTL_BODY        = 5,
-    CTL_PRESENCE    = 6,
-    CTL_AIR         = 7,
-    CTL_DRIVE       = 8,
-    CTL_DOUBLER     = 9,
-    CTL_MOD         = 10,
-    CTL_MOD_SPEED   = 11,
-    CTL_DELAY_TIME  = 12,
-    CTL_DELAY_REPEATS    = 13,
-    CTL_DELAY_MIX   = 14,
-    CTL_REVERB      = 15,
-    CTL_REVERB_MIX  = 16,
-    CTL_FX          = 17,   /* toggle, for a footswitch */
-    CTL_FX_TRIGGER  = 18,   /* trigger, for MIDI: same state as the toggle */
-    CTL_TAP         = 19,   /* trigger: two taps set the delay time */
-    CTL_OUTPUT      = 20,
-    CTL_GR          = 21,   /* output: compressor gain reduction, dB */
-    CTL_LEVEL       = 22,   /* output: peak out level, 0..1 */
-    CTL_GATE_OPEN   = 23,   /* output: 1 while the gate is open */
-    CTL_FX_STATE    = 24,   /* output: the FX state actually in force */
-    CTL_TIME_OUT    = 25,   /* output: delay time in force, tap included */
-    CTL_COUNT       = 26
+    CTL_IN_GAIN       = 0,
+    CTL_LOW_CUT       = 1,
+    CTL_GATE_ON       = 2,   /* every effect has a switch of its own, and    */
+    CTL_GATE          = 3,   /* it sits immediately before the controls it   */
+    CTL_COMP_ON       = 4,   /* switches: mod-ui lists the ports in index    */
+    CTL_COMP          = 5,   /* order, so the order IS the layout            */
+    CTL_DE_ESS_ON     = 6,
+    CTL_DE_ESS        = 7,
+    CTL_BODY          = 8,
+    CTL_PRESENCE      = 9,
+    CTL_AIR           = 10,
+    CTL_DRIVE_ON      = 11,
+    CTL_DRIVE         = 12,
+    CTL_DOUBLER_ON    = 13,
+    CTL_DOUBLER       = 14,
+    CTL_MOD_ON        = 15,
+    CTL_MOD           = 16,
+    CTL_MOD_SPEED     = 17,
+    CTL_DELAY_ON      = 18,
+    CTL_DELAY_TIME    = 19,
+    CTL_DELAY_REPEATS = 20,
+    CTL_DELAY_MIX     = 21,
+    CTL_REVERB_ON     = 22,
+    CTL_REVERB        = 23,
+    CTL_REVERB_MIX    = 24,
+    CTL_FX            = 25,  /* the master: it feeds all four at once */
+    CTL_FX_TRIGGER    = 26,  /* trigger, for MIDI: same state as the toggle */
+    CTL_TAP           = 27,  /* trigger: two taps set the delay time */
+    CTL_OUTPUT        = 28,
+    CTL_GR            = 29,  /* output: compressor gain reduction, dB */
+    CTL_LEVEL         = 30,  /* output: peak out level, 0..1 */
+    CTL_GATE_OPEN     = 31,  /* output: 1 while the gate is open */
+    CTL_FX_STATE      = 32,  /* output: the FX state actually in force */
+    CTL_TIME_OUT      = 33,  /* output: delay time in force, tap included */
+    CTL_COUNT         = 34
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -324,19 +352,27 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
     { "in_gain",      -20.0f,   40.0f,     0.0f },
     { "low_cut",        0.0f,  400.0f,    90.0f },
+    { "gate_on",        0.0f,    1.0f,     1.0f },
     { "gate",         -80.0f,  -20.0f,   -80.0f },
+    { "comp_on",        0.0f,    1.0f,     1.0f },
     { "comp",           0.0f,  100.0f,    30.0f },
+    { "de_ess_on",      0.0f,    1.0f,     1.0f },
     { "de_ess",         0.0f,  100.0f,     0.0f },
     { "body",         -12.0f,   12.0f,     0.0f },
     { "presence",     -12.0f,   12.0f,     0.0f },
     { "air",          -12.0f,   12.0f,     0.0f },
+    { "drive_on",       0.0f,    1.0f,     1.0f },
     { "drive",          0.0f,  100.0f,     0.0f },
+    { "doubler_on",     0.0f,    1.0f,     1.0f },
     { "doubler",        0.0f,  100.0f,     0.0f },
+    { "mod_on",         0.0f,    1.0f,     1.0f },
     { "modulation",     0.0f,  100.0f,     0.0f },
     { "mod_speed",      0.05f,   8.0f,     0.6f },
+    { "delay_on",       0.0f,    1.0f,     1.0f },
     { "delay_time",    20.0f, 2000.0f,   400.0f },
     { "delay_repeats",  0.0f,   95.0f,    30.0f },
     { "delay_mix",      0.0f,  100.0f,     0.0f },
+    { "reverb_on",      0.0f,    1.0f,     1.0f },
     { "reverb",         0.0f,  100.0f,    40.0f },
     { "reverb_mix",     0.0f,  100.0f,     0.0f },
     { "fx",             0.0f,    1.0f,     1.0f },
@@ -348,6 +384,24 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "gate_open",      0.0f,    1.0f,     0.0f },
     { "fx_state",       0.0f,    1.0f,     1.0f },
     { "time_out",      20.0f, 2000.0f,   400.0f },
+};
+
+/* One ramp per switch, so a foot on any of them fades rather than clicks.
+   The four effect switches and the FX master multiply together: the master
+   is the "all of it, off" stomp, each switch is "this one, off". */
+typedef enum {
+    SW_GATE = 0, SW_COMP, SW_DE_ESS, SW_DRIVE,
+    SW_DOUBLER, SW_MOD, SW_DELAY, SW_REVERB, SW_COUNT
+} SwitchIndex;
+
+static const uint8_t switch_ctl[SW_COUNT] = {
+    CTL_GATE_ON, CTL_COMP_ON, CTL_DE_ESS_ON, CTL_DRIVE_ON,
+    CTL_DOUBLER_ON, CTL_MOD_ON, CTL_DELAY_ON, CTL_REVERB_ON
+};
+
+/* Eight characters at most: the device truncates silently. */
+static const char* const switch_label[SW_COUNT] = {
+    "GATE", "COMP", "DE-ESS", "DRIVE", "DOUBLE", "MOD", "DELAY", "REVERB"
 };
 
 /* ------------------------------------------------------------------ */
@@ -434,6 +488,15 @@ static const uint16_t allpass_base[N_ALLPASS] = { 556, 441, 341, 225 };
    is the whole of Freeverb's stereo image, and it costs nothing. */
 #define REV_SPREAD 23
 
+/* The three doubled voices. Delays in the twenties and thirties of
+   milliseconds read as a second take; below about fifteen they start to
+   comb, above about fifty they become a slapback. The depths give a few
+   cents of drift each - depth * 2 * pi * rate, in seconds per second -
+   and the rates share no common period. */
+static const float double_ms[3]    = { 21.0f, 29.0f, 38.0f };
+static const float double_depth[3] = { 1.6f, 2.2f, 2.8f };
+static const float double_rate[3]  = { 0.13f, 0.19f, 0.27f };
+
 /* Everything the two channels do not share. */
 typedef struct {
     /* channel strip filter states */
@@ -444,6 +507,7 @@ typedef struct {
 
     /* effects */
     Ring    shortline;       /* doubler and modulation taps */
+    float   dbl_lp;          /* the doubled voices, a shade darker */
     Ring    delay;
     float   dly_lp, dly_hp;  /* tone shaping inside the feedback path */
     Comb    comb[N_COMB];
@@ -463,16 +527,25 @@ typedef enum {
 /* Screen slots: the controls this plugin has something to SAY about when
    they are addressed to a knob or a footswitch. Each keeps its own cache;
    sharing one between the FX toggle and the FX trigger would mean the
-   second write is skipped because the first already matched. */
+   second write is skipped because the first already matched.
+
+   The eight per-effect switches all say the same kind of thing, so they
+   share one branch and differ only by their label. */
 typedef enum {
     SLOT_FX = 0, SLOT_FX_TRIGGER, SLOT_TAP, SLOT_DELAY,
-    SLOT_COMP, SLOT_GATE, SLOT_OUT, SLOT_COUNT
+    SLOT_COMP, SLOT_GATE, SLOT_OUT,
+    SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
+    SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
 
-static const uint8_t slot_ctl[SLOT_COUNT] = {
-    CTL_FX, CTL_FX_TRIGGER, CTL_TAP, CTL_DELAY_TIME,
-    CTL_COMP, CTL_GATE, CTL_OUTPUT
-};
+static uint8_t slot_ctl_of(int slot)
+{
+    static const uint8_t fixed[SLOT_SWITCH] = {
+        CTL_FX, CTL_FX_TRIGGER, CTL_TAP, CTL_DELAY_TIME,
+        CTL_COMP, CTL_GATE, CTL_OUTPUT
+    };
+    return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
+}
 
 /* Everything from CTL_GR on is an output port. */
 #define CTL_FIRST_OUTPUT CTL_GR
@@ -522,6 +595,7 @@ typedef struct {
     int   fx_toggle_prev;
     int   fx_trigger_prev;
     float fx_gain;            /* ramped, so the send does not click */
+    float sw[SW_COUNT];       /* one ramp per effect switch, same reason */
 
     /* --- tap tempo --- */
     int      tap_prev;
@@ -532,7 +606,8 @@ typedef struct {
     float    delay_ms;        /* the time in force, glided towards its target */
 
     /* --- LFOs --- */
-    float ph_double_a, ph_double_b, ph_mod;
+    float ph_double[3];       /* one per doubled voice */
+    float ph_mod;
 
     /* --- screen --- */
     const LV2_HMI_WidgetControl* hmi;
@@ -767,6 +842,7 @@ activate(LV2_Handle instance)
         ch->eq_low = ch->eq_mid_hi = ch->eq_mid_lo = ch->eq_air = 0.0f;
         ch->dc_x = ch->dc_y = 0.0f;
         ch->dly_lp = ch->dly_hp = 0.0f;
+        ch->dbl_lp = 0.0f;
 
         memset(ch->shortline.buf, 0, ch->shortline.len * sizeof(float));
         memset(ch->delay.buf,     0, ch->delay.len     * sizeof(float));
@@ -813,6 +889,9 @@ activate(LV2_Handle instance)
     self->fx_toggle_prev  = self->fx_state;
     self->fx_trigger_prev = (ctl_read(self, CTL_FX_TRIGGER) > 0.5f) ? 1 : 0;
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        self->sw[k] = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1.0f : 0.0f;
+    }
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
     self->tap_count    = 0u;
@@ -821,9 +900,12 @@ activate(LV2_Handle instance)
     self->knob_ms_prev = ctl_read(self, CTL_DELAY_TIME);
     self->delay_ms     = ctl_read(self, CTL_DELAY_TIME);
 
-    self->ph_double_a = 0.0f;
-    self->ph_double_b = 0.37f;
-    self->ph_mod      = 0.0f;
+    /* Start the three voices apart, or they drift as one and the doubler
+       is just a delay. */
+    self->ph_double[0] = 0.0f;
+    self->ph_double[1] = 0.37f;
+    self->ph_double[2] = 0.71f;
+    self->ph_mod       = 0.0f;
 
     self->screen_left = 1u;
     self->forget_left = self->forget_period;
@@ -874,7 +956,7 @@ paint(Voice* self, int force)
     const float time_ms = self->tap_active ? self->tap_ms : self->knob_ms_prev;
 
     for (int s = 0; s < (int)SLOT_COUNT; ++s) {
-        const uint32_t idx = self->n_audio + (uint32_t)slot_ctl[s];
+        const uint32_t idx = self->n_audio + (uint32_t)slot_ctl_of(s);
         const LV2_HMI_Addressing a = self->addr[idx];
         if (!a) {
             continue;
@@ -974,8 +1056,15 @@ paint(Voice* self, int force)
             break;
         }
 
-        case SLOT_COUNT:
         default:
+            /* one of the eight per-effect switches */
+            if (s >= (int)SLOT_SWITCH && s < (int)SLOT_COUNT) {
+                const int k = s - (int)SLOT_SWITCH;
+                const int on = (*self->ctl[switch_ctl[k]] > 0.5f);
+                label = switch_label[k];
+                value = on ? "ON" : "OFF";
+                led   = on ? LV2_HMI_LED_Colour_Green : LV2_HMI_LED_Colour_Off;
+            }
             break;
         }
 
@@ -1171,22 +1260,32 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float de_rel   = env_coef(30.0f, rate);
 
     /* Gate. At its minimum the control means OFF, not "threshold at
-       -80 dB": a threshold that low would chatter on room noise. */
-    const int      gate_on    = gate_db > ctl_spec[CTL_GATE].min + 0.5f;
+       -80 dB": a threshold that low would chatter on room noise. Its own
+       switch is the other way to turn it off, and the one a foot can
+       reach. */
+    const int      gate_on    = gate_db > ctl_spec[CTL_GATE].min + 0.5f
+                                && ctl_read(self, CTL_GATE_ON) > 0.5f;
     const float    gate_open  = db_to_lin(gate_db);
     const float    gate_close = gate_open * 0.5f;         /* -6 dB hysteresis */
     const uint32_t gate_hold  = (uint32_t)(rate * 0.08f); /* 80 ms */
 
-    /* Compressor: one knob. It opens the threshold downwards and the
-       ratio upwards together, which is how a singer thinks about "more
-       compression", and adds back most of what it takes off. */
+    /* Compressor: one knob. It opens the threshold downwards and the ratio
+       upwards together, which is how a singer thinks about "more
+       compression".
+
+       The gain it gives back is MEASURED, not derived: it is exactly what
+       this compressor takes off a signal sitting at the reference level,
+       so a voice at -12 dBFS leaves at -12 dBFS whatever the knob says.
+       Deriving it from the threshold instead - the obvious formula, and
+       what this did first - handed a preset with COMP at 65 nearly 12 dB
+       of makeup on top of everything else, and the whole preset came out
+       shouting. */
     const int   comp_on     = comp_amt > 0.5f;
     const float comp_thr    = -comp_amt * 0.4f;              /* 0 .. -40 dB */
     const float comp_ratio  = 1.0f + comp_amt * 0.05f;       /* 1 .. 6 : 1 */
     const float comp_slope  = 1.0f - 1.0f / comp_ratio;
-    const float comp_makeup = -comp_thr * comp_slope * 0.6f;
     const float knee        = 6.0f;
-    const float knee_half   = knee * 0.5f;
+    const float comp_makeup = comp_reduction(REF_DB - comp_thr, comp_slope, knee);
 
     /* De-esser: a compressor on the band above 5.5 kHz only, so it takes
        the edge off an S without dulling the whole word.
@@ -1203,7 +1302,8 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     /* Delay feedback tone: repeats lose their top and their bottom, so a
        long tail sits behind the voice instead of fighting it. */
-    const float fb_lp_c = onepole_coef(3500.0f, rate);
+    const float dbl_lp_c = onepole_coef(6500.0f, rate);
+    const float fb_lp_c  = onepole_coef(3500.0f, rate);
     const float fb_hp_c = onepole_coef(120.0f, rate);
 
     /* Reverb: one control moves the tail length and the damping together.
@@ -1244,8 +1344,14 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float fx_step   = 1.0f / (FX_RAMP_MS * 0.001f * rate);
     const float glide     = env_coef(120.0f, rate);
 
-    const float inc_a = 0.27f / rate;    /* the two doubler drifts, slow  */
-    const float inc_b = 0.19f / rate;    /* and mutually prime in period  */
+    float sw_target[SW_COUNT];
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        sw_target[k] = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1.0f : 0.0f;
+    }
+
+    /* The three doubled voices drift on their own slow LFO. The rates are
+       mutually prime so the three never line up: a doubler whose copies
+       move together is one copy with a wobble. */
     const float inc_m = mod_speed / rate;
 
     float gr_worst = 0.0f;
@@ -1263,6 +1369,15 @@ run(LV2_Handle instance, uint32_t n_samples)
         } else if (self->fx_gain > fx_target) {
             self->fx_gain -= fx_step;
             if (self->fx_gain < fx_target) { self->fx_gain = fx_target; }
+        }
+        for (int k = 0; k < (int)SW_COUNT; ++k) {
+            if (self->sw[k] < sw_target[k]) {
+                self->sw[k] += fx_step;
+                if (self->sw[k] > sw_target[k]) { self->sw[k] = sw_target[k]; }
+            } else if (self->sw[k] > sw_target[k]) {
+                self->sw[k] -= fx_step;
+                if (self->sw[k] < sw_target[k]) { self->sw[k] = sw_target[k]; }
+            }
         }
 
         self->delay_ms += glide * (time_target - self->delay_ms);
@@ -1315,16 +1430,14 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->comp_env = flush(self->comp_env + ce * (det - self->comp_env));
 
             const float over = lin_to_db(self->comp_env) - comp_thr;
-            float red = 0.0f;
-            if (over >= knee_half) {
-                red = comp_slope * over;
-            } else if (over > -knee_half) {
-                const float t = over + knee_half;      /* soft knee, 6 dB wide */
-                red = comp_slope * t * t / (2.0f * knee);
-            }
+            /* The switch scales what the compressor does rather than
+               branching around it, so a foot on it fades instead of
+               stepping, and the detector stays warm either way. */
+            const float red = comp_reduction(over, comp_slope, knee)
+                            * self->sw[SW_COMP];
             if (red > gr_worst) { gr_worst = red; }
 
-            const float g = db_to_lin(comp_makeup - red);
+            const float g = db_to_lin(comp_makeup * self->sw[SW_COMP] - red);
             for (uint32_t c = 0; c < n_ch; ++c) {
                 x[c] *= g;
             }
@@ -1347,7 +1460,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 
             const float over = lin_to_db(self->de_env) - deess_thr;
             if (over > 0.0f) {
-                const float g = db_to_lin(-deess_slope * over);
+                const float g = db_to_lin(-deess_slope * over * self->sw[SW_DE_ESS]);
                 for (uint32_t c = 0; c < n_ch; ++c) {
                     x[c] -= (1.0f - g) * hf[c];        /* the band, quieter */
                 }
@@ -1381,7 +1494,8 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             const float sat = softclip(x[c] * sm[SM_DRIVE_PRE]) * sm[SM_DRIVE_POST];
-            const float v   = x[c] + sm[SM_DRIVE_MIX] * (sat - x[c]);
+            const float v   = x[c] + sm[SM_DRIVE_MIX] * self->sw[SW_DRIVE]
+                                     * (sat - x[c]);
             const float y = v - ch->dc_x + dc_r * ch->dc_y;
             ch->dc_x = v;
             ch->dc_y = flush(y);
@@ -1399,15 +1513,19 @@ run(LV2_Handle instance, uint32_t n_samples)
         if (n_ch > 1u) { send_sum *= 0.5f; }
 
         /* --- doubler and modulation, both reading one short line ---
-               The doubler is two taps a few tens of milliseconds apart,
-               each drifting on its own slow LFO. The drift is what makes
-               it sound like a second take rather than a copy: a moving
-               delay is a pitch difference, and it needs no pitch
-               detection to produce one. */
-        const float lfo_a = lfo_sin(self->ph_double_a);
-        const float lfo_b = lfo_sin(self->ph_double_b);
-        const float dbl_a = (19.0f + 1.2f * lfo_a) * ms2n;
-        const float dbl_b = (31.0f + 1.2f * lfo_b) * ms2n;
+               THREE voices, twenty to forty milliseconds late, each
+               drifting on its own slow LFO. The drift is what makes it a
+               second and third take rather than a copy: a delay that
+               moves IS a pitch difference, a few cents of it, and
+               producing one that way needs no pitch detection at all.
+               Three voices at mutually prime rates never line up, which
+               is the difference between a chorus of singers and one
+               singer through a wobble. */
+        float dbl[3];
+        for (int k = 0; k < 3; ++k) {
+            dbl[k] = (double_ms[k] + double_depth[k] * lfo_sin(self->ph_double[k]))
+                     * ms2n;
+        }
         const float depth = 0.5f + 3.5f * mod_amt;
 
         float wet[MAX_CH];
@@ -1418,24 +1536,35 @@ run(LV2_Handle instance, uint32_t n_samples)
 
             float w;
             if (n_ch > 1u) {
-                /* one tap each side: that IS the width */
-                w = ring_read(&ch->shortline, c == 0u ? dbl_a : dbl_b);
+                /* one voice each side and the third up the middle: that
+                   IS the width, and it still sums cleanly to mono */
+                w = ring_read(&ch->shortline, dbl[c ? 1 : 0])
+                  + 0.7f * ring_read(&ch->shortline, dbl[2]);
+                w *= 0.74f;
             } else {
-                w = 0.5f * (ring_read(&ch->shortline, dbl_a)
-                          + ring_read(&ch->shortline, dbl_b));
+                w = (ring_read(&ch->shortline, dbl[0])
+                   + ring_read(&ch->shortline, dbl[1])
+                   + ring_read(&ch->shortline, dbl[2])) * 0.48f;
             }
-            wet[c] = w * sm[SM_DOUBLER] * 0.9f;
+            /* The copies sit a little behind the lead voice rather than
+               on top of it: three bright copies of one voice sound like
+               a phaser, three slightly darker ones sound like people. */
+            ch->dbl_lp = flush(ch->dbl_lp + dbl_lp_c * (w - ch->dbl_lp));
+            wet[c] = ch->dbl_lp * sm[SM_DOUBLER] * self->sw[SW_DOUBLER];
 
             const float mod_ph = self->ph_mod + (c ? 0.25f : 0.0f);
             const float d_mod  = (8.0f + depth * lfo_sin(mod_ph)) * ms2n;
-            wet[c] += ring_read(&ch->shortline, d_mod) * sm[SM_MOD] * 0.7f;
+            wet[c] += ring_read(&ch->shortline, d_mod)
+                    * sm[SM_MOD] * self->sw[SW_MOD] * 0.6f;
 
-            /* --- delay --- */
+            /* --- delay. Its switch cuts what goes IN, so the tail rings
+                   out; cutting the return would chop it. --- */
             const float dly = ring_read(&ch->delay, delay_n);
             ch->dly_lp = flush(ch->dly_lp + fb_lp_c * (dly - ch->dly_lp));
             const float band = ch->dly_lp;
             ch->dly_hp = flush(ch->dly_hp + fb_hp_c * (band - ch->dly_hp));
-            ring_write(&ch->delay, flush(send[c] + (band - ch->dly_hp) * fb_amt));
+            ring_write(&ch->delay, flush(send[c] * self->sw[SW_DELAY]
+                                         + (band - ch->dly_hp) * fb_amt));
 
             wet[c] += dly * sm[SM_DELAY];
             dly_sum += dly;
@@ -1444,7 +1573,8 @@ run(LV2_Handle instance, uint32_t n_samples)
 
         /* --- reverb, fed by the send AND by the delay, so the repeats
                are in the room too --- */
-        const float rev_in = (send_sum + dly_sum * sm[SM_DELAY]) * rev_in_g;
+        const float rev_in = (send_sum + dly_sum * sm[SM_DELAY])
+                           * self->sw[SW_REVERB] * rev_in_g;
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             float r = 0.0f;
@@ -1467,10 +1597,10 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (a > peak) { peak = a; }
         }
 
-        self->ph_double_a += inc_a;
-        if (self->ph_double_a >= 1.0f) { self->ph_double_a -= 1.0f; }
-        self->ph_double_b += inc_b;
-        if (self->ph_double_b >= 1.0f) { self->ph_double_b -= 1.0f; }
+        for (int k = 0; k < 3; ++k) {
+            self->ph_double[k] += double_rate[k] / rate;
+            if (self->ph_double[k] >= 1.0f) { self->ph_double[k] -= 1.0f; }
+        }
         self->ph_mod += inc_m;
         if (self->ph_mod >= 1.0f) { self->ph_mod -= 1.0f; }
     }

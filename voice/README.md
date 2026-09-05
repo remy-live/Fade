@@ -26,18 +26,24 @@ the tails ring out.
 ## The chain
 
 ```
-IN GAIN → LOW CUT → GATE → COMP → DE-ESS → BODY/PRESENCE/AIR
-        → DRIVE ─┬─→ (dry) ──────────────────────────────┬─→ OUTPUT
-                 ├─→ DOUBLE ─────────────────────────────┤
-                 ├─→ MOD ────────────────────────────────┤
-                 └─→ DELAY ─┬────────────────────────────┤
-                            └─→ REVERB ──────────────────┘
+        [on] [on]  [on]    [on]                    [on]
+IN GAIN → LOW CUT → GATE → COMP → DE-ESS → BODY/PRESENCE/AIR → DRIVE
+     ┬─→ (dry) ────────────────────────────────────────────────┬─→ OUTPUT
+     ├─→ [on] DOUBLE ──────────────────────────────────────────┤
+     ├─→ [on] MOD ─────────────────────────────────────────────┤
+     └─→ [on] DELAY ─┬────────────────────────────────────────┤
+                     └─→ [on] REVERB ─────────────────────────┘
+                          all four also under one master FX switch
 ```
 
-The four blocks after the split are the **FX**. One switch feeds them or
-stops feeding them, and it stops the *send*, not the return: switch off
-and the delay and the reverb ring out instead of being chopped. That is
-the same idea the Fade plugin in this repository exists for.
+**Every effect has its own switch**, made for a footswitch, and each one
+sits immediately in front of the controls it switches. On top of them, the
+**FX** master feeds all four effects or stops feeding them at once.
+
+Switching off stops the *send*, never the return: the delay and the reverb
+ring out instead of being chopped. That is the same idea the Fade plugin
+in this repository exists for. Every switch is a 40 ms ramp, so a foot on
+any of them fades rather than clicks.
 
 ## Controls
 
@@ -46,17 +52,18 @@ the same idea the Fade plugin in this repository exists for.
 | **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. |
 | **LOW CUT** | 0–400 Hz, 6 dB/octave. Rumble, handling noise and plosives, before they reach the gate. At 0 it is off. |
 | **GATE** | Threshold, −80 to −20 dB. 6 dB of hysteresis and an 80 ms hold, so a held note does not chatter. At −80 dB it is off. |
-| **COMP** | 0–100 %. One control: it lowers the threshold and raises the ratio together, from off to −40 dB at 6:1, and adds back most of what it takes off. |
+| **COMP** | 0–100 %. One control: it lowers the threshold and raises the ratio together, from off to −40 dB at 6:1. What it gives back is what it takes off a voice at −12 dBFS, so turning it up changes the sound, not how loud you are. |
 | **DE-ESS** | 0–100 %. Compresses the band above 5.5 kHz alone: an S loses its edge, the word does not go dull. |
 | **BODY** | ±12 dB below ~240 Hz. |
 | **PRESENCE** | ±12 dB between ~1 and 4.5 kHz. Where a voice cuts through a band. |
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation, level-matched at −12 dBFS: the colour changes, how loud you are does not. |
-| **DOUBLE** | 0–100 %. Two copies a few tens of milliseconds late, each drifting on its own slow LFO. In the stereo build one goes left and the other right. |
+| **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
+| **DOUBLE** | 0–100 %. Three copies, 21/29/38 ms late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. In the stereo build one goes left, one right, one up the middle. |
 | **MOD** / **MOD SPEED** | Chorus depth and rate, 0.05–8 Hz. The two sides move a quarter cycle apart in the stereo build. |
 | **DELAY** / **REPEATS** / **DELAY MIX** | 20–2000 ms, up to 95 % feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice. |
 | **REVERB** / **REVERB MIX** | Tail length and how much is heard. At 100 % mix the tail sits at the same level as the dry voice — measured, not guessed. |
-| **FX** | On: the four effects are fed. Off: the send is cut over 40 ms and the tails ring out. Meant for a footswitch. |
+| **FX** | The master switch: on, all four effects are fed; off, their send is cut over 40 ms and the tails ring out. It sits on top of the individual switches, not instead of them. Meant for a footswitch. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -84,6 +91,20 @@ the readout:
 | **DELAY** | The time in force, in ms — and the label reads `TAP` instead of `DELAY` when the tap owns it, rather than showing a knob position that is no longer true. |
 | **TAP** | The tempo in BPM, and the LED blinks it back at you. |
 | **FX** / **FX TRIGGER** | `ON` or `OFF`, green or dark. |
+| any effect switch | Its own name — `DELAY`, `REVERB`, `DOUBLE`… — with `ON` or `OFF` and the LED to match. |
+
+## Levels
+
+Every preset lands within about a decibel of unity, and the bench fails
+the build if one does not. Three rules get it there, and they are worth
+knowing because they also apply while you are turning knobs:
+
+- **A preset never writes IN GAIN.** How loud the microphone is belongs to
+  the rig, not to the sound, so what you set survives changing preset.
+- **COMP gives back what it takes off a voice at −12 dBFS.** Turning it up
+  compresses harder; it does not make you louder.
+- **DRIVE is matched at the same level**, so it changes the colour and not
+  the volume.
 
 ## Presets
 
@@ -92,6 +113,11 @@ Each one writes every control it does not name at its default, so loading
 a preset lands somewhere known instead of on top of half of whatever was
 there before. Neither trigger is ever written — a preset that pressed TAP
 would set a tempo as it loaded.
+
+Every effect gets a usable amount even when its switch starts *off*, so
+the footswitch has something to bring in rather than turning on silence.
+Speech starts dry, Ballad with the doubler, the delay and the reverb in,
+Rock with drive and a slapback behind it.
 
 ## Install
 
@@ -164,9 +190,10 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-105 checks: the approximations against libm, every block of the chain
-against what it claims to do, the delay against a clock at three sample
-rates, and a simulated HMI screen. Without a simulated screen none of the
+152 checks: the approximations against libm, every block of the chain
+against what it claims to do, every switch for what it removes and for the
+click it must not make, every preset for the level it lands on, the delay
+against a clock at three sample rates, and a simulated HMI screen. Without a simulated screen none of the
 display code ever runs, and that is where the bugs live.
 
 ## Notes on the implementation
@@ -187,9 +214,24 @@ display code ever runs, and that is where the bugs live.
   were out of phase. A two-pole low pass, with the band taken as
   `input − lowpass`, gives 12 dB, because there the two halves really do
   sum back to the input.
-- **The drive is level-matched at −12 dBFS**, which is about where a voice
-  sits after the compressor. Before that it was compensated by a formula
-  rather than by measurement, and turning it up cost a loud passage 10 dB.
+- **The drive and the compressor are both level-matched at −12 dBFS**,
+  which is about where a voice sits mid-chain. Both were compensated by a
+  formula first, and both were wrong the same way: the drive cost a loud
+  passage 10 dB, and the compressor *gave* nearly 12 dB at COMP 65 —
+  which, on top of a preset that also moved IN GAIN, is why the first
+  presets came out shouting. What is given back is now the reduction the
+  same curve applies at the reference level: measured, not derived.
+- **The doubler is three voices**, at 21, 29 and 38 ms, drifting a few
+  cents each on LFOs at 0.13, 0.19 and 0.27 Hz — rates that share no
+  common period, so the three never line up into one wobble. They are
+  filtered a shade darker than the lead: three bright copies sound like a
+  phaser, three darker ones sound like people. At full mix the copies sit
+  about 2.5 dB under the lead, which the bench measures by running the
+  same noise through the plugin twice and subtracting.
+- **Every switch is a 40 ms ramp**, never a branch. The bench throws all
+  eight while a note is playing and fails if the biggest sample-to-sample
+  step during the throw is more than half again the biggest step while
+  nothing is moving.
 - **Gate, compressor and de-esser share one detector across both
   channels.** Independent detectors pull the stereo image sideways every
   time one side is louder, which on a voice is every sibilant. The bench
@@ -214,8 +256,11 @@ display code ever runs, and that is where the bugs live.
 
 - No pitch detection, and therefore no harmony, no correction, no octave.
   That is the point, not an omission.
-- No MIDI input: the FX switch and the tap take a control port each, which
+- No MIDI input: every switch and the tap take a control port each, which
   is what the Dwarf addresses to a footswitch or to a MIDI CC.
+- LOW CUT and the three tone bands have no switch of their own. They have
+  neutral positions — 0 Hz and 0 dB — and a switch that only duplicates a
+  knob position is a control that can disagree with itself.
 - No custom web UI. mod-ui draws its own from the descriptor, which shows
   every control and cannot be broken by a template bug. The device screen
   is where the work went instead.

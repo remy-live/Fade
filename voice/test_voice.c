@@ -245,6 +245,31 @@ static double gain_db(Banc* b, double freq, double amp, int chauffe, int mesure)
     return 10.0 * log10(ss / se);
 }
 
+/* Gain on noise. Three copies of a SINE, drifting, can cancel at whatever
+   frequency the measurement happens to use; three copies of noise cannot,
+   because the copies are decorrelated and their power simply adds. This
+   is also how loud a preset actually is, which is not a question about
+   one frequency. */
+static double gain_bruit_db(Banc* b, double amp, int chauffe, int mesure)
+{
+    double se = 0.0, ss = 0.0;
+    for (int k = 0; k < chauffe + mesure; ++k) {
+        for (uint32_t i = 0; i < b->bloc; ++i) {
+            const float v = (float)(amp * (2.0 * rand() / RAND_MAX - 1.0));
+            for (uint32_t c = 0; c < b->n_ch; ++c) { b->in[c][i] = v; }
+        }
+        tourner(b);
+        if (k >= chauffe) {
+            for (uint32_t i = 0; i < b->bloc; ++i) {
+                se += (double)b->in[0][i] * (double)b->in[0][i];
+                ss += (double)b->out[0][i] * (double)b->out[0][i];
+            }
+        }
+    }
+    if (se <= 0.0 || ss <= 0.0) { return -200.0; }
+    return 10.0 * log10(ss / se);
+}
+
 static int tout_fini(const Banc* b)
 {
     for (uint32_t c = 0; c < b->n_ch; ++c) {
@@ -785,34 +810,76 @@ static void essai_reverb(void)
     fermer(&b);
 }
 
+/* The copies, measured by DIFFERENCE: two runs fed the same noise, one
+   with the doubler and one without. Subtracting them leaves exactly what
+   the doubler added, which is a question no single-frequency measurement
+   can answer - three drifting copies of a sine can cancel at whatever
+   frequency the bench happens to pick. */
 static void essai_doubleur(void)
 {
+    const uint32_t N = 128;
+    const int      nb = 700, saute = 200;
+    float* bruit = (float*)malloc((size_t)nb * N * sizeof(float));
+    float* sans  = (float*)malloc((size_t)nb * N * sizeof(float));
+    float* avec  = (float*)malloc((size_t)nb * N * sizeof(float));
+    float* coupe = (float*)malloc((size_t)nb * N * sizeof(float));
+
+    srand(7);
+    for (size_t i = 0; i < (size_t)nb * N; ++i) {
+        bruit[i] = (float)(0.2 * (2.0 * rand() / RAND_MAX - 1.0));
+    }
+
+    for (int cas = 0; cas < 3; ++cas) {
+        Banc b;
+        ouvrir(&b, 0, 48000.0, N, 0);
+        neutre(&b);
+        b.ctl[CTL_DOUBLER]    = cas ? 100.0f : 0.0f;
+        b.ctl[CTL_DOUBLER_ON] = (cas == 2) ? 0.0f : 1.0f;
+        float* dst = cas == 0 ? sans : (cas == 1 ? avec : coupe);
+        for (int k = 0; k < nb; ++k) {
+            memcpy(b.in[0], bruit + (size_t)k * N, N * sizeof(float));
+            tourner(&b);
+            memcpy(dst + (size_t)k * N, b.out[0], N * sizeof(float));
+        }
+        fermer(&b);
+    }
+
+    double e_sec = 0.0, e_copies = 0.0, e_avec = 0.0, ecart_coupe = 0.0;
+    for (size_t i = (size_t)saute * N; i < (size_t)nb * N; ++i) {
+        const double d = (double)avec[i] - (double)sans[i];
+        e_sec    += (double)sans[i] * (double)sans[i];
+        e_avec   += (double)avec[i] * (double)avec[i];
+        e_copies += d * d;
+        const double c = fabs((double)coupe[i] - (double)sans[i]);
+        if (c > ecart_coupe) { ecart_coupe = c; }
+    }
+    const double copies_db = 10.0 * log10(e_copies / e_sec);
+    const double total_db  = 10.0 * log10(e_avec / e_sec);
+
+    verifie_entre("the three copies sit just under the lead voice",
+                  copies_db, -10.0, -4.0);
+    verifie_entre("so the doubler is not a volume pedal", total_db, 0.3, 2.5);
+    verifie("its switch takes it back out completely", ecart_coupe, 0.0, 0.0);
+
+    free(bruit); free(sans); free(avec); free(coupe);
+
+    /* The copies must MOVE. A doubler with fixed delays is a comb filter,
+       and it is the drift that stops it being one. */
     Banc b;
     ouvrir(&b, 0, 48000.0, 128, 0);
     neutre(&b);
-
-    b.ctl[CTL_DOUBLER] = 0.0f;
-    const double sec = gain_db(&b, 800.0, 0.2, 40, 60);
     b.ctl[CTL_DOUBLER] = 100.0f;
-    chauffer(&b, 200.0);
-    const double double_ = gain_db(&b, 800.0, 0.2, 40, 60);
-    verifie_vrai("the doubler adds something", double_ > sec + 1.0);
-
-    /* the copies must move: a fixed delay would be a comb filter, and it
-       is the drift that stops it sounding like one */
-    b.ctl[CTL_MOD] = 0.0f;
     double bas = 1.0e9, haut = 0.0;
-    for (int k = 0; k < 600; ++k) {
+    for (int k = 0; k < 3000; ++k) {
         sinus(&b, 800.0, 0.2);
         tourner(&b);
-        if (k > 100) {
+        if (k > 200) {
             const double c = crete(b.out[0], b.bloc);
             if (c < bas)  { bas = c; }
             if (c > haut) { haut = c; }
         }
     }
-    verifie_vrai("and the copies drift instead of standing still",
-                 haut > bas * 1.02);
+    verifie_vrai("and they drift instead of standing still", haut > bas * 1.05);
     fermer(&b);
 }
 
@@ -1101,6 +1168,21 @@ static void essai_ecran_interrupteur(void)
     verifie("and the LED goes out", (double)ecran.couleur,
             (double)LV2_HMI_LED_Colour_Off, 0.001);
     fermer(&b);
+
+    /* and each per-effect switch names itself on the footswitch */
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_DELAY_ON, TOUTES_CAPS, (void*)0xC2);
+    verifie_vrai("an effect switch shows its own name",
+                 !strcmp(ecran.dernier_label, "DELAY"));
+    verifie_vrai("and its state", !strcmp(ecran.dernier_value, "ON"));
+    b.ctl[CTL_DELAY_ON] = 0.0f;
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("which follows the switch", !strcmp(ecran.dernier_value, "OFF"));
+    verifie("with the LED to match", (double)ecran.couleur,
+            (double)LV2_HMI_LED_Colour_Off, 0.001);
+    fermer(&b);
 }
 
 static void essai_ecran_compresseur(void)
@@ -1157,6 +1239,291 @@ static void essai_sans_ecran(void)
 }
 
 /* ================================================================== */
+/* One switch per effect                                               */
+/* ================================================================== */
+
+static void essai_interrupteurs_effets(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+
+    /* --- gate --- */
+    b.ctl[CTL_GATE] = -30.0f;
+    for (int k = 0; k < 800; ++k) { sinus(&b, 400.0, 0.003); tourner(&b); }
+    verifie_vrai("GATE ON: the gate is doing its job", crete(b.out[0], b.bloc) < 3.0e-4);
+    b.ctl[CTL_GATE_ON] = 0.0f;
+    for (int k = 0; k < 200; ++k) { sinus(&b, 400.0, 0.003); tourner(&b); }
+    verifie("GATE OFF: the signal comes straight through",
+            crete(b.out[0], b.bloc), 0.003, 3.0e-4);
+    b.ctl[CTL_GATE] = ctl_spec[CTL_GATE].min;
+    b.ctl[CTL_GATE_ON] = 1.0f;
+
+    /* --- compressor --- */
+    b.ctl[CTL_COMP] = 100.0f;
+    for (int k = 0; k < 300; ++k) { sinus(&b, 500.0, 0.5); tourner(&b); }
+    verifie_vrai("COMP ON: it is compressing", (double)b.ctl[CTL_GR] < -5.0);
+    b.ctl[CTL_COMP_ON] = 0.0f;
+    for (int k = 0; k < 300; ++k) { sinus(&b, 500.0, 0.5); tourner(&b); }
+    verifie("COMP OFF: no reduction left", (double)b.ctl[CTL_GR], 0.0, 0.001);
+    verifie("COMP OFF: and no makeup either",
+            gain_db(&b, 500.0, 0.3, 60, 60), 0.0, 0.1);
+    b.ctl[CTL_COMP] = 0.0f;
+    b.ctl[CTL_COMP_ON] = 1.0f;
+
+    /* --- de-esser --- */
+    b.ctl[CTL_DE_ESS] = 100.0f;
+    verifie_vrai("DE-ESS ON: an 8 kHz tone is held down",
+                 gain_db(&b, 8000.0, 0.3, 80, 60) < -8.0);
+    b.ctl[CTL_DE_ESS_ON] = 0.0f;
+    verifie("DE-ESS OFF: it is not", gain_db(&b, 8000.0, 0.3, 80, 60), 0.0, 0.1);
+    b.ctl[CTL_DE_ESS] = 0.0f;
+    b.ctl[CTL_DE_ESS_ON] = 1.0f;
+
+    /* --- drive --- */
+    b.ctl[CTL_DRIVE] = 100.0f;
+    verifie_vrai("DRIVE ON: a quiet signal is lifted",
+                 gain_db(&b, 800.0, 0.02, 60, 60) > 5.0);
+    b.ctl[CTL_DRIVE_ON] = 0.0f;
+    verifie("DRIVE OFF: unity again", gain_db(&b, 800.0, 0.02, 60, 60), 0.0, 0.1);
+    b.ctl[CTL_DRIVE] = 0.0f;
+    b.ctl[CTL_DRIVE_ON] = 1.0f;
+
+    /* --- chorus --- */
+    srand(3);
+    const double sec = gain_bruit_db(&b, 0.2, 40, 300);
+    b.ctl[CTL_MOD] = 100.0f;
+    chauffer(&b, 200.0);
+    verifie_vrai("MOD ON: the chorus adds something",
+                 gain_bruit_db(&b, 0.2, 40, 300) > sec + 0.2);
+    b.ctl[CTL_MOD_ON] = 0.0f;
+    chauffer(&b, 200.0);
+    verifie("MOD OFF: back where it was",
+            gain_bruit_db(&b, 0.2, 40, 300), sec, 0.2);
+    b.ctl[CTL_MOD] = 0.0f;
+    b.ctl[CTL_MOD_ON] = 1.0f;
+    fermer(&b);
+
+    /* --- delay: its switch stops the SEND, so nothing new goes in --- */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_DELAY_TIME]    = 200.0f;
+    b.ctl[CTL_DELAY_MIX]     = 100.0f;
+    b.ctl[CTL_DELAY_REPEATS] = 0.0f;
+    b.ctl[CTL_DELAY_ON]      = 0.0f;
+    chauffer(&b, 2000.0);
+    silence(&b);
+    b.in[0][0] = 1.0f;
+    tourner(&b);
+    /* The first 100 ms belong to the dry impulse and to the DC blocker
+       ringing behind it - an impulse through a 20 Hz high pass leaves a
+       tail of its own, some microvolts of it, for a good while. The echo,
+       if the switch let one through, would land at 200 ms at full
+       level. */
+    chauffer(&b, 100.0);
+    double reste = 0.0;
+    for (int k = 0; k < 150; ++k) {
+        silence(&b);
+        tourner(&b);
+        const double c = crete(b.out[0], b.bloc);
+        if (c > reste) { reste = c; }
+    }
+    verifie("DELAY OFF: nothing new goes into the line", reste, 0.0, 1.0e-5);
+    b.ctl[CTL_DELAY_ON] = 1.0f;
+    chauffer(&b, 100.0);
+    verifie("DELAY ON: the echo is back", echo_ms(&b, 600.0), 200.0, 3.0);
+
+    /* and switching it off lets what is already in there ring out */
+    b.ctl[CTL_DELAY_REPEATS] = 80.0f;
+    for (int k = 0; k < 400; ++k) { sinus(&b, 600.0, 0.3); tourner(&b); }
+    b.ctl[CTL_DELAY_ON] = 0.0f;
+    chauffer(&b, 400.0);
+    verifie_vrai("DELAY OFF: the tail rings out rather than being chopped",
+                 crete(b.out[0], b.bloc) > 1.0e-3);
+    fermer(&b);
+
+    /* --- reverb, same rule --- */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_REVERB]     = 80.0f;
+    b.ctl[CTL_REVERB_MIX] = 100.0f;
+    b.ctl[CTL_REVERB_ON]  = 0.0f;
+    chauffer(&b, 200.0);          /* let the switch ramp reach zero first */
+    for (int k = 0; k < 200; ++k) { sinus(&b, 600.0, 0.3); tourner(&b); }
+    chauffer(&b, 300.0);
+    verifie("REVERB OFF: no tail at all", crete(b.out[0], b.bloc), 0.0, 1.0e-7);
+    b.ctl[CTL_REVERB_ON] = 1.0f;
+    for (int k = 0; k < 200; ++k) { sinus(&b, 600.0, 0.3); tourner(&b); }
+    chauffer(&b, 300.0);
+    verifie_vrai("REVERB ON: there is one", crete(b.out[0], b.bloc) > 1.0e-3);
+    fermer(&b);
+}
+
+static void essai_interrupteurs_sans_clic(void)
+{
+    static const int commandes[] = {
+        CTL_GATE_ON, CTL_COMP_ON, CTL_DE_ESS_ON, CTL_DRIVE_ON,
+        CTL_DOUBLER_ON, CTL_MOD_ON, CTL_DELAY_ON, CTL_REVERB_ON
+    };
+    static const char* noms[] = {
+        "GATE", "COMP", "DE-ESS", "DRIVE", "DOUBLE", "MOD", "DELAY", "REVERB"
+    };
+
+    for (int j = 0; j < 8; ++j) {
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 64, 0);
+        /* everything engaged at once: the worst case for a switch */
+        b.ctl[CTL_LOW_CUT]       = 80.0f;
+        b.ctl[CTL_GATE]          = -60.0f;
+        b.ctl[CTL_COMP]          = 60.0f;
+        b.ctl[CTL_DE_ESS]        = 60.0f;
+        b.ctl[CTL_DRIVE]         = 50.0f;
+        b.ctl[CTL_DOUBLER]       = 60.0f;
+        b.ctl[CTL_MOD]           = 50.0f;
+        b.ctl[CTL_DELAY_MIX]     = 60.0f;
+        b.ctl[CTL_DELAY_REPEATS] = 40.0f;
+        b.ctl[CTL_REVERB_MIX]    = 50.0f;
+        chauffer(&b, 1500.0);
+
+        /* Three seconds of singing first: with a 400 ms delay and a long
+           reverb, "quiet" measured before those have reached the output
+           is not quiet, it is early. */
+        double calme = 0.0, precedent = 0.0;
+        for (int k = 0; k < 2600; ++k) {
+            sinus(&b, 500.0, 0.3);
+            tourner(&b);
+            for (uint32_t i = 0; i < b.bloc; ++i) {
+                const double d = fabs((double)b.out[0][i] - precedent);
+                if (k > 2200 && d > calme) { calme = d; }
+                precedent = b.out[0][i];
+            }
+        }
+
+        double bascule = 0.0;
+        for (int tour = 0; tour < 2; ++tour) {
+            b.ctl[commandes[j]] = tour ? 1.0f : 0.0f;
+            for (int k = 0; k < 120; ++k) {
+                sinus(&b, 500.0, 0.3);
+                tourner(&b);
+                for (uint32_t i = 0; i < b.bloc; ++i) {
+                    const double d = fabs((double)b.out[0][i] - precedent);
+                    if (d > bascule) { bascule = d; }
+                    precedent = b.out[0][i];
+                }
+            }
+        }
+        char quoi[64];
+        snprintf(quoi, sizeof(quoi), "throwing %s does not click", noms[j]);
+        verifie_vrai(quoi, bascule < calme * 1.5);
+        fermer(&b);
+    }
+}
+
+/* ================================================================== */
+/* Presets, read out of the file that ships                            */
+/* ================================================================== */
+
+typedef struct {
+    char  label[32];
+    float val[CTL_COUNT];
+} Preset;
+
+static int lire_presets(Preset* p, int max)
+{
+    static char buf[600000];
+    FILE* f = fopen("presets.ttl", "r");
+    if (!f) {
+        printf("  *** presets.ttl not found - run the bench from voice/\n");
+        echec = 1;
+        return 0;
+    }
+    const size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    buf[n] = '\0';
+    fclose(f);
+
+    int nb = 0;
+    const char* cur = buf;
+    while (nb < max && (cur = strstr(cur, "a pset:Preset")) != NULL) {
+        const char* fin = strstr(cur, "] .");
+        const char* app = strstr(cur, "lv2:appliesTo <");
+        const char* lab = strstr(cur, "rdfs:label \"");
+        if (!fin) { break; }
+        /* the mono variant only: the stereo presets carry the same values */
+        if (app && lab && app < fin &&
+            !strncmp(app + 15, "http://remy-live.github.io/lv2/voice>", 37)) {
+            for (int i = 0; i < (int)CTL_COUNT; ++i) {
+                p[nb].val[i] = ctl_spec[i].def;
+            }
+            memset(p[nb].label, 0, sizeof(p[nb].label));
+            if (sscanf(lab + 12, "%31[^\"]", p[nb].label) != 1) {
+                p[nb].label[0] = '\0';
+            }
+            p[nb].label[sizeof(p[nb].label) - 1] = '\0';
+            const char* q = lab;
+            while ((q = strstr(q, "lv2:symbol \"")) != NULL && q < fin) {
+                char  sym[48];
+                float v = 0.0f;
+                const char* val = strstr(q, "pset:value ");
+                if (sscanf(q + 12, "%47[^\"]", sym) == 1 && val && val < fin &&
+                    sscanf(val + 11, "%f", &v) == 1) {
+                    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+                        if (!strcmp(sym, ctl_spec[i].symbol)) { p[nb].val[i] = v; }
+                    }
+                }
+                q += 12;
+            }
+            ++nb;
+        }
+        cur = fin;
+    }
+    return nb;
+}
+
+/* The complaint this test exists for: loading a preset used to be twenty
+   decibels louder than not loading one. A preset chooses a SOUND; how loud
+   the singer is belongs to IN GAIN and to the desk. */
+static void essai_presets(void)
+{
+    Preset p[16];
+    const int nb = lire_presets(p, 16);
+    verifie_vrai("presets.ttl reads back", nb >= 6);
+
+    for (int k = 0; k < nb; ++k) {
+        Banc b;
+        char quoi[160];
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        for (int i = 0; i < (int)CTL_COUNT; ++i) { b.ctl[i] = p[k].val[i]; }
+        srand(11);
+        const double g = gain_bruit_db(&b, 0.22, 80, 600);
+        snprintf(quoi, sizeof(quoi), "preset \"%.31s\" leaves the level alone", p[k].label);
+        verifie_entre(quoi, g, -3.0, 3.0);
+        verifie_vrai("  and never writes IN GAIN",
+                     p[k].val[CTL_IN_GAIN] == ctl_spec[CTL_IN_GAIN].def);
+        fermer(&b);
+    }
+}
+
+/* The compressor gives back what it takes off a voice at the reference
+   level, so turning it up must not turn you up. */
+static void essai_comp_niveau(void)
+{
+    const double amounts[] = { 0.0, 30.0, 60.0, 100.0 };
+    for (int k = 0; k < 4; ++k) {
+        Banc b;
+        char quoi[72];
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        neutre(&b);
+        b.ctl[CTL_COMP] = (float)amounts[k];
+        /* a sine whose PEAK sits on the reference: -12 dBFS */
+        const double g = gain_db(&b, 500.0, 0.25, 300, 80);
+        snprintf(quoi, sizeof(quoi), "COMP at %3.0f leaves a -12 dBFS voice alone",
+                 amounts[k]);
+        verifie(quoi, g, 0.0, 1.5);
+        fermer(&b);
+    }
+}
+
+/* ================================================================== */
 
 int main(void)
 {
@@ -1175,6 +1542,10 @@ int main(void)
     printf("Tap tempo:\n");                essai_tap();
     printf("FX switch:\n");                essai_interrupteur();
                                            essai_interrupteur_sans_clic();
+    printf("One switch per effect:\n");    essai_interrupteurs_effets();
+                                           essai_interrupteurs_sans_clic();
+    printf("Compressor level:\n");         essai_comp_niveau();
+    printf("Presets:\n");                  essai_presets();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
     printf("Stereo variant:\n");           essai_stereo();

@@ -170,9 +170,10 @@ code ever runs, and that is where the bugs live.
 [`voice/`](voice/) is a separate bundle with its own build, its own
 descriptors and its own test bench: **Voice** and **Voice Stereo**, a
 vocal channel strip and effects rack — gate, compressor, de-esser, low
-cut, three tone bands, drive, doubler, chorus, tap delay and reverb. It
-replaces what a VoiceLive does to a voice, minus the pitch tracking, which
-is the half that fails on stage.
+cut, three tone bands, drive, a three-voice doubler, chorus, tap delay and
+reverb, each with its own footswitchable on/off. It replaces what a
+VoiceLive does to a voice, minus the pitch tracking, which is the half
+that fails on stage.
 
 It shares this repository's rules rather than its code: libc only, one
 allocation, screen support written against `lv2-hmi.h`, and a build that
