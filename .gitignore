@@ -9,6 +9,7 @@ voice/voice-aarch64.tar.gz
 voice/install-voice.html
 voice/test_voice
 voice/test_voice.log
+voice/voice-demo.wav
 *.o
 *.so
 
