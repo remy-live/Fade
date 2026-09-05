@@ -68,7 +68,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD2_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD3_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -291,41 +291,43 @@ static float ceiling(float x)
 /* ------------------------------------------------------------------ */
 
 typedef enum {
-    CTL_IN_GAIN       = 0,
-    CTL_LOW_CUT       = 1,
-    CTL_GATE_ON       = 2,   /* every effect has a switch of its own, and    */
-    CTL_GATE          = 3,   /* it sits immediately before the controls it   */
-    CTL_COMP_ON       = 4,   /* switches: mod-ui lists the ports in index    */
-    CTL_COMP          = 5,   /* order, so the order IS the layout            */
-    CTL_DE_ESS_ON     = 6,
-    CTL_DE_ESS        = 7,
-    CTL_BODY          = 8,
-    CTL_PRESENCE      = 9,
-    CTL_AIR           = 10,
-    CTL_DRIVE_ON      = 11,
-    CTL_DRIVE         = 12,
-    CTL_DOUBLER_ON    = 13,
-    CTL_DOUBLER       = 14,
-    CTL_MOD_ON        = 15,
-    CTL_MOD           = 16,
-    CTL_MOD_SPEED     = 17,
-    CTL_DELAY_ON      = 18,
-    CTL_DELAY_TIME    = 19,
-    CTL_DELAY_REPEATS = 20,
-    CTL_DELAY_MIX     = 21,
-    CTL_REVERB_ON     = 22,
-    CTL_REVERB        = 23,
-    CTL_REVERB_MIX    = 24,
-    CTL_FX            = 25,  /* the master: it feeds all four at once */
-    CTL_FX_TRIGGER    = 26,  /* trigger, for MIDI: same state as the toggle */
-    CTL_TAP           = 27,  /* trigger: two taps set the delay time */
-    CTL_OUTPUT        = 28,
-    CTL_GR            = 29,  /* output: compressor gain reduction, dB */
-    CTL_LEVEL         = 30,  /* output: peak out level, 0..1 */
-    CTL_GATE_OPEN     = 31,  /* output: 1 while the gate is open */
-    CTL_FX_STATE      = 32,  /* output: the FX state actually in force */
-    CTL_TIME_OUT      = 33,  /* output: delay time in force, tap included */
-    CTL_COUNT         = 34
+    CTL_PROGRAM       = 0,   /* the list: 0 = MANUAL, then the built-in sounds */
+    CTL_IN_GAIN       = 1,
+    CTL_LOW_CUT       = 2,
+    CTL_GATE_ON       = 3,   /* every effect has a switch of its own, and    */
+    CTL_GATE          = 4,   /* it sits immediately before the controls it   */
+    CTL_COMP_ON       = 5,   /* switches: mod-ui lists the ports in index    */
+    CTL_COMP          = 6,   /* order, so the order IS the layout            */
+    CTL_DE_ESS_ON     = 7,
+    CTL_DE_ESS        = 8,
+    CTL_BODY          = 9,
+    CTL_PRESENCE      = 10,
+    CTL_AIR           = 11,
+    CTL_DRIVE_ON      = 12,
+    CTL_DRIVE         = 13,
+    CTL_DOUBLER_ON    = 14,
+    CTL_DOUBLER       = 15,
+    CTL_VOICES        = 16,  /* 2, 3 or 4 doubled voices */
+    CTL_MOD_ON        = 17,
+    CTL_MOD           = 18,
+    CTL_MOD_SPEED     = 19,
+    CTL_DELAY_ON      = 20,
+    CTL_DELAY_TIME    = 21,
+    CTL_DELAY_REPEATS = 22,
+    CTL_DELAY_MIX     = 23,
+    CTL_REVERB_ON     = 24,
+    CTL_REVERB        = 25,
+    CTL_REVERB_MIX    = 26,
+    CTL_FX            = 27,  /* the master: it feeds all four at once */
+    CTL_FX_TRIGGER    = 28,  /* trigger, for MIDI: same state as the toggle */
+    CTL_TAP           = 29,  /* trigger: two taps set the delay time */
+    CTL_OUTPUT        = 30,
+    CTL_GR            = 31,  /* output: compressor gain reduction, dB */
+    CTL_LEVEL         = 32,  /* output: peak out level, 0..1 */
+    CTL_GATE_OPEN     = 33,  /* output: 1 while the gate is open */
+    CTL_FX_STATE      = 34,  /* output: the FX state actually in force */
+    CTL_TIME_OUT      = 35,  /* output: delay time in force, tap included */
+    CTL_COUNT         = 36
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -350,6 +352,7 @@ typedef struct {
 
 static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
+    { "program",        0.0f,   10.0f,     0.0f },
     { "in_gain",      -20.0f,   40.0f,     0.0f },
     { "low_cut",        0.0f,  400.0f,    90.0f },
     { "gate_on",        0.0f,    1.0f,     1.0f },
@@ -365,6 +368,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "drive",          0.0f,  100.0f,     0.0f },
     { "doubler_on",     0.0f,    1.0f,     1.0f },
     { "doubler",        0.0f,  100.0f,     0.0f },
+    { "voices",         2.0f,    4.0f,     3.0f },
     { "mod_on",         0.0f,    1.0f,     1.0f },
     { "modulation",     0.0f,  100.0f,     0.0f },
     { "mod_speed",      0.05f,   8.0f,     0.6f },
@@ -385,6 +389,10 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "fx_state",       0.0f,    1.0f,     1.0f },
     { "time_out",      20.0f, 2000.0f,   400.0f },
 };
+
+/* The built-in sounds, generated from the same table that writes
+   presets.ttl. See programs.h. */
+#include "programs.h"
 
 /* One ramp per switch, so a foot on any of them fades rather than clicks.
    The four effect switches and the FX master multiply together: the master
@@ -493,9 +501,18 @@ static const uint16_t allpass_base[N_ALLPASS] = { 556, 441, 341, 225 };
    comb, above about fifty they become a slapback. The depths give a few
    cents of drift each - depth * 2 * pi * rate, in seconds per second -
    and the rates share no common period. */
-static const float double_ms[3]    = { 21.0f, 29.0f, 38.0f };
-static const float double_depth[3] = { 1.6f, 2.2f, 2.8f };
-static const float double_rate[3]  = { 0.13f, 0.19f, 0.27f };
+#define MAX_VOICES 4
+static const float double_ms[MAX_VOICES]    = { 21.0f, 29.0f, 38.0f, 46.0f };
+static const float double_depth[MAX_VOICES] = { 1.6f, 2.2f, 2.8f, 3.4f };
+static const float double_rate[MAX_VOICES]  = { 0.13f, 0.19f, 0.27f, 0.09f };
+
+/* The level is held steady as the count changes, so VOICES picks a
+   texture and not a volume. Decorrelated copies add in power, so the
+   gain goes as one over the root of the count - written out rather than
+   computed, because there is no sqrt in this binary. Indexed by the
+   count, so the first two entries are never used. */
+static const float double_gain[MAX_VOICES + 1]    = { 0.0f, 0.0f, 0.588f, 0.480f, 0.415f };
+static const float double_gain_st[MAX_VOICES + 1] = { 0.0f, 0.0f, 0.900f, 0.740f, 0.636f };
 
 /* Everything the two channels do not share. */
 typedef struct {
@@ -533,7 +550,7 @@ typedef enum {
    share one branch and differ only by their label. */
 typedef enum {
     SLOT_FX = 0, SLOT_FX_TRIGGER, SLOT_TAP, SLOT_DELAY,
-    SLOT_COMP, SLOT_GATE, SLOT_OUT,
+    SLOT_COMP, SLOT_GATE, SLOT_OUT, SLOT_PROGRAM, SLOT_VOICES,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -542,7 +559,7 @@ static uint8_t slot_ctl_of(int slot)
 {
     static const uint8_t fixed[SLOT_SWITCH] = {
         CTL_FX, CTL_FX_TRIGGER, CTL_TAP, CTL_DELAY_TIME,
-        CTL_COMP, CTL_GATE, CTL_OUTPUT
+        CTL_COMP, CTL_GATE, CTL_OUTPUT, CTL_PROGRAM, CTL_VOICES
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
@@ -597,6 +614,14 @@ typedef struct {
     float fx_gain;            /* ramped, so the send does not click */
     float sw[SW_COUNT];       /* one ramp per effect switch, same reason */
 
+    /* Which program is in force, and the switch positions that go with it.
+       A program ADOPTS the switches when it is selected and then lets go:
+       the port wins again as soon as it MOVES, because a footswitch that
+       stops working when a program is chosen is a broken footswitch. */
+    int program;
+    int sw_state[SW_COUNT];   /* what is really in force */
+    int sw_prev[SW_COUNT];    /* the port position we last saw */
+
     /* --- tap tempo --- */
     int      tap_prev;
     uint32_t tap_count;       /* samples since the last tap */
@@ -606,7 +631,7 @@ typedef struct {
     float    delay_ms;        /* the time in force, glided towards its target */
 
     /* --- LFOs --- */
-    float ph_double[3];       /* one per doubled voice */
+    float ph_double[MAX_VOICES];   /* one per doubled voice */
     float ph_mod;
 
     /* --- screen --- */
@@ -827,12 +852,47 @@ static float ctl_read(const Voice* self, int i)
     return v;
 }
 
+/* What the DSP actually gets. With a program selected it comes from the
+   built-in table; with MANUAL it comes from the port. IN GAIN, OUTPUT,
+   the switches and the performance controls are never in the table, so
+   they are always the player's. */
+static float param_read(const Voice* self, int i)
+{
+    if (self->program > 0 && program_col[i] >= 0) {
+        float v = program_value[self->program][program_col[i]];
+        if (!(v >= ctl_spec[i].min)) { v = ctl_spec[i].min; }
+        if (v > ctl_spec[i].max)     { v = ctl_spec[i].max; }
+        return v;
+    }
+    return ctl_read(self, i);
+}
+
 static void
 activate(LV2_Handle instance)
 {
     Voice* self = (Voice*)instance;
     if (!self) {
         return;
+    }
+
+    /* FIRST, before anything reads a parameter: which program is in force
+       decides what every param_read() below returns. Working this out
+       halfway down instead left the smoothed values starting from the
+       knobs and sliding to the program over the first block - inaudible,
+       but enough to make a program and its preset differ sample for
+       sample, which is a thing the bench checks and should.
+
+       The switch positions come from the PORTS, never from the program
+       table: a pedalboard being reloaded has them saved in those ports,
+       and adopting the program's here would throw them away every load. */
+    self->program = (int)(ctl_read(self, CTL_PROGRAM) + 0.5f);
+    if (self->program < 0)          { self->program = 0; }
+    if (self->program >= N_PROGRAM) { self->program = N_PROGRAM - 1; }
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        const int on = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
+        self->sw_state[k] = on;
+        self->sw_prev[k]  = on;
+        self->sw[k]       = on ? 1.0f : 0.0f;
     }
 
     for (uint32_t c = 0; c < self->n_ch; ++c) {
@@ -865,16 +925,16 @@ activate(LV2_Handle instance)
        pedalboard load. */
     self->sm[SM_IN]         = db_to_lin(ctl_read(self, CTL_IN_GAIN));
     self->sm[SM_OUT]        = db_to_lin(ctl_read(self, CTL_OUTPUT));
-    self->sm[SM_BODY]       = db_to_lin(ctl_read(self, CTL_BODY)) - 1.0f;
-    self->sm[SM_PRESENCE]   = db_to_lin(ctl_read(self, CTL_PRESENCE)) - 1.0f;
-    self->sm[SM_AIR]        = db_to_lin(ctl_read(self, CTL_AIR)) - 1.0f;
-    self->sm[SM_DRIVE_PRE]  = drive_pre_of(ctl_read(self, CTL_DRIVE));
+    self->sm[SM_BODY]       = db_to_lin(param_read(self, CTL_BODY)) - 1.0f;
+    self->sm[SM_PRESENCE]   = db_to_lin(param_read(self, CTL_PRESENCE)) - 1.0f;
+    self->sm[SM_AIR]        = db_to_lin(param_read(self, CTL_AIR)) - 1.0f;
+    self->sm[SM_DRIVE_PRE]  = drive_pre_of(param_read(self, CTL_DRIVE));
     self->sm[SM_DRIVE_POST] = drive_post_of(self->sm[SM_DRIVE_PRE]);
-    self->sm[SM_DRIVE_MIX]  = ctl_read(self, CTL_DRIVE) * 0.01f;
-    self->sm[SM_DOUBLER]    = ctl_read(self, CTL_DOUBLER)    * 0.01f;
-    self->sm[SM_MOD]        = ctl_read(self, CTL_MOD)        * 0.01f;
-    self->sm[SM_DELAY]      = ctl_read(self, CTL_DELAY_MIX)  * 0.01f;
-    self->sm[SM_REVERB]     = ctl_read(self, CTL_REVERB_MIX) * 0.01f;
+    self->sm[SM_DRIVE_MIX]  = param_read(self, CTL_DRIVE) * 0.01f;
+    self->sm[SM_DOUBLER]    = param_read(self, CTL_DOUBLER)    * 0.01f;
+    self->sm[SM_MOD]        = param_read(self, CTL_MOD)        * 0.01f;
+    self->sm[SM_DELAY]      = param_read(self, CTL_DELAY_MIX)  * 0.01f;
+    self->sm[SM_REVERB]     = param_read(self, CTL_REVERB_MIX) * 0.01f;
 
     self->gate_env  = 0.0f;
     self->gate_gain = 1.0f;
@@ -889,22 +949,20 @@ activate(LV2_Handle instance)
     self->fx_toggle_prev  = self->fx_state;
     self->fx_trigger_prev = (ctl_read(self, CTL_FX_TRIGGER) > 0.5f) ? 1 : 0;
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
-    for (int k = 0; k < (int)SW_COUNT; ++k) {
-        self->sw[k] = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1.0f : 0.0f;
-    }
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
     self->tap_count    = 0u;
     self->tap_active   = 0;
-    self->tap_ms       = ctl_read(self, CTL_DELAY_TIME);
-    self->knob_ms_prev = ctl_read(self, CTL_DELAY_TIME);
-    self->delay_ms     = ctl_read(self, CTL_DELAY_TIME);
+    self->tap_ms       = param_read(self, CTL_DELAY_TIME);
+    self->knob_ms_prev = param_read(self, CTL_DELAY_TIME);
+    self->delay_ms     = param_read(self, CTL_DELAY_TIME);
 
     /* Start the three voices apart, or they drift as one and the doubler
        is just a delay. */
     self->ph_double[0] = 0.0f;
     self->ph_double[1] = 0.37f;
     self->ph_double[2] = 0.71f;
+    self->ph_double[3] = 0.13f;
     self->ph_mod       = 0.0f;
 
     self->screen_left = 1u;
@@ -1038,6 +1096,27 @@ paint(Voice* self, int force)
             bar_h = (int)(bar * 100.0f + 0.5f);
             break;
 
+        case SLOT_PROGRAM:
+            /* The list, on an encoder: turn it and the name changes. */
+            label = "PROGRAM";
+            value = program_name[(self->program >= 0 && self->program < N_PROGRAM)
+                                 ? self->program : 0];
+            bar   = (float)self->program * (1.0f / (float)(N_PROGRAM - 1));
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+
+        case SLOT_VOICES: {
+            int n = (int)(param_read(self, CTL_VOICES) + 0.5f);
+            if (n < 2)          { n = 2; }
+            if (n > MAX_VOICES) { n = MAX_VOICES; }
+            label = "VOICES";
+            write_int(vbuf, sizeof(vbuf), n);
+            value = vbuf;
+            bar   = (float)(n - 2) * 0.5f;
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+        }
+
         case SLOT_OUT: {
             /* A level meter on the output knob. On a stage this is the
                one readout a singer actually looks at. */
@@ -1060,7 +1139,7 @@ paint(Voice* self, int force)
             /* one of the eight per-effect switches */
             if (s >= (int)SLOT_SWITCH && s < (int)SLOT_COUNT) {
                 const int k = s - (int)SLOT_SWITCH;
-                const int on = (*self->ctl[switch_ctl[k]] > 0.5f);
+                const int on = self->sw_state[k];
                 label = switch_label[k];
                 value = on ? "ON" : "OFF";
                 led   = on ? LV2_HMI_LED_Colour_Green : LV2_HMI_LED_Colour_Off;
@@ -1179,16 +1258,44 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float    ms2n = rate * 0.001f;     /* milliseconds to samples */
 
     /* ---------------- controls, read and clamped once ---------------- */
-    const float lowcut_hz = ctl_read(self, CTL_LOW_CUT);
-    const float gate_db   = ctl_read(self, CTL_GATE);
-    const float comp_amt  = ctl_read(self, CTL_COMP);
-    const float deess_amt = ctl_read(self, CTL_DE_ESS);
-    const float drive_amt = ctl_read(self, CTL_DRIVE);
-    const float mod_speed = ctl_read(self, CTL_MOD_SPEED);
-    const float mod_amt   = ctl_read(self, CTL_MOD) * 0.01f;
-    const float fb_amt    = ctl_read(self, CTL_DELAY_REPEATS) * 0.01f;
-    const float rev_amt   = ctl_read(self, CTL_REVERB) * 0.01f;
+    const float lowcut_hz = param_read(self, CTL_LOW_CUT);
+    const float gate_db   = param_read(self, CTL_GATE);
+    const float comp_amt  = param_read(self, CTL_COMP);
+    const float deess_amt = param_read(self, CTL_DE_ESS);
+    const float drive_amt = param_read(self, CTL_DRIVE);
+    const float mod_speed = param_read(self, CTL_MOD_SPEED);
+    const float mod_amt   = param_read(self, CTL_MOD) * 0.01f;
+    const float fb_amt    = param_read(self, CTL_DELAY_REPEATS) * 0.01f;
+    const float rev_amt   = param_read(self, CTL_REVERB) * 0.01f;
+    int n_voices = (int)(param_read(self, CTL_VOICES) + 0.5f);
+    if (n_voices < 2)          { n_voices = 2; }
+    if (n_voices > MAX_VOICES) { n_voices = MAX_VOICES; }
     const float out_db    = ctl_read(self, CTL_OUTPUT);
+
+    /* ---------------- the program list ----------------
+       Changing programs is the only moment the switch positions are taken
+       from the table. After that the ports own them again, so a foot on a
+       switch always wins - and the screen shows what is in force rather
+       than what the knob says, exactly as it does for the tapped tempo. */
+    int prog = (int)(ctl_read(self, CTL_PROGRAM) + 0.5f);
+    if (prog < 0)          { prog = 0; }
+    if (prog >= N_PROGRAM) { prog = N_PROGRAM - 1; }
+    if (prog != self->program) {
+        self->program = prog;
+        if (prog > 0) {
+            for (int k = 0; k < (int)SW_COUNT; ++k) {
+                self->sw_state[k] = program_switch[prog][k] ? 1 : 0;
+                self->sw_prev[k]  = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
+            }
+        }
+    }
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        const int now = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
+        if (now != self->sw_prev[k] || self->program == 0) {
+            self->sw_state[k] = now;
+        }
+        self->sw_prev[k] = now;
+    }
 
     /* ---------------- the FX switch: one state, two ways in ----------
        Same reasoning as fade.c. The toggle is followed by its CHANGES so
@@ -1234,7 +1341,7 @@ run(LV2_Handle instance, uint32_t n_samples)
        plugin cannot write the tapped value back into an input port, so
        its position goes stale the moment a tap lands. TIME publishes what
        is really in force. */
-    const float knob_ms = ctl_read(self, CTL_DELAY_TIME);
+    const float knob_ms = param_read(self, CTL_DELAY_TIME);
     if (knob_ms > self->knob_ms_prev + 0.5f || knob_ms < self->knob_ms_prev - 0.5f) {
         self->tap_active = 0;
     }
@@ -1264,7 +1371,7 @@ run(LV2_Handle instance, uint32_t n_samples)
        switch is the other way to turn it off, and the one a foot can
        reach. */
     const int      gate_on    = gate_db > ctl_spec[CTL_GATE].min + 0.5f
-                                && ctl_read(self, CTL_GATE_ON) > 0.5f;
+                                && self->sw_state[SW_GATE];
     const float    gate_open  = db_to_lin(gate_db);
     const float    gate_close = gate_open * 0.5f;         /* -6 dB hysteresis */
     const uint32_t gate_hold  = (uint32_t)(rate * 0.08f); /* 80 ms */
@@ -1323,16 +1430,16 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_IN]         = db_to_lin(ctl_read(self, CTL_IN_GAIN));
     target[SM_OUT]        = (out_db <= ctl_spec[CTL_OUTPUT].min + 0.5f)
                           ? 0.0f : db_to_lin(out_db);   /* the minimum is silence */
-    target[SM_BODY]       = db_to_lin(ctl_read(self, CTL_BODY))     - 1.0f;
-    target[SM_PRESENCE]   = db_to_lin(ctl_read(self, CTL_PRESENCE)) - 1.0f;
-    target[SM_AIR]        = db_to_lin(ctl_read(self, CTL_AIR))      - 1.0f;
+    target[SM_BODY]       = db_to_lin(param_read(self, CTL_BODY))     - 1.0f;
+    target[SM_PRESENCE]   = db_to_lin(param_read(self, CTL_PRESENCE)) - 1.0f;
+    target[SM_AIR]        = db_to_lin(param_read(self, CTL_AIR))      - 1.0f;
     target[SM_DRIVE_PRE]  = drive_pre;
     target[SM_DRIVE_POST] = drive_post;
     target[SM_DRIVE_MIX]  = drive_amt * 0.01f;
-    target[SM_DOUBLER]    = ctl_read(self, CTL_DOUBLER) * 0.01f;
+    target[SM_DOUBLER]    = param_read(self, CTL_DOUBLER) * 0.01f;
     target[SM_MOD]        = mod_amt;
-    target[SM_DELAY]      = ctl_read(self, CTL_DELAY_MIX)  * 0.01f;
-    target[SM_REVERB]     = ctl_read(self, CTL_REVERB_MIX) * 0.01f;
+    target[SM_DELAY]      = param_read(self, CTL_DELAY_MIX)  * 0.01f;
+    target[SM_REVERB]     = param_read(self, CTL_REVERB_MIX) * 0.01f;
 
     float sm[SM_COUNT], sm_step[SM_COUNT];
     for (int k = 0; k < (int)SM_COUNT; ++k) {
@@ -1346,7 +1453,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     float sw_target[SW_COUNT];
     for (int k = 0; k < (int)SW_COUNT; ++k) {
-        sw_target[k] = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1.0f : 0.0f;
+        sw_target[k] = self->sw_state[k] ? 1.0f : 0.0f;
     }
 
     /* The three doubled voices drift on their own slow LFO. The rates are
@@ -1521,8 +1628,8 @@ run(LV2_Handle instance, uint32_t n_samples)
                Three voices at mutually prime rates never line up, which
                is the difference between a chorus of singers and one
                singer through a wobble. */
-        float dbl[3];
-        for (int k = 0; k < 3; ++k) {
+        float dbl[MAX_VOICES];
+        for (int k = 0; k < MAX_VOICES; ++k) {
             dbl[k] = (double_ms[k] + double_depth[k] * lfo_sin(self->ph_double[k]))
                      * ms2n;
         }
@@ -1534,18 +1641,18 @@ run(LV2_Handle instance, uint32_t n_samples)
             Chan* ch = &self->ch[c];
             ring_write(&ch->shortline, send[c]);
 
-            float w;
-            if (n_ch > 1u) {
-                /* one voice each side and the third up the middle: that
-                   IS the width, and it still sums cleanly to mono */
-                w = ring_read(&ch->shortline, dbl[c ? 1 : 0])
-                  + 0.7f * ring_read(&ch->shortline, dbl[2]);
-                w *= 0.74f;
-            } else {
-                w = (ring_read(&ch->shortline, dbl[0])
-                   + ring_read(&ch->shortline, dbl[1])
-                   + ring_read(&ch->shortline, dbl[2])) * 0.48f;
+            float w = 0.0f;
+            for (int k = 0; k < n_voices; ++k) {
+                const float v = ring_read(&ch->shortline, dbl[k]);
+                if (n_ch == 1u) {
+                    w += v;
+                } else if ((n_voices & 1) && k == n_voices - 1) {
+                    w += 0.7f * v;          /* an odd count: the last one is centred */
+                } else if ((uint32_t)(k & 1) == c) {
+                    w += v;                 /* even voices left, odd voices right */
+                }
             }
+            w *= (n_ch == 1u) ? double_gain[n_voices] : double_gain_st[n_voices];
             /* The copies sit a little behind the lead voice rather than
                on top of it: three bright copies of one voice sound like
                a phaser, three slightly darker ones sound like people. */
@@ -1597,7 +1704,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (a > peak) { peak = a; }
         }
 
-        for (int k = 0; k < 3; ++k) {
+        for (int k = 0; k < MAX_VOICES; ++k) {
             self->ph_double[k] += double_rate[k] / rate;
             if (self->ph_double[k] >= 1.0f) { self->ph_double[k] -= 1.0f; }
         }

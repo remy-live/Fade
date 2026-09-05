@@ -20,6 +20,7 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 @prefix mod:    <http://moddevices.com/ns/mod#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 
 <%(uri)s>
@@ -34,7 +35,7 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 
     rdfs:comment "%(comment)s" ;
 
-    lv2:minorVersion 2 ;
+    lv2:minorVersion 3 ;
     lv2:microVersion 0 ;
 
     lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl ;
@@ -51,14 +52,21 @@ COMMENT = ("A vocal channel strip and effects rack, with no pitch detection "
            "instead of being chopped.")
 
 # symbol, name, min, max, default, unit, properties, comment
-# The order IS the layout: mod-ui lists ports by index, so each effect's
-# switch sits immediately in front of the controls it switches.
+# The order IS the layout: mod-ui lists ports by index, so the patch
+# selector comes first and each effect's switch sits immediately in front
+# of the controls it switches.
 SWITCH = ["lv2:toggled"]
+LIST = ["lv2:integer", "lv2:enumeration", "pprops:hasStrictBounds"]
 CONTROLS = [
+ ("program", "PROGRAM", 0.0, 10.0, 0.0, None, LIST,
+  "Picks a built-in sound from the list. MANUAL means the controls below "
+  "are yours; anything else overrides them for as long as it is selected, "
+  "and IN GAIN, OUTPUT and every switch stay yours either way. Address it "
+  "to an encoder to walk the list from the device."),
  ("in_gain", "IN GAIN", -20.0, 40.0, 0.0, "db", [],
   "Gain applied to the input, before everything else. This is a rig "
-  "setting, not a sound: no preset touches it, so what you set here "
-  "survives changing preset."),
+  "setting, not a sound: no preset and no program touches it, so what you "
+  "set here survives everything."),
  ("low_cut", "LOW CUT", 0.0, 400.0, 90.0, "hz", [],
   "High-pass filter on the way in, 6 dB per octave. Takes out stage rumble, "
   "handling noise and plosives before they reach the gate. At 0 Hz it is off."),
@@ -72,9 +80,9 @@ CONTROLS = [
   "Switches the compressor in and out. Made for a footswitch."),
  ("comp", "COMP", 0.0, 100.0, 30.0, "pc", [],
   "Compression amount. One control: it lowers the threshold and raises the "
-  "ratio together, from off to -40 dB at 6:1. What it gives back is what it "
-  "takes off a voice at -12 dBFS, so turning it up changes the sound and not "
-  "how loud you are. The GR output says how hard it is working."),
+  "ratio together, from off to -40 dB at 6:1. What it gives back is most of "
+  "what it takes off a voice at -12 dBFS, so turning it up changes the sound "
+  "rather than how loud you are. The GR output says how hard it is working."),
  ("de_ess_on", "DE-ESS ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the de-esser in and out. Made for a footswitch."),
  ("de_ess", "DE-ESS", 0.0, 100.0, 0.0, "pc", [],
@@ -98,10 +106,14 @@ CONTROLS = [
  ("doubler_on", "DOUBLE ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the doubler in and out. Made for a footswitch."),
  ("doubler", "DOUBLE", 0.0, 100.0, 0.0, "pc", [],
-  "Three copies of the voice, twenty to forty milliseconds late, each "
-  "drifting a few cents on its own slow LFO and sitting slightly darker than "
-  "the lead. In the stereo build one goes left, one right and one up the "
-  "middle."),
+  "How much of the doubled voices is heard. They arrive twenty to forty "
+  "milliseconds late, each drifting a few cents on its own slow LFO and "
+  "sitting slightly darker than the lead."),
+ ("voices", "VOICES", 2.0, 4.0, 3.0, None, LIST,
+  "How many doubled voices: two for a straight double, three for a thicker "
+  "one, four for a small choir. The level is held steady as the count "
+  "changes, so this picks a texture and not a volume. In the stereo build "
+  "they alternate left and right, with the odd one up the middle."),
  ("mod_on", "MOD ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the chorus in and out. Made for a footswitch."),
  ("modulation", "MOD", 0.0, 100.0, 0.0, "pc", [],
@@ -142,8 +154,15 @@ CONTROLS = [
   "Tap tempo for the delay. Two presses set the time, from 20 to 2000 ms. "
   "Longer than that is treated as a fresh start, not a tempo."),
  ("output", "OUTPUT", -60.0, 12.0, 0.0, "db", [],
-  "Output level, after everything. At -60 dB the plugin is silent."),
+  "Output level, after everything. Yours, always: no program moves it. At "
+  "-60 dB the plugin is silent."),
 ]
+
+# What a program overrides, and what stays the player's whatever is
+# selected. IN GAIN and OUTPUT are rig levels, the switches are feet.
+LIVE = ("program", "in_gain", "output", "fx", "fx_trigger", "tap")
+SWITCHES = ("gate_on", "comp_on", "de_ess_on", "drive_on",
+            "doubler_on", "mod_on", "delay_on", "reverb_on")
 
 OUTPUTS = [
  ("gr", "GR", -24.0, 0.0, 0.0, "db", [],
@@ -175,48 +194,86 @@ OUTPUTS = [
 # effect gets a usable amount even when its switch starts OFF, so the
 # footswitch has something to bring in rather than turning on silence.
 PRESETS = [
-    ("speech", "Speech", {
-        "low_cut": 120.0, "gate": -45.0, "comp": 35.0, "de_ess": 40.0,
-        "presence": 4.0, "air": 2.0,
-        "doubler": 20.0, "doubler_on": 0.0, "modulation": 25.0, "mod_on": 0.0,
-        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 12.0,
-        "delay_on": 0.0, "reverb": 25.0, "reverb_mix": 12.0, "reverb_on": 0.0,
-        "drive": 15.0, "drive_on": 0.0}),
-    ("stage", "Stage Dry", {
-        "low_cut": 100.0, "gate": -42.0, "comp": 45.0, "de_ess": 30.0,
-        "body": -2.0, "presence": 3.0, "air": 2.0,
-        "doubler": 25.0, "doubler_on": 0.0, "modulation": 30.0, "mod_on": 0.0,
-        "delay_time": 350.0, "delay_repeats": 25.0, "delay_mix": 14.0,
-        "delay_on": 0.0, "reverb": 35.0, "reverb_mix": 12.0,
-        "drive": 20.0, "drive_on": 0.0}),
-    ("ballad", "Ballad", {
-        "low_cut": 90.0, "gate": -48.0, "comp": 45.0, "de_ess": 30.0,
-        "body": 2.0, "air": 3.0,
-        "doubler": 25.0, "modulation": 30.0, "mod_on": 0.0,
-        "delay_time": 420.0, "delay_repeats": 25.0, "delay_mix": 16.0,
-        "reverb": 55.0, "reverb_mix": 26.0,
-        "drive": 15.0, "drive_on": 0.0}),
-    ("rock", "Rock", {
-        "low_cut": 130.0, "gate": -40.0, "comp": 55.0, "de_ess": 45.0,
-        "presence": 5.0, "air": 2.0, "drive": 35.0,
-        "doubler": 25.0, "doubler_on": 0.0, "modulation": 25.0, "mod_on": 0.0,
-        "delay_time": 120.0, "delay_repeats": 20.0, "delay_mix": 10.0,
-        "reverb": 30.0, "reverb_mix": 14.0}),
-    ("wide", "Wide", {
-        "low_cut": 90.0, "gate": -48.0, "comp": 40.0, "de_ess": 30.0,
-        "air": 4.0,
-        "doubler": 60.0, "modulation": 40.0, "mod_speed": 0.4,
-        "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 10.0,
-        "delay_on": 0.0, "reverb": 60.0, "reverb_mix": 26.0,
-        "drive": 15.0, "drive_on": 0.0}),
-    ("cathedral", "Cathedral", {
-        "low_cut": 110.0, "gate": -46.0, "comp": 40.0, "de_ess": 35.0,
-        "air": 3.0, "doubler": 30.0,
+    # key, label (for the preset list), name on the device screen (8 max),
+    # and what it changes. Everything else is written at its default.
+    ("speech", "Speech", "SPEECH", {
+        "low_cut": 120.0, "gate": -45.0, "comp": 30.0, "de_ess": 40.0,
+        "presence": 3.0, "air": 1.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 20.0, "voices": 2.0, "doubler_on": 0.0,
         "modulation": 25.0, "mod_on": 0.0,
-        "delay_time": 600.0, "delay_repeats": 45.0, "delay_mix": 20.0,
-        "reverb": 100.0, "reverb_mix": 40.0,
-        "drive": 15.0, "drive_on": 0.0}),
+        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 10.0,
+        "delay_on": 0.0, "reverb": 25.0, "reverb_mix": 10.0, "reverb_on": 0.0}),
+    ("stage", "Stage Dry", "STAGE", {
+        "low_cut": 100.0, "gate": -42.0, "comp": 32.0, "de_ess": 30.0,
+        "body": -2.0, "presence": 2.0, "air": 2.0, "drive": 20.0, "drive_on": 0.0,
+        "doubler": 25.0, "voices": 2.0, "doubler_on": 0.0,
+        "modulation": 30.0, "mod_on": 0.0,
+        "delay_time": 350.0, "delay_repeats": 25.0, "delay_mix": 12.0,
+        "delay_on": 0.0, "reverb": 35.0, "reverb_mix": 10.0}),
+    ("ballad", "Ballad", "BALLAD", {
+        "low_cut": 90.0, "gate": -48.0, "comp": 30.0, "de_ess": 30.0,
+        "body": 2.0, "air": 2.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 25.0, "voices": 3.0,
+        "modulation": 30.0, "mod_on": 0.0,
+        "delay_time": 420.0, "delay_repeats": 25.0, "delay_mix": 12.0,
+        "reverb": 55.0, "reverb_mix": 16.0}),
+    ("rock", "Rock", "ROCK", {
+        "low_cut": 130.0, "gate": -40.0, "comp": 34.0, "de_ess": 45.0,
+        "presence": 4.0, "air": 1.0, "drive": 22.0,
+        "doubler": 25.0, "voices": 2.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 120.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "reverb": 30.0, "reverb_mix": 10.0}),
+    ("wide", "Wide", "WIDE", {
+        "low_cut": 90.0, "gate": -48.0, "comp": 30.0, "de_ess": 30.0,
+        "air": 3.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 55.0, "voices": 3.0,
+        "modulation": 40.0, "mod_speed": 0.4,
+        "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 60.0, "reverb_mix": 20.0}),
+    ("cathedral", "Cathedral", "CATHEDRL", {
+        "low_cut": 110.0, "gate": -46.0, "comp": 26.0, "de_ess": 35.0,
+        "air": 2.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 25.0, "voices": 3.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 600.0, "delay_repeats": 45.0, "delay_mix": 11.0,
+        "reverb": 100.0, "reverb_mix": 22.0}),
+    ("choir", "Choir", "CHOIR", {
+        "low_cut": 100.0, "gate": -46.0, "comp": 28.0, "de_ess": 30.0,
+        "body": 1.0, "air": 2.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 60.0, "voices": 4.0,
+        "modulation": 45.0, "mod_speed": 0.35,
+        "delay_time": 350.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 70.0, "reverb_mix": 18.0}),
+    ("slap", "Slapback", "SLAP", {
+        "low_cut": 120.0, "gate": -42.0, "comp": 32.0, "de_ess": 35.0,
+        "presence": 3.0, "drive": 25.0,
+        "doubler": 20.0, "voices": 2.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 95.0, "delay_repeats": 8.0, "delay_mix": 18.0,
+        "reverb": 20.0, "reverb_mix": 8.0}),
+    ("ambient", "Ambient", "AMBIENT", {
+        "low_cut": 90.0, "gate": -50.0, "comp": 24.0, "de_ess": 30.0,
+        "air": 3.0, "drive": 15.0, "drive_on": 0.0,
+        "doubler": 30.0, "voices": 3.0,
+        "modulation": 30.0, "mod_speed": 0.3,
+        "delay_time": 700.0, "delay_repeats": 45.0, "delay_mix": 13.0,
+        "reverb": 85.0, "reverb_mix": 24.0}),
+    ("radio", "Radio", "RADIO", {
+        "low_cut": 250.0, "gate": -42.0, "comp": 40.0, "de_ess": 40.0,
+        "body": -8.0, "presence": 6.0, "air": -6.0, "drive": 50.0,
+        "doubler": 20.0, "voices": 2.0, "doubler_on": 0.0,
+        "modulation": 25.0, "mod_on": 0.0,
+        "delay_time": 200.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "delay_on": 0.0, "reverb": 20.0, "reverb_mix": 8.0, "reverb_on": 0.0}),
 ]
+
+# Scale points: the lists a knob walks through on the device.
+SCALE = {
+    "voices": [("2 voices", 2.0), ("3 voices", 3.0), ("4 voices", 4.0)],
+    "program": [("Manual", 0.0)] + [(p[1], float(i + 1))
+                                    for i, p in enumerate(PRESETS)],
+}
 
 # Triggers are left out on purpose: a preset that presses TAP would set a
 # tempo the moment it loads.
@@ -240,7 +297,7 @@ def preset_uri(plugin_uri, suffix, key):
 def write_presets(path):
     out = [PRESET_HEAD]
     for uri, suffix in PLUGINS:
-        for key, label, values in PRESETS:
+        for key, label, _short, values in PRESETS:
             unknown = [k for k in values if k not in [c[0] for c in CONTROLS]]
             if unknown:
                 raise SystemExit("preset %s names no such port: %s" % (key, unknown))
@@ -281,7 +338,7 @@ MANIFEST_HEAD = """@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 def write_manifest(path):
     out = [MANIFEST_HEAD]
     for uri, suffix in PLUGINS:
-        for key, _label, _values in PRESETS:
+        for key, _label, _short, _values in PRESETS:
             out.append("<%s>\n    a pset:Preset ;\n    lv2:appliesTo <%s> ;\n"
                        "    rdfs:seeAlso <presets.ttl> .\n"
                        % (preset_uri(uri, suffix, key), uri))
@@ -305,6 +362,18 @@ def fmt(v):
     return s
 
 
+def scale_block(symbol):
+    """The list a knob walks through, if this control has one."""
+    pts = SCALE.get(symbol)
+    if not pts:
+        return []
+    out = []
+    for label, value in pts:
+        out.append('            [ rdfs:label "%s" ; rdf:value %s ]'
+                   % (label, fmt(value)))
+    return ["        lv2:scalePoint\n" + " ,\n".join(out) + " ;"]
+
+
 def port_block(index, kind, direction, symbol, name, comment,
                mn=None, mx=None, default=None, unit=None, props=()):
     out = ["        a lv2:%s , lv2:%s ;" % (kind, direction),
@@ -319,6 +388,7 @@ def port_block(index, kind, direction, symbol, name, comment,
         out.append("        lv2:maximum %s ;" % fmt(mx))
     if unit:
         out.append("        units:unit units:%s ;" % unit)
+    out += scale_block(symbol)
     if comment:
         out.append('        rdfs:comment "%s"' % comment)
     else:                      # nothing may end with a semicolon
@@ -347,6 +417,88 @@ def write(path, uri, name, label, audio):
     return index
 
 
+PROGRAM_H = """/* Generated by make_ttl.py - DO NOT EDIT.
+ *
+ * The built-in programs, as the plugin reads them. The same numbers go
+ * into presets.ttl, where they are written to ports instead; a program
+ * selected on the PROGRAM control and the preset of the same name loaded
+ * from the list must sound identical, and the test bench checks exactly
+ * that by running both and subtracting.
+ *
+ * Regenerate with:  python3 make_ttl.py
+ */
+
+#define N_PROGRAM     %(n_program)d
+#define N_PROGRAM_COL %(n_col)d
+
+/* Eight characters at most: the device truncates silently. */
+static const char* const program_name[N_PROGRAM] = {
+%(names)s};
+
+/* Which column of program_value holds a control, -1 for the ones a
+   program never touches: the rig levels and the switches. */
+static const int8_t program_col[CTL_COUNT] = {
+%(cols)s};
+
+static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
+%(values)s};
+
+/* Switch positions, in the order of SwitchIndex. A program ADOPTS these
+   when it is selected and then lets go: a foot on a switch must always
+   win, or a footswitch stops working the moment a program is chosen. */
+static const uint8_t program_switch[N_PROGRAM][%(n_switch)d] = {
+%(switches)s};
+"""
+
+
+def write_programs(path):
+    cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
+    col = {}
+    for i, c in enumerate(cont):
+        col[c[0]] = i
+
+    names = '    "MANUAL",\n'
+    for _k, _label, short, _v in PRESETS:
+        if len(short) > 8 or short != short.upper():
+            raise SystemExit("program name %r must be 8 upper-case characters "
+                             "or fewer" % short)
+        names += '    "%s",\n' % short
+
+    cols = ""
+    for symbol, _n, _mn, _mx, _d, _u, _p, _c in CONTROLS:
+        cols += "    %d,   /* %s */\n" % (col.get(symbol, -1), symbol)
+    for symbol, _n, _mn, _mx, _d, _u, _p, _c in OUTPUTS:
+        cols += "    -1,  /* %s */\n" % symbol
+
+    def row(values):
+        out = []
+        for c in cont:
+            symbol, _n, mn, mx, default, _u, _p, _cm = c
+            v = values.get(symbol, default)
+            if not mn <= v <= mx:
+                raise SystemExit("%s = %s is outside %s..%s" % (symbol, v, mn, mx))
+            out.append("%sf" % fmt(v))
+        return "    { " + ", ".join(out) + " },\n"
+
+    values = row({})                      # MANUAL, never read
+    for _k, _label, _s, v in PRESETS:
+        values += row(v)
+
+    def srow(v):
+        return ("    { " + ", ".join("%d" % int(v.get(s, 1.0)) for s in SWITCHES)
+                + " },\n")
+
+    switches = srow({})
+    for _k, _label, _s, v in PRESETS:
+        switches += srow(v)
+
+    open(path, "w").write(PROGRAM_H % {
+        "n_program": len(PRESETS) + 1, "n_col": len(cont),
+        "n_switch": len(SWITCHES), "names": names, "cols": cols,
+        "values": values, "switches": switches})
+    return len(cont)
+
+
 if __name__ == "__main__":
     n = write("voice.ttl", "http://remy-live.github.io/lv2/voice",
               "Voice", "VOICE", MONO_AUDIO)
@@ -354,6 +506,9 @@ if __name__ == "__main__":
               "Voice Stereo", "VOICE ST", STEREO_AUDIO)
     p = write_presets("presets.ttl")
     write_manifest("manifest.ttl")
-    print("voice.ttl: %d ports, voice_stereo.ttl: %d ports, presets.ttl: %d"
-          % (n, m, p))
+    c = write_programs("programs.h")
+    print("voice.ttl: %d ports, voice_stereo.ttl: %d ports, presets.ttl: %d,"
+          " programs.h: %d programs x %d controls"
+          % (n, m, p, len(PRESETS) + 1, c))
+    print("PROGRAM must run 0..%d in voice.c's ctl_spec" % len(PRESETS))
     sys.exit(0)

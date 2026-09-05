@@ -5,6 +5,7 @@
 @prefix mod:    <http://moddevices.com/ns/mod#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 
 <http://remy-live.github.io/lv2/voice#stereo>
@@ -19,7 +20,7 @@
 
     rdfs:comment "A vocal channel strip and effects rack, with no pitch detection anywhere in it: gate, compressor, de-esser, low cut, three tone bands, drive, three-voice doubler, chorus, tap delay and reverb. Every effect has its own switch for a footswitch, and one master switch feeds them all or stops feeding them. Switching off stops the send, not the return, so the delay and the reverb ring out instead of being chopped." ;
 
-    lv2:minorVersion 2 ;
+    lv2:minorVersion 3 ;
     lv2:microVersion 0 ;
 
     lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl ;
@@ -50,16 +51,38 @@
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
         lv2:index 4 ;
+        lv2:symbol "program" ;
+        lv2:name "PROGRAM" ;
+        lv2:portProperty lv2:integer , lv2:enumeration , pprops:hasStrictBounds ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 10.0 ;
+        lv2:scalePoint
+            [ rdfs:label "Manual" ; rdf:value 0.0 ] ,
+            [ rdfs:label "Speech" ; rdf:value 1.0 ] ,
+            [ rdfs:label "Stage Dry" ; rdf:value 2.0 ] ,
+            [ rdfs:label "Ballad" ; rdf:value 3.0 ] ,
+            [ rdfs:label "Rock" ; rdf:value 4.0 ] ,
+            [ rdfs:label "Wide" ; rdf:value 5.0 ] ,
+            [ rdfs:label "Cathedral" ; rdf:value 6.0 ] ,
+            [ rdfs:label "Choir" ; rdf:value 7.0 ] ,
+            [ rdfs:label "Slapback" ; rdf:value 8.0 ] ,
+            [ rdfs:label "Ambient" ; rdf:value 9.0 ] ,
+            [ rdfs:label "Radio" ; rdf:value 10.0 ] ;
+        rdfs:comment "Picks a built-in sound from the list. MANUAL means the controls below are yours; anything else overrides them for as long as it is selected, and IN GAIN, OUTPUT and every switch stay yours either way. Address it to an encoder to walk the list from the device."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 5 ;
         lv2:symbol "in_gain" ;
         lv2:name "IN GAIN" ;
         lv2:default 0.0 ;
         lv2:minimum -20.0 ;
         lv2:maximum 40.0 ;
         units:unit units:db ;
-        rdfs:comment "Gain applied to the input, before everything else. This is a rig setting, not a sound: no preset touches it, so what you set here survives changing preset."
+        rdfs:comment "Gain applied to the input, before everything else. This is a rig setting, not a sound: no preset and no program touches it, so what you set here survives everything."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 5 ;
+        lv2:index 6 ;
         lv2:symbol "low_cut" ;
         lv2:name "LOW CUT" ;
         lv2:default 90.0 ;
@@ -69,7 +92,7 @@
         rdfs:comment "High-pass filter on the way in, 6 dB per octave. Takes out stage rumble, handling noise and plosives before they reach the gate. At 0 Hz it is off."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 6 ;
+        lv2:index 7 ;
         lv2:symbol "gate_on" ;
         lv2:name "GATE ON" ;
         lv2:portProperty lv2:toggled ;
@@ -79,7 +102,7 @@
         rdfs:comment "Switches the gate in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 7 ;
+        lv2:index 8 ;
         lv2:symbol "gate" ;
         lv2:name "GATE" ;
         lv2:default -80.0 ;
@@ -89,7 +112,7 @@
         rdfs:comment "Gate threshold. Below it the channel closes over about 120 ms, with 6 dB of hysteresis and an 80 ms hold so a held note does not chatter. At -80 dB the gate does nothing whatever its switch says."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 8 ;
+        lv2:index 9 ;
         lv2:symbol "comp_on" ;
         lv2:name "COMP ON" ;
         lv2:portProperty lv2:toggled ;
@@ -99,17 +122,17 @@
         rdfs:comment "Switches the compressor in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 9 ;
+        lv2:index 10 ;
         lv2:symbol "comp" ;
         lv2:name "COMP" ;
         lv2:default 30.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 100.0 ;
         units:unit units:pc ;
-        rdfs:comment "Compression amount. One control: it lowers the threshold and raises the ratio together, from off to -40 dB at 6:1. What it gives back is what it takes off a voice at -12 dBFS, so turning it up changes the sound and not how loud you are. The GR output says how hard it is working."
+        rdfs:comment "Compression amount. One control: it lowers the threshold and raises the ratio together, from off to -40 dB at 6:1. What it gives back is most of what it takes off a voice at -12 dBFS, so turning it up changes the sound rather than how loud you are. The GR output says how hard it is working."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 10 ;
+        lv2:index 11 ;
         lv2:symbol "de_ess_on" ;
         lv2:name "DE-ESS ON" ;
         lv2:portProperty lv2:toggled ;
@@ -119,7 +142,7 @@
         rdfs:comment "Switches the de-esser in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 11 ;
+        lv2:index 12 ;
         lv2:symbol "de_ess" ;
         lv2:name "DE-ESS" ;
         lv2:default 0.0 ;
@@ -129,7 +152,7 @@
         rdfs:comment "Tames sibilance by compressing the band above 5.5 kHz alone, so an S loses its edge without the whole word going dull."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 12 ;
+        lv2:index 13 ;
         lv2:symbol "body" ;
         lv2:name "BODY" ;
         lv2:default 0.0 ;
@@ -139,7 +162,7 @@
         rdfs:comment "Low band, below about 240 Hz. Up for weight, down when the microphone is close and the proximity effect has already added it."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 13 ;
+        lv2:index 14 ;
         lv2:symbol "presence" ;
         lv2:name "PRESENCE" ;
         lv2:default 0.0 ;
@@ -149,7 +172,7 @@
         rdfs:comment "Middle band, roughly 1 to 4.5 kHz. This is where a voice cuts through a band, and where it gets honky if pushed too far."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 14 ;
+        lv2:index 15 ;
         lv2:symbol "air" ;
         lv2:name "AIR" ;
         lv2:default 0.0 ;
@@ -159,7 +182,7 @@
         rdfs:comment "Top band, above about 6 kHz. Breath and detail. Use the de-esser if adding air also brings the sibilance up."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 15 ;
+        lv2:index 16 ;
         lv2:symbol "drive_on" ;
         lv2:name "DRIVE ON" ;
         lv2:portProperty lv2:toggled ;
@@ -169,7 +192,7 @@
         rdfs:comment "Switches the saturation in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 16 ;
+        lv2:index 17 ;
         lv2:symbol "drive" ;
         lv2:name "DRIVE" ;
         lv2:default 0.0 ;
@@ -179,7 +202,7 @@
         rdfs:comment "Soft saturation, level-matched at -12 dBFS like the compressor: it adds harmonics and holds down what the compressor left, without making you louder."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 17 ;
+        lv2:index 18 ;
         lv2:symbol "doubler_on" ;
         lv2:name "DOUBLE ON" ;
         lv2:portProperty lv2:toggled ;
@@ -189,17 +212,31 @@
         rdfs:comment "Switches the doubler in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 18 ;
+        lv2:index 19 ;
         lv2:symbol "doubler" ;
         lv2:name "DOUBLE" ;
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 100.0 ;
         units:unit units:pc ;
-        rdfs:comment "Three copies of the voice, twenty to forty milliseconds late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. In the stereo build one goes left, one right and one up the middle."
+        rdfs:comment "How much of the doubled voices is heard. They arrive twenty to forty milliseconds late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 19 ;
+        lv2:index 20 ;
+        lv2:symbol "voices" ;
+        lv2:name "VOICES" ;
+        lv2:portProperty lv2:integer , lv2:enumeration , pprops:hasStrictBounds ;
+        lv2:default 3.0 ;
+        lv2:minimum 2.0 ;
+        lv2:maximum 4.0 ;
+        lv2:scalePoint
+            [ rdfs:label "2 voices" ; rdf:value 2.0 ] ,
+            [ rdfs:label "3 voices" ; rdf:value 3.0 ] ,
+            [ rdfs:label "4 voices" ; rdf:value 4.0 ] ;
+        rdfs:comment "How many doubled voices: two for a straight double, three for a thicker one, four for a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 21 ;
         lv2:symbol "mod_on" ;
         lv2:name "MOD ON" ;
         lv2:portProperty lv2:toggled ;
@@ -209,7 +246,7 @@
         rdfs:comment "Switches the chorus in and out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 20 ;
+        lv2:index 22 ;
         lv2:symbol "modulation" ;
         lv2:name "MOD" ;
         lv2:default 0.0 ;
@@ -219,7 +256,7 @@
         rdfs:comment "Chorus. Sets the depth and the amount together. In the stereo build the two sides move a quarter cycle apart, which is where the width comes from."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 21 ;
+        lv2:index 23 ;
         lv2:symbol "mod_speed" ;
         lv2:name "MOD SPEED" ;
         lv2:portProperty pprops:logarithmic ;
@@ -230,7 +267,7 @@
         rdfs:comment "Speed of the chorus. Slow is a drift, fast is a vibrato."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 22 ;
+        lv2:index 24 ;
         lv2:symbol "delay_on" ;
         lv2:name "DELAY ON" ;
         lv2:portProperty lv2:toggled ;
@@ -240,7 +277,7 @@
         rdfs:comment "Switches the delay in and out. It cuts what goes IN, so switching off lets the repeats ring out instead of chopping them. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 23 ;
+        lv2:index 25 ;
         lv2:symbol "delay_time" ;
         lv2:name "DELAY" ;
         lv2:portProperty pprops:logarithmic ;
@@ -251,7 +288,7 @@
         rdfs:comment "Delay time. Two presses of TAP override it; moving this control takes it back. TIME publishes the value actually in force."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 24 ;
+        lv2:index 26 ;
         lv2:symbol "delay_repeats" ;
         lv2:name "REPEATS" ;
         lv2:default 30.0 ;
@@ -261,7 +298,7 @@
         rdfs:comment "Delay feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice instead of fighting it."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 25 ;
+        lv2:index 27 ;
         lv2:symbol "delay_mix" ;
         lv2:name "DELAY MIX" ;
         lv2:default 0.0 ;
@@ -271,7 +308,7 @@
         rdfs:comment "How much delay is heard. The delay also feeds the reverb, so repeats are in the room rather than in front of it."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 26 ;
+        lv2:index 28 ;
         lv2:symbol "reverb_on" ;
         lv2:name "REVERB ON" ;
         lv2:portProperty lv2:toggled ;
@@ -281,7 +318,7 @@
         rdfs:comment "Switches the reverb in and out. Like the delay it cuts the send, so the tail rings out. Made for a footswitch."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 27 ;
+        lv2:index 29 ;
         lv2:symbol "reverb" ;
         lv2:name "REVERB" ;
         lv2:default 40.0 ;
@@ -291,7 +328,7 @@
         rdfs:comment "Tail length. Moves the size of the room and its damping together, from a small dry box to a long hall."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 28 ;
+        lv2:index 30 ;
         lv2:symbol "reverb_mix" ;
         lv2:name "REVERB MIX" ;
         lv2:default 0.0 ;
@@ -301,7 +338,7 @@
         rdfs:comment "How much reverb is heard. At 100 the tail sits at the same level as the voice."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 29 ;
+        lv2:index 31 ;
         lv2:symbol "fx" ;
         lv2:name "FX" ;
         lv2:portProperty lv2:toggled ;
@@ -311,7 +348,7 @@
         rdfs:comment "The master switch for all four effects at once. Off: their send is cut over 40 ms and the tails ring out instead of being chopped. Each effect also has its own switch; this one is on top of them."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 30 ;
+        lv2:index 32 ;
         lv2:symbol "fx_trigger" ;
         lv2:name "FX TRIGGER" ;
         lv2:portProperty lv2:toggled , pprops:trigger ;
@@ -321,7 +358,7 @@
         rdfs:comment "Each pulse flips the FX state. Meant for MIDI: a port can only take one addressing, so this doubles the toggle rather than replacing it."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 31 ;
+        lv2:index 33 ;
         lv2:symbol "tap" ;
         lv2:name "TAP" ;
         lv2:portProperty lv2:toggled , pprops:trigger ;
@@ -331,17 +368,17 @@
         rdfs:comment "Tap tempo for the delay. Two presses set the time, from 20 to 2000 ms. Longer than that is treated as a fresh start, not a tempo."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 32 ;
+        lv2:index 34 ;
         lv2:symbol "output" ;
         lv2:name "OUTPUT" ;
         lv2:default 0.0 ;
         lv2:minimum -60.0 ;
         lv2:maximum 12.0 ;
         units:unit units:db ;
-        rdfs:comment "Output level, after everything. At -60 dB the plugin is silent."
+        rdfs:comment "Output level, after everything. Yours, always: no program moves it. At -60 dB the plugin is silent."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 33 ;
+        lv2:index 35 ;
         lv2:symbol "gr" ;
         lv2:name "GR" ;
         lv2:default 0.0 ;
@@ -351,7 +388,7 @@
         rdfs:comment "Output. Compressor gain reduction in dB, at its worst over the last block. 0 means the compressor is doing nothing."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 34 ;
+        lv2:index 36 ;
         lv2:symbol "level" ;
         lv2:name "LEVEL" ;
         lv2:default 0.0 ;
@@ -360,7 +397,7 @@
         rdfs:comment "Output. Peak level leaving the plugin, 0 to 1, with a 300 ms fall so a peak stays visible."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 35 ;
+        lv2:index 37 ;
         lv2:symbol "gate_open" ;
         lv2:name "GATE OPEN" ;
         lv2:portProperty lv2:toggled ;
@@ -370,7 +407,7 @@
         rdfs:comment "Output. 1 while the gate is open."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 36 ;
+        lv2:index 38 ;
         lv2:symbol "fx_state" ;
         lv2:name "FX STATE" ;
         lv2:portProperty lv2:toggled ;
@@ -380,7 +417,7 @@
         rdfs:comment "Output. The FX state actually in force. It exists because the trigger and the toggle drive one state, and a plugin must not write back into either."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 37 ;
+        lv2:index 39 ;
         lv2:symbol "time_out" ;
         lv2:name "TIME" ;
         lv2:default 400.0 ;

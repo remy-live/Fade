@@ -170,8 +170,9 @@ code ever runs, and that is where the bugs live.
 [`voice/`](voice/) is a separate bundle with its own build, its own
 descriptors and its own test bench: **Voice** and **Voice Stereo**, a
 vocal channel strip and effects rack — gate, compressor, de-esser, low
-cut, three tone bands, drive, a three-voice doubler, chorus, tap delay and
-reverb, each with its own footswitchable on/off. It replaces what a
+cut, three tone bands, drive, a two-to-four-voice doubler, chorus, tap
+delay and reverb, each with its own footswitchable on/off, and ten
+built-in sounds on a list you can walk from the device. It replaces what a
 VoiceLive does to a voice, minus the pitch tracking, which is the half
 that fails on stage.
 

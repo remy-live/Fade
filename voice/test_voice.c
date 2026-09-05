@@ -1524,6 +1524,230 @@ static void essai_comp_niveau(void)
 }
 
 /* ================================================================== */
+/* The program list                                                    */
+/* ================================================================== */
+
+/* A sung phrase: loud lines, quiet lines, breaths between them. Loudness
+   through a compressor is not loudness through a wire - density is what
+   the ear adds up - so a preset measured on steady noise can pass while
+   the same preset shouts at a singer. This bench measures on a phrase. */
+static void phrase(float* buf, size_t n, double sr)
+{
+    double ph = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double t   = (double)i / sr;
+        const double bar = fmod(t, 2.4);
+        double env = (bar < 0.9) ? 0.30 : (bar < 1.2) ? 0.02
+                   : (bar < 1.9) ? 0.09 : 0.004;
+        env *= 0.6 + 0.4 * sin(2.0 * PI * 3.1 * t);       /* syllables */
+        const double f = 180.0 + 40.0 * sin(2.0 * PI * 0.7 * t);
+        ph += 2.0 * PI * f / sr;
+        buf[i] = (float)(env * (sin(ph) + 0.5 * sin(2 * ph) + 0.25 * sin(3 * ph)
+                              + 0.12 * sin(4 * ph)) * 0.55);
+    }
+}
+
+/* Runs a phrase through one setting and returns its level in dB. */
+static double niveau_phrase(const float* val, const float* in, size_t total,
+                            double sr, float* sortie)
+{
+    const uint32_t N = 128;
+    Banc b;
+    ouvrir(&b, 0, sr, N, 0);
+    for (int i = 0; i < (int)CTL_COUNT; ++i) { b.ctl[i] = val[i]; }
+    b.d->activate(b.h);          /* with the ports already where they belong */
+
+    double e = 0.0;
+    size_t done = 0, compte = 0;
+    const size_t saute = (size_t)(sr * 2.0);
+    while (done + N <= total) {
+        memcpy(b.in[0], in + done, N * sizeof(float));
+        tourner(&b);
+        if (sortie) { memcpy(sortie + done, b.out[0], N * sizeof(float)); }
+        if (done > saute) {
+            for (uint32_t i = 0; i < N; ++i) {
+                e += (double)b.out[0][i] * (double)b.out[0][i];
+            }
+            compte += N;
+        }
+        done += N;
+    }
+    fermer(&b);
+    return (compte && e > 0.0) ? 10.0 * log10(e / (double)compte) : -200.0;
+}
+
+static void essai_sonie_presets(void)
+{
+    Preset p[24];
+    const int nb = lire_presets(p, 24);
+    const double sr = 48000.0;
+    const size_t total = (size_t)(sr * 12.0);
+    float* in = (float*)malloc(total * sizeof(float));
+    phrase(in, total, sr);
+
+    float nu[CTL_COUNT];
+    for (int i = 0; i < (int)CTL_COUNT; ++i) { nu[i] = ctl_spec[i].def; }
+    nu[CTL_COMP] = 0.0f;
+    nu[CTL_LOW_CUT] = 0.0f;
+    const double ref = niveau_phrase(nu, in, total, sr, NULL);
+
+    for (int k = 0; k < nb; ++k) {
+        char quoi[96];
+        snprintf(quoi, sizeof(quoi), "\"%.20s\" against a transparent plugin",
+                 p[k].label);
+        verifie_entre(quoi, niveau_phrase(p[k].val, in, total, sr, NULL) - ref,
+                      -2.5, 2.0);
+    }
+    free(in);
+}
+
+/* Picking "Ballad" from the list and selecting program 3 must give the
+   same sound, sample for sample. They come from one table in make_ttl.py,
+   but by two completely different routes: one writes ports, the other is
+   read straight out of programs.h. */
+static void essai_programme_egale_preset(void)
+{
+    Preset p[24];
+    const int nb = lire_presets(p, 24);
+    const double sr = 48000.0;
+    const size_t total = (size_t)(sr * 6.0);
+    float* in  = (float*)malloc(total * sizeof(float));
+    float* a   = (float*)malloc(total * sizeof(float));
+    float* b   = (float*)malloc(total * sizeof(float));
+    phrase(in, total, sr);
+
+    double pire = 0.0;
+    for (int k = 0; k < nb; ++k) {
+        float par_port[CTL_COUNT], par_liste[CTL_COUNT];
+        memcpy(par_port, p[k].val, sizeof(par_port));
+        /* the list route: everything at its default except the switches,
+           which belong to the player either way, and the program itself */
+        for (int i = 0; i < (int)CTL_COUNT; ++i) { par_liste[i] = ctl_spec[i].def; }
+        for (int j = 0; j < (int)SW_COUNT; ++j) {
+            par_liste[switch_ctl[j]] = p[k].val[switch_ctl[j]];
+        }
+        par_liste[CTL_PROGRAM] = (float)(k + 1);
+
+        niveau_phrase(par_port,  in, total, sr, a);
+        niveau_phrase(par_liste, in, total, sr, b);
+        for (size_t i = 0; i < total; ++i) {
+            const double d = fabs((double)a[i] - (double)b[i]);
+            if (d > pire) { pire = d; }
+        }
+    }
+    verifie("every program is its preset, sample for sample", pire, 0.0, 0.0);
+    free(in); free(a); free(b);
+}
+
+static void essai_programme_interrupteurs(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    /* Speech is program 1 and starts with the delay switched off */
+    b.ctl[CTL_PROGRAM] = 1.0f;
+    silence(&b); tourner(&b);
+    verifie_vrai("selecting a program adopts its switch positions",
+                 program_switch[1][SW_DELAY] == 0);
+
+    /* ... and a foot on the switch takes it straight back */
+    b.ctl[CTL_DELAY_ON] = 0.0f;   /* move it, so the port is seen to change */
+    silence(&b); tourner(&b);
+    b.ctl[CTL_DELAY_ON] = 1.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_DELAY_TIME] = 200.0f;   /* ignored: the program owns the sound */
+    b.ctl[CTL_DELAY_MIX]  = 100.0f;   /* also ignored */
+    chauffer(&b, 2000.0);
+    verifie("a program overrides the knobs it owns",
+            (double)b.ctl[CTL_TIME_OUT], 300.0, 0.01);
+
+    /* MANUAL hands everything back */
+    b.ctl[CTL_PROGRAM] = 0.0f;
+    silence(&b); tourner(&b);
+    verifie("MANUAL hands the knobs back", (double)b.ctl[CTL_TIME_OUT], 200.0, 0.01);
+
+    fermer(&b);
+
+    /* IN GAIN and OUTPUT are never taken away. Measured on two fresh
+       instances rather than by turning the knob on one: a program with a
+       long reverb takes seconds to settle, and comparing before with
+       after on the same instance measures the settling, not the knob. */
+    double niveau[2];
+    for (int k = 0; k < 2; ++k) {
+        Banc c;
+        ouvrir(&c, 0, 48000.0, 128, 0);
+        c.ctl[CTL_PROGRAM] = 3.0f;                 /* Ballad */
+        c.ctl[CTL_COMP_ON] = 0.0f;
+        c.ctl[CTL_OUTPUT]  = k ? -20.0f : 0.0f;
+        c.d->activate(c.h);
+        niveau[k] = gain_db(&c, 500.0, 0.1, 400, 60);
+        fermer(&c);
+    }
+    verifie("OUTPUT stays the player's under a program",
+            niveau[1] - niveau[0], -20.0, 0.05);
+}
+
+static void essai_voix(void)
+{
+    /* Two, three or four voices must be a texture, not a volume. */
+    double niveau[5];
+    for (int n = 2; n <= 4; ++n) {
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        neutre(&b);
+        b.ctl[CTL_DOUBLER] = 100.0f;
+        b.ctl[CTL_VOICES]  = (float)n;
+        srand(5);
+        chauffer(&b, 300.0);
+        niveau[n] = gain_bruit_db(&b, 0.2, 40, 400);
+        fermer(&b);
+    }
+    verifie("three voices sit at the level of two", niveau[3], niveau[2], 0.6);
+    verifie("and so do four", niveau[4], niveau[2], 0.6);
+
+    /* but they are not the same signal */
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_DOUBLER] = 100.0f;
+    b.ctl[CTL_VOICES]  = 4.0f;
+    chauffer(&b, 300.0);
+    double bas = 1.0e9, haut = 0.0;
+    for (int k = 0; k < 2000; ++k) {
+        sinus(&b, 700.0, 0.2);
+        tourner(&b);
+        if (k > 200) {
+            const double c = crete(b.out[0], b.bloc);
+            if (c < bas)  { bas = c; }
+            if (c > haut) { haut = c; }
+        }
+    }
+    verifie_vrai("four voices drift like the others", haut > bas * 1.05);
+    fermer(&b);
+}
+
+static void essai_ecran_programme(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_PROGRAM, TOUTES_CAPS, (void*)0xE1);
+    verifie_vrai("the list shows MANUAL to start with",
+                 !strcmp(ecran.dernier_value, "MANUAL"));
+    b.ctl[CTL_PROGRAM] = 3.0f;
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and the name of whatever is picked",
+                 !strcmp(ecran.dernier_value, "BALLAD"));
+    verifie_vrai("under its own label", !strcmp(ecran.dernier_label, "PROGRAM"));
+
+    memset(&ecran, 0, sizeof(ecran));
+    adresser(&b, CTL_VOICES, TOUTES_CAPS, (void*)0xE2);
+    verifie_vrai("the voice count shows itself",
+                 !strcmp(ecran.dernier_label, "VOICES"));
+    fermer(&b);
+}
+
+/* ================================================================== */
 
 int main(void)
 {
@@ -1546,6 +1770,11 @@ int main(void)
                                            essai_interrupteurs_sans_clic();
     printf("Compressor level:\n");         essai_comp_niveau();
     printf("Presets:\n");                  essai_presets();
+    printf("Preset loudness, on a sung phrase:\n"); essai_sonie_presets();
+    printf("The program list:\n");          essai_programme_egale_preset();
+                                           essai_programme_interrupteurs();
+    printf("Doubled voices:\n");            essai_voix();
+    printf("Screen - the list:\n");         essai_ecran_programme();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
     printf("Stereo variant:\n");           essai_stereo();

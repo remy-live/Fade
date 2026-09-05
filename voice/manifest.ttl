@@ -42,6 +42,26 @@
     lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
     rdfs:seeAlso <presets.ttl> .
 
+<http://remy-live.github.io/lv2/voice#preset_choir>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_slap>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_ambient>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_radio>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
 <http://remy-live.github.io/lv2/voice#preset_speech_stereo>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
@@ -68,6 +88,26 @@
     rdfs:seeAlso <presets.ttl> .
 
 <http://remy-live.github.io/lv2/voice#preset_cathedral_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_choir_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_slap_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_ambient_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_radio_stereo>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
     rdfs:seeAlso <presets.ttl> .

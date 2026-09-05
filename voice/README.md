@@ -45,11 +45,37 @@ ring out instead of being chopped. That is the same idea the Fade plugin
 in this repository exists for. Every switch is a 40 ms ramp, so a foot on
 any of them fades rather than clicks.
 
+## The program list
+
+**PROGRAM** is a list, not a knob: MANUAL, then ten built-in sounds. Put it
+on an encoder and you can walk through them from the device.
+
+What a program takes over, and what stays yours, is a deliberate split:
+
+| | |
+|---|---|
+| The program owns | low cut, gate threshold, comp, de-ess, the three tone bands, drive, double, voices, mod, delay and reverb — everything that makes up *the sound* |
+| You always own | **IN GAIN** and **OUTPUT** (rig levels — a master volume that stops responding is a broken master volume), the **FX** master, **TAP**, and every effect switch |
+
+The switches are the subtle one. Selecting a program *adopts* its switch
+positions — pick Ballad and the doubler, delay and reverb come in with it —
+and then lets go: the moment you move a switch, that switch is yours again.
+A footswitch that stopped working because a program was chosen would be
+worse than no programs at all.
+
+Two consequences worth knowing. While a program is selected, turning a knob
+it owns does nothing — the device screen shows what is really in force, but
+the web UI knob will read whatever it last read, the same honest problem as
+the tapped tempo. And reloading a pedalboard takes the switch positions from
+the saved ports, not from the program, so a board comes back exactly as you
+left it.
+
 ## Controls
 
 | Control | What it does |
 |---|---|
-| **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. |
+| **PROGRAM** | The list of built-in sounds. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
+| **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. No preset and no program ever touches it. |
 | **LOW CUT** | 0–400 Hz, 6 dB/octave. Rumble, handling noise and plosives, before they reach the gate. At 0 it is off. |
 | **GATE** | Threshold, −80 to −20 dB. 6 dB of hysteresis and an 80 ms hold, so a held note does not chatter. At −80 dB it is off. |
 | **COMP** | 0–100 %. One control: it lowers the threshold and raises the ratio together, from off to −40 dB at 6:1. What it gives back is what it takes off a voice at −12 dBFS, so turning it up changes the sound, not how loud you are. |
@@ -59,7 +85,8 @@ any of them fades rather than clicks.
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation, level-matched at −12 dBFS: the colour changes, how loud you are does not. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
-| **DOUBLE** | 0–100 %. Three copies, 21/29/38 ms late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. In the stereo build one goes left, one right, one up the middle. |
+| **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 21 to 46 ms late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. |
+| **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
 | **MOD** / **MOD SPEED** | Chorus depth and rate, 0.05–8 Hz. The two sides move a quarter cycle apart in the stereo build. |
 | **DELAY** / **REPEATS** / **DELAY MIX** | 20–2000 ms, up to 95 % feedback. The repeats lose their top and their bottom each time round, so a long tail sits behind the voice. |
 | **REVERB** / **REVERB MIX** | Tail length and how much is heard. At 100 % mix the tail sits at the same level as the dry voice — measured, not guessed. |
@@ -91,33 +118,72 @@ the readout:
 | **DELAY** | The time in force, in ms — and the label reads `TAP` instead of `DELAY` when the tap owns it, rather than showing a knob position that is no longer true. |
 | **TAP** | The tempo in BPM, and the LED blinks it back at you. |
 | **FX** / **FX TRIGGER** | `ON` or `OFF`, green or dark. |
-| any effect switch | Its own name — `DELAY`, `REVERB`, `DOUBLE`… — with `ON` or `OFF` and the LED to match. |
+| any effect switch | Its own name — `DELAY`, `REVERB`, `DOUBLE`… — with `ON` or `OFF` and the LED to match. It shows what is actually in force, which after a program change is not always what the knob says. |
+| **PROGRAM** | The name of the sound in force: `MANUAL`, `BALLAD`, `CATHEDRL`… |
+| **VOICES** | How many voices the doubler is running. |
 
 ## Levels
 
-Every preset lands within about a decibel of unity, and the bench fails
-the build if one does not. Three rules get it there, and they are worth
-knowing because they also apply while you are turning knobs:
+Every program lands within about a decibel of a transparent plugin, measured
+on a *sung phrase* — loud lines, quiet lines, breaths between them — and the
+bench fails the build if one drifts outside ±2.5 dB. That measurement is the
+point: on steady noise every preset here already looked fine, because noise
+gives a compressor nothing to work on. Density is loudness, and only material
+with dynamics shows it.
 
-- **A preset never writes IN GAIN.** How loud the microphone is belongs to
-  the rig, not to the sound, so what you set survives changing preset.
+Three rules get them there, and they apply while you turn knobs too:
+
+- **Nothing but you writes IN GAIN.** How loud the microphone is belongs to
+  the rig, not to the sound.
 - **COMP gives back what it takes off a voice at −12 dBFS.** Turning it up
   compresses harder; it does not make you louder.
 - **DRIVE is matched at the same level**, so it changes the colour and not
   the volume.
 
-## Presets
+## Presets, and your own sounds
 
-Six, on both variants: Speech, Stage Dry, Ballad, Rock, Wide, Cathedral.
-Each one writes every control it does not name at its default, so loading
-a preset lands somewhere known instead of on top of half of whatever was
-there before. Neither trigger is ever written — a preset that pressed TAP
-would set a tempo as it loaded.
+Ten, on both variants, and they exist twice over: as entries in the PROGRAM
+list, and as LV2 presets in the plugin's own preset menu. Both come from one
+table in `make_ttl.py`, and the bench runs a phrase through both routes and
+subtracts — picking Ballad from the menu and selecting program 3 give the
+same samples, or the build stops.
 
-Every effect gets a usable amount even when its switch starts *off*, so
-the footswitch has something to bring in rather than turning on silence.
-Speech starts dry, Ballad with the doubler, the delay and the reverb in,
-Rock with drive and a slapback behind it.
+| | |
+|---|---|
+| **Speech** | dry, tight, a firm low cut. Everything wet is dialled in but switched off. |
+| **Stage Dry** | a working monitor sound, a hint of room |
+| **Ballad** | doubler, a slow delay, a real tail |
+| **Rock** | drive, presence, a short slapback |
+| **Wide** | doubler and chorus, a big room |
+| **Cathedral** | the longest tail there is, with the delay feeding it |
+| **Choir** | four voices, chorus, a hall behind them |
+| **Slapback** | 95 ms, one repeat, drive |
+| **Ambient** | a 700 ms delay into a long reverb |
+| **Radio** | narrow, driven, no wet at all |
+
+Each writes every control it does not name at its default, so loading one
+lands somewhere known instead of on top of half of whatever was there
+before. Neither trigger is ever written — a preset that pressed TAP would
+set a tempo as it loaded — and neither is IN GAIN.
+
+Every effect gets a usable amount even where its switch starts *off*, so the
+footswitch has something to bring in rather than turning on silence.
+
+### Your own, without snapshots
+
+Set **PROGRAM** to MANUAL, dial the sound you want, then use mod-ui's own
+**Save** on the plugin block. That writes a *plugin preset* — your settings,
+under your name, in the same menu as the ten above — and it is not a
+pedalboard snapshot: it belongs to the plugin, travels with it, and can be
+recalled without touching the board. On the device, that preset menu is
+addressable like any other control, so your own sounds land on an encoder
+next to the built-in ones.
+
+The one thing a saved preset cannot do is join the **PROGRAM** list: that
+list is compiled into the plugin. If you want your sound *there* — on the
+encoder, with a name on the screen — add it to `PRESETS` in `make_ttl.py`
+and rebuild; it becomes a program and an LV2 preset at the same time, and
+the bench will hold it to the same loudness as the rest.
 
 ## Install
 
@@ -190,7 +256,7 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-152 checks: the approximations against libm, every block of the chain
+182 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
 click it must not make, every preset for the level it lands on, the delay
 against a clock at three sample rates, and a simulated HMI screen. Without a simulated screen none of the
@@ -221,13 +287,23 @@ display code ever runs, and that is where the bugs live.
   which, on top of a preset that also moved IN GAIN, is why the first
   presets came out shouting. What is given back is now the reduction the
   same curve applies at the reference level: measured, not derived.
-- **The doubler is three voices**, at 21, 29 and 38 ms, drifting a few
-  cents each on LFOs at 0.13, 0.19 and 0.27 Hz — rates that share no
-  common period, so the three never line up into one wobble. They are
+- **The doubler runs two, three or four voices**, at 21, 29, 38 and 46 ms,
+  drifting a few cents each on LFOs at 0.13, 0.19, 0.27 and 0.09 Hz — rates that share no
+  common period, so they never line up into one wobble. Decorrelated copies
+  add in power, so the level is divided by the root of the count — written
+  out as a table, since there is no square root in this binary — and
+  changing VOICES changes the texture without changing the volume. They are
   filtered a shade darker than the lead: three bright copies sound like a
   phaser, three darker ones sound like people. At full mix the copies sit
   about 2.5 dB under the lead, which the bench measures by running the
   same noise through the plugin twice and subtracting.
+- **A program and its preset are one table.** `make_ttl.py` writes both
+  `presets.ttl`, which sets ports, and `programs.h`, which the plugin reads
+  directly; `check_descriptor.py` compares the two files entry by entry and
+  the bench compares the *audio* they produce, sample for sample. That test
+  found a real bug on its first run: `activate()` worked out which program
+  was in force halfway down, after the smoothed values had already been
+  initialised from the knobs.
 - **Every switch is a 40 ms ramp**, never a branch. The bench throws all
   eight while a note is playing and fails if the biggest sample-to-sample
   step during the throw is more than half again the biggest step while
@@ -256,7 +332,8 @@ display code ever runs, and that is where the bugs live.
 
 - No pitch detection, and therefore no harmony, no correction, no octave.
   That is the point, not an omission.
-- No MIDI input: every switch and the tap take a control port each, which
+- No MIDI input: every switch, the program list and the tap take a control
+  port each, which
   is what the Dwarf addresses to a footswitch or to a MIDI CC.
 - LOW CUT and the three tone bands have no switch of their own. They have
   neutral positions — 0 Hz and 0 dB — and a switch that only duplicates a

@@ -201,6 +201,85 @@ dire("both variants have the same presets",
 dire("no preset presses a trigger",
      not re.search(r'lv2:symbol "(tap|fx_trigger)"', pres))
 
+# --- programs.h against presets.ttl ---
+# The plugin reads its programs from a C table; the preset list writes the
+# same sounds to ports. If the two drift, picking "Ballad" from the list
+# and picking it on the PROGRAM control give different sounds, and nobody
+# would think to look here.
+hdr = open('programs.h').read()
+n_prog = int(re.search(r'#define N_PROGRAM\s+(\d+)', hdr).group(1))
+def tableau(nom):
+    """The body of one generated array, found by its declaration rather
+    than by its name alone - the name also appears in the comments."""
+    m = re.search(r'%s\[[^\]]*\](?:\[[^\]]*\])? = \{(.*?)\n\};' % nom, hdr, re.S)
+    return m.group(1) if m else ''
+
+
+h_names = re.findall(r'"([^"]*)"', tableau('program_name'))
+h_col = [int(x) for x in re.findall(r'^\s*(-?\d+),', tableau('program_col'), re.M)]
+h_rows = [[float(v.rstrip('f')) for v in row.split(',') if v.strip()]
+          for row in re.findall(r'\{ ([^}]*) \}', tableau('program_value'))]
+h_sw = [[int(v) for v in row.split(',') if v.strip()]
+        for row in re.findall(r'\{ ([^}]*) \}', tableau('program_switch'))]
+
+dire("programs.h has one row per program and one more for MANUAL",
+     len(h_rows) == n_prog and len(h_sw) == n_prog and len(h_names) == n_prog,
+     "%d rows / %d programs" % (len(h_rows), n_prog))
+dire("programs.h covers every control", len(h_col) == len(c_table),
+     "%d / %d" % (len(h_col), len(c_table)))
+dire("every program name fits the screen",
+     all(len(n) <= 8 and n == n.upper() for n in h_names),
+     " ".join(n for n in h_names if len(n) > 8 or n != n.upper()))
+dire("the list on the PROGRAM control is as long as the program table",
+     by_symbol['program']['max'] == n_prog - 1,
+     "max %s / %d programs" % (by_symbol['program']['max'], n_prog))
+
+# the ttl scale points
+def scale_points(symbol):
+    for p in mono:
+        if p['symbol'] == symbol:
+            return re.findall(r'rdfs:label "([^"]+)" ; rdf:value ([-\d.]+)', p['text'])
+    return []
+
+
+dire("PROGRAM offers one scale point per program",
+     len(scale_points('program')) == n_prog,
+     "%d points" % len(scale_points('program')))
+dire("VOICES offers two, three and four",
+     [v for _l, v in scale_points('voices')] == ['2.0', '3.0', '4.0'])
+
+# and the values themselves, program by program
+ctl_by_symbol = [p for p in mono if p['control'] and p['input']]
+col_of = dict((ctl_by_symbol[i]['symbol'], h_col[i]) for i in range(len(h_col))
+              if i < len(ctl_by_symbol))
+sw_order = re.findall(r'CTL_(\w+_ON)', src.split('switch_ctl[SW_COUNT]')[1].split('};')[0])
+sw_symbols = [w.lower() for w in sw_order]
+dire("the switch order in voice.c is the one programs.h was written for",
+     len(sw_symbols) == len(h_sw[0]), " ".join(sw_symbols))
+
+desaccord = []
+for prog_index, (uri, applique, label, corps) in enumerate(
+        [b for b in blocs if not b[1].endswith('#stereo')], start=1):
+    valeurs = dict((sym, float(val)) for sym, val in
+                   re.findall(r'lv2:symbol "([^"]+)" ;\s*\n\s*pset:value ([-\d.]+)',
+                              corps))
+    if prog_index >= n_prog:
+        break
+    if h_names[prog_index] and label.upper()[:8] != h_names[prog_index]:
+        pass          # the screen name is allowed to be an abbreviation
+    for sym, v in valeurs.items():
+        c = col_of.get(sym, -1)
+        if c >= 0 and abs(h_rows[prog_index][c] - v) > 1e-6:
+            desaccord.append("%s/%s %s vs %s" % (label, sym, v, h_rows[prog_index][c]))
+        if sym in sw_symbols and int(v) != h_sw[prog_index][sw_symbols.index(sym)]:
+            desaccord.append("%s/%s switch %s vs %s"
+                             % (label, sym, v, h_sw[prog_index][sw_symbols.index(sym)]))
+dire("every program matches the preset of the same name", not desaccord,
+     " ".join(desaccord[:4]))
+dire("presets leave PROGRAM on MANUAL, so the ports rule when one is loaded",
+     all(re.search(r'lv2:symbol "program" ;\s*\n\s*pset:value 0', b[3]) is not None
+         for b in blocs), "a preset that selected a program would fight itself")
+
 # --- source rules that the compiler cannot check ---
 libm = re.findall(r'\b(sinf?|cosf?|tanf?|powf?|expf?|logf?|log2f?|log10f?|sqrtf?|'
                   r'fabsf?|tanhf?|floorf?|ceilf?|roundf?|fmodf?)\s*\(', code)
