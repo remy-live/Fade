@@ -9,8 +9,12 @@
  * Regenerate with:  python3 make_ttl.py
  */
 
-#define N_PROGRAM     11
-#define N_PROGRAM_COL 17
+#define N_PROGRAM     15
+#define N_PROGRAM_COL 20
+/* Four more slots the player fills in, saved with the pedalboard. They sit
+   after the built-in programs on the same list. */
+#define N_USER        4
+#define N_SWITCH_SAVED 10
 
 /* Eight characters at most: the device truncates silently. */
 static const char* const program_name[N_PROGRAM] = {
@@ -25,12 +29,17 @@ static const char* const program_name[N_PROGRAM] = {
     "SLAP",
     "AMBIENT",
     "RADIO",
+    "BARITONE",
+    "TENOR",
+    "HELIUM",
+    "OCTAVE",
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
    program never touches: the rig levels and the switches. */
 static const int8_t program_col[CTL_COUNT] = {
     -1,   /* program */
+    -1,   /* save */
     -1,   /* in_gain */
     0,   /* low_cut */
     -1,   /* gate_on */
@@ -39,26 +48,31 @@ static const int8_t program_col[CTL_COUNT] = {
     2,   /* comp */
     -1,   /* de_ess_on */
     3,   /* de_ess */
+    -1,   /* eq_on */
     4,   /* body */
-    5,   /* presence */
-    6,   /* air */
+    5,   /* mid_freq */
+    6,   /* presence */
+    7,   /* air */
     -1,   /* drive_on */
-    7,   /* drive */
+    8,   /* drive */
+    -1,   /* pitch_on */
+    9,   /* pitch */
+    10,   /* pitch_mix */
     -1,   /* doubler_on */
-    8,   /* doubler */
-    9,   /* voices */
+    11,   /* doubler */
+    12,   /* voices */
     -1,   /* mod_on */
-    10,   /* modulation */
-    11,   /* mod_speed */
+    13,   /* modulation */
+    14,   /* mod_speed */
     -1,   /* delay_on */
-    12,   /* delay_time */
-    13,   /* delay_repeats */
-    14,   /* delay_mix */
+    15,   /* delay_time */
+    16,   /* delay_repeats */
+    17,   /* delay_mix */
     -1,   /* reverb_on */
-    15,   /* reverb */
-    16,   /* reverb_mix */
+    18,   /* reverb */
+    19,   /* reverb_mix */
     -1,   /* fx */
-    -1,   /* fx_trigger */
+    -1,   /* fx_2 */
     -1,   /* tap */
     -1,   /* output */
     -1,  /* gr */
@@ -69,32 +83,40 @@ static const int8_t program_col[CTL_COUNT] = {
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
-    { 90.0f, -80.0f, 30.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.0f, 0.6f, 400.0f, 30.0f, 0.0f, 40.0f, 0.0f },
-    { 120.0f, -45.0f, 30.0f, 40.0f, 0.0f, 3.0f, 1.0f, 15.0f, 20.0f, 2.0f, 25.0f, 0.6f, 300.0f, 20.0f, 10.0f, 25.0f, 10.0f },
-    { 100.0f, -42.0f, 32.0f, 30.0f, -2.0f, 2.0f, 2.0f, 20.0f, 25.0f, 2.0f, 30.0f, 0.6f, 350.0f, 25.0f, 12.0f, 35.0f, 10.0f },
-    { 90.0f, -48.0f, 30.0f, 30.0f, 2.0f, 0.0f, 2.0f, 15.0f, 25.0f, 3.0f, 30.0f, 0.6f, 420.0f, 25.0f, 12.0f, 55.0f, 16.0f },
-    { 130.0f, -40.0f, 34.0f, 45.0f, 0.0f, 4.0f, 1.0f, 22.0f, 25.0f, 2.0f, 25.0f, 0.6f, 120.0f, 20.0f, 8.0f, 30.0f, 10.0f },
-    { 90.0f, -48.0f, 30.0f, 30.0f, 0.0f, 0.0f, 3.0f, 15.0f, 55.0f, 3.0f, 40.0f, 0.4f, 400.0f, 20.0f, 8.0f, 60.0f, 20.0f },
-    { 110.0f, -46.0f, 26.0f, 35.0f, 0.0f, 0.0f, 2.0f, 15.0f, 25.0f, 3.0f, 25.0f, 0.6f, 600.0f, 45.0f, 11.0f, 100.0f, 22.0f },
-    { 100.0f, -46.0f, 28.0f, 30.0f, 1.0f, 0.0f, 2.0f, 15.0f, 60.0f, 4.0f, 45.0f, 0.35f, 350.0f, 20.0f, 8.0f, 70.0f, 18.0f },
-    { 120.0f, -42.0f, 32.0f, 35.0f, 0.0f, 3.0f, 0.0f, 25.0f, 20.0f, 2.0f, 25.0f, 0.6f, 95.0f, 8.0f, 18.0f, 20.0f, 8.0f },
-    { 90.0f, -50.0f, 24.0f, 30.0f, 0.0f, 0.0f, 3.0f, 15.0f, 30.0f, 3.0f, 30.0f, 0.3f, 700.0f, 45.0f, 13.0f, 85.0f, 24.0f },
-    { 250.0f, -42.0f, 40.0f, 40.0f, -8.0f, 6.0f, -6.0f, 50.0f, 20.0f, 2.0f, 25.0f, 0.6f, 200.0f, 20.0f, 8.0f, 20.0f, 8.0f },
+    { 90.0f, -80.0f, 30.0f, 0.0f, 0.0f, 2200.0f, 0.0f, 0.0f, 0.0f, 0.0f, 100.0f, 0.0f, 3.0f, 0.0f, 0.6f, 400.0f, 30.0f, 0.0f, 40.0f, 0.0f },
+    { 120.0f, -45.0f, 30.0f, 40.0f, 0.0f, 2500.0f, 3.0f, 1.0f, 15.0f, 0.0f, 100.0f, 20.0f, 2.0f, 25.0f, 0.6f, 300.0f, 20.0f, 10.0f, 25.0f, 10.0f },
+    { 100.0f, -42.0f, 32.0f, 30.0f, -2.0f, 2200.0f, 2.0f, 2.0f, 20.0f, 0.0f, 100.0f, 25.0f, 2.0f, 30.0f, 0.6f, 350.0f, 25.0f, 12.0f, 35.0f, 10.0f },
+    { 90.0f, -48.0f, 30.0f, 30.0f, 2.0f, 2200.0f, 0.0f, 2.0f, 15.0f, 0.0f, 100.0f, 25.0f, 3.0f, 30.0f, 0.6f, 420.0f, 25.0f, 12.0f, 55.0f, 16.0f },
+    { 130.0f, -40.0f, 34.0f, 45.0f, 0.0f, 3000.0f, 4.0f, 1.0f, 22.0f, 0.0f, 100.0f, 25.0f, 2.0f, 25.0f, 0.6f, 120.0f, 20.0f, 8.0f, 30.0f, 10.0f },
+    { 90.0f, -48.0f, 30.0f, 30.0f, 0.0f, 2200.0f, 0.0f, 3.0f, 15.0f, 0.0f, 100.0f, 55.0f, 3.0f, 40.0f, 0.4f, 400.0f, 20.0f, 8.0f, 60.0f, 20.0f },
+    { 110.0f, -46.0f, 26.0f, 35.0f, 0.0f, 2200.0f, 0.0f, 2.0f, 15.0f, 0.0f, 100.0f, 25.0f, 3.0f, 25.0f, 0.6f, 600.0f, 45.0f, 11.0f, 100.0f, 22.0f },
+    { 100.0f, -46.0f, 28.0f, 30.0f, 1.0f, 2200.0f, 0.0f, 2.0f, 15.0f, 0.0f, 100.0f, 60.0f, 4.0f, 45.0f, 0.35f, 350.0f, 20.0f, 8.0f, 70.0f, 18.0f },
+    { 120.0f, -42.0f, 32.0f, 35.0f, 0.0f, 2800.0f, 3.0f, 0.0f, 25.0f, 0.0f, 100.0f, 20.0f, 2.0f, 25.0f, 0.6f, 95.0f, 8.0f, 18.0f, 20.0f, 8.0f },
+    { 90.0f, -50.0f, 24.0f, 30.0f, 0.0f, 2200.0f, 0.0f, 3.0f, 15.0f, 0.0f, 100.0f, 30.0f, 3.0f, 30.0f, 0.3f, 700.0f, 45.0f, 13.0f, 85.0f, 24.0f },
+    { 250.0f, -42.0f, 40.0f, 40.0f, -8.0f, 1500.0f, 6.0f, -6.0f, 50.0f, 0.0f, 100.0f, 20.0f, 2.0f, 25.0f, 0.6f, 200.0f, 20.0f, 8.0f, 20.0f, 8.0f },
+    { 80.0f, -46.0f, 30.0f, 25.0f, 3.0f, 1200.0f, 1.0f, 0.0f, 0.0f, -4.0f, 100.0f, 20.0f, 2.0f, 25.0f, 0.6f, 400.0f, 20.0f, 8.0f, 35.0f, 10.0f },
+    { 100.0f, -46.0f, 30.0f, 35.0f, 0.0f, 2600.0f, 2.0f, 2.0f, 0.0f, 3.0f, 100.0f, 20.0f, 2.0f, 25.0f, 0.6f, 350.0f, 20.0f, 8.0f, 35.0f, 10.0f },
+    { 150.0f, -44.0f, 36.0f, 30.0f, 0.0f, 3000.0f, 3.0f, 0.0f, 0.0f, 9.0f, 100.0f, 20.0f, 2.0f, 30.0f, 0.6f, 250.0f, 20.0f, 8.0f, 20.0f, 8.0f },
+    { 90.0f, -46.0f, 36.0f, 30.0f, 2.0f, 2200.0f, 0.0f, 0.0f, 0.0f, -12.0f, 35.0f, 20.0f, 2.0f, 25.0f, 0.6f, 400.0f, 20.0f, 8.0f, 30.0f, 12.0f },
 };
 
 /* Switch positions, in the order of SwitchIndex. A program ADOPTS these
    when it is selected and then lets go: a foot on a switch must always
    win, or a footswitch stops working the moment a program is chosen. */
-static const uint8_t program_switch[N_PROGRAM][8] = {
-    { 1, 1, 1, 1, 1, 1, 1, 1 },
-    { 1, 1, 1, 0, 0, 0, 0, 0 },
-    { 1, 1, 1, 0, 0, 0, 0, 1 },
-    { 1, 1, 1, 0, 1, 0, 1, 1 },
-    { 1, 1, 1, 1, 0, 0, 1, 1 },
-    { 1, 1, 1, 0, 1, 1, 0, 1 },
-    { 1, 1, 1, 0, 1, 0, 1, 1 },
-    { 1, 1, 1, 0, 1, 1, 0, 1 },
-    { 1, 1, 1, 1, 0, 0, 1, 1 },
-    { 1, 1, 1, 0, 1, 1, 1, 1 },
-    { 1, 1, 1, 1, 0, 0, 0, 0 },
+static const uint8_t program_switch[N_PROGRAM][10] = {
+    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+    { 1, 1, 1, 1, 0, 1, 0, 0, 0, 0 },
+    { 1, 1, 1, 1, 0, 1, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 0, 1, 1, 0, 1, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1 },
+    { 1, 1, 1, 1, 0, 1, 1, 1, 0, 1 },
+    { 1, 1, 1, 1, 0, 1, 1, 0, 1, 1 },
+    { 1, 1, 1, 1, 0, 1, 1, 1, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1 },
+    { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 },
 };

@@ -32,8 +32,14 @@ def code_only(text):
     kind of false alarm that teaches people to ignore the checker.
     """
     text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
-    text = re.sub(r'//[^\n]*', ' ', text)
-    return re.sub(r'"(\\.|[^"\\])*"', '""', text)
+    # STRINGS BEFORE LINE COMMENTS. The other way round, the // in a URL
+    # inside a string literal reads as a comment, the rest of that line
+    # goes - closing quote included - and the string-stripping pass that
+    # follows then swallows everything up to the next quote. That is not a
+    # hypothetical: it quietly disabled four checks in this file until the
+    # day a second URL was added and the damage moved.
+    text = re.sub(r'"(\\.|[^"\\])*"', '""', text)
+    return re.sub(r'//[^\n]*', ' ', text)
 
 
 code = code_only(src)
@@ -156,9 +162,19 @@ by_symbol = dict((p['symbol'], p) for p in mono)
 for sym in ('fx', 'fx_state', 'gate_open'):
     dire("%s is toggled" % sym,
          any('lv2:toggled' in x for x in by_symbol[sym]['props']))
-for sym in ('fx_trigger', 'tap'):
+for sym in ('tap', 'save'):
     dire("%s is a trigger" % sym,
          any('pprops:trigger' in x for x in by_symbol[sym]['props']))
+for sym in ('fx', 'fx_2'):
+    dire("%s is a plain switch, not a pulse" % sym,
+         any('lv2:toggled' in x for x in by_symbol[sym]['props'])
+         and not any('pprops:trigger' in x for x in by_symbol[sym]['props']))
+dire("the state interface is declared, or the USER slots never come back",
+     re.search(r'lv2:extensionData\s+[^;]*state:interface', ttl) is not None)
+dire("urid:map is declared as an optional feature",
+     re.search(r'lv2:optionalFeature\s+[^;]*urid:map', ttl) is not None)
+dire("the plugin keeps its own user slots out of the port list",
+     'user' not in [p['symbol'] for p in mono])
 
 # --- manifest ---
 dire("both plugins in the manifest",
@@ -230,9 +246,11 @@ dire("programs.h covers every control", len(h_col) == len(c_table),
 dire("every program name fits the screen",
      all(len(n) <= 8 and n == n.upper() for n in h_names),
      " ".join(n for n in h_names if len(n) > 8 or n != n.upper()))
-dire("the list on the PROGRAM control is as long as the program table",
-     by_symbol['program']['max'] == n_prog - 1,
-     "max %s / %d programs" % (by_symbol['program']['max'], n_prog))
+n_user = int(re.search(r'#define N_USER\s+(\d+)', hdr).group(1))
+dire("the PROGRAM control covers the programs AND the user slots",
+     by_symbol['program']['max'] == n_prog - 1 + n_user,
+     "max %s / %d programs + %d slots"
+     % (by_symbol['program']['max'], n_prog, n_user))
 
 # the ttl scale points
 def scale_points(symbol):
@@ -242,8 +260,8 @@ def scale_points(symbol):
     return []
 
 
-dire("PROGRAM offers one scale point per program",
-     len(scale_points('program')) == n_prog,
+dire("PROGRAM offers one scale point per program and per slot",
+     len(scale_points('program')) == n_prog + n_user,
      "%d points" % len(scale_points('program')))
 dire("VOICES offers two, three and four",
      [v for _l, v in scale_points('voices')] == ['2.0', '3.0', '4.0'])

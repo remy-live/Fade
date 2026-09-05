@@ -130,7 +130,29 @@ static LV2_HMI_WidgetControl widget = {
 };
 
 static LV2_Feature feat_hmi = { LV2_HMI__WidgetControl, &widget };
-static const LV2_Feature* features[] = { &feat_hmi, NULL };
+
+/* A URID map, because the USER slots cannot be saved without one. Tiny:
+   it hands out one number per string it has not seen before. */
+#define MAX_URI 32
+static char  uris[MAX_URI][128];
+static int   n_uris = 0;
+
+static LV2_URID f_map(LV2_URID_Map_Handle h, const char* uri)
+{
+    (void)h;
+    for (int i = 0; i < n_uris; ++i) {
+        if (!strcmp(uris[i], uri)) { return (LV2_URID)(i + 1); }
+    }
+    if (n_uris >= MAX_URI) { return 0; }
+    strncpy(uris[n_uris], uri, sizeof(uris[0]) - 1);
+    return (LV2_URID)(++n_uris);
+}
+
+static LV2_URID_Map map_feature = { NULL, f_map };
+static LV2_Feature feat_map = { LV2_URID__map, &map_feature };
+
+static const LV2_Feature* features[]     = { &feat_hmi, &feat_map, NULL };
+static const LV2_Feature* features_map[] = { &feat_map, NULL };
 
 #define TOUTES_CAPS (LV2_HMI_AddressingCapability_LED       | \
                      LV2_HMI_AddressingCapability_Label     | \
@@ -154,7 +176,8 @@ static void ouvrir(Banc* b, int stereo, double sr, uint32_t bloc, int avec_ecran
 {
     memset(b, 0, sizeof(*b));
     b->d       = lv2_descriptor(stereo ? 1u : 0u);
-    b->h       = b->d->instantiate(b->d, sr, ".", avec_ecran ? features : NULL);
+    b->h       = b->d->instantiate(b->d, sr, ".",
+                                   avec_ecran ? features : features_map);
     b->n_ch    = stereo ? 2u : 1u;
     b->n_audio = b->n_ch * 2u;
     b->bloc    = bloc;
@@ -704,20 +727,21 @@ static void essai_interrupteur(void)
     verifie_vrai("and it does die away eventually",
                  crete(b.out[0], b.bloc) < juste_apres * 0.05);
 
-    /* the trigger drives the same state */
-    b.ctl[CTL_FX_TRIGGER] = 1.0f; silence(&b); tourner(&b);
-    b.ctl[CTL_FX_TRIGGER] = 0.0f; silence(&b); tourner(&b);
-    verifie("a trigger pulse flips the state back",
-            (double)b.ctl[CTL_FX_STATE], 1.0, 0.001);
-    b.ctl[CTL_FX_TRIGGER] = 1.0f; silence(&b); tourner(&b);
-    b.ctl[CTL_FX_TRIGGER] = 0.0f; silence(&b); tourner(&b);
-    verifie("and again", (double)b.ctl[CTL_FX_STATE], 0.0, 0.001);
-    /* held down, it must NOT keep flipping: an edge, not a level */
-    b.ctl[CTL_FX_TRIGGER] = 1.0f;
+    /* FX 2 is a second SWITCH on the same state: a latching footswitch
+       sends a level, so what counts is the switch moving, either way */
+    b.ctl[CTL_FX_2] = 0.0f; silence(&b); tourner(&b);
+    verifie("moving FX 2 flips the state", (double)b.ctl[CTL_FX_STATE], 1.0, 0.001);
+    b.ctl[CTL_FX_2] = 1.0f; silence(&b); tourner(&b);
+    verifie("and moving it back flips it again",
+            (double)b.ctl[CTL_FX_STATE], 0.0, 0.001);
+    /* held where it is, it must not keep flipping */
     for (int k = 0; k < 20; ++k) { silence(&b); tourner(&b); }
-    verifie("holding the trigger down does not keep flipping",
+    verifie("holding FX 2 still does not keep flipping",
+            (double)b.ctl[CTL_FX_STATE], 0.0, 0.001);
+    /* and the other switch still works from where it is */
+    b.ctl[CTL_FX] = 1.0f; silence(&b); tourner(&b);
+    verifie("FX itself still sets the state",
             (double)b.ctl[CTL_FX_STATE], 1.0, 0.001);
-    b.ctl[CTL_FX_TRIGGER] = 0.0f;
     fermer(&b);
 }
 
@@ -1479,29 +1503,6 @@ static int lire_presets(Preset* p, int max)
     return nb;
 }
 
-/* The complaint this test exists for: loading a preset used to be twenty
-   decibels louder than not loading one. A preset chooses a SOUND; how loud
-   the singer is belongs to IN GAIN and to the desk. */
-static void essai_presets(void)
-{
-    Preset p[16];
-    const int nb = lire_presets(p, 16);
-    verifie_vrai("presets.ttl reads back", nb >= 6);
-
-    for (int k = 0; k < nb; ++k) {
-        Banc b;
-        char quoi[160];
-        ouvrir(&b, 0, 48000.0, 128, 0);
-        for (int i = 0; i < (int)CTL_COUNT; ++i) { b.ctl[i] = p[k].val[i]; }
-        srand(11);
-        const double g = gain_bruit_db(&b, 0.22, 80, 600);
-        snprintf(quoi, sizeof(quoi), "preset \"%.31s\" leaves the level alone", p[k].label);
-        verifie_entre(quoi, g, -3.0, 3.0);
-        verifie_vrai("  and never writes IN GAIN",
-                     p[k].val[CTL_IN_GAIN] == ctl_spec[CTL_IN_GAIN].def);
-        fermer(&b);
-    }
-}
 
 /* The compressor gives back what it takes off a voice at the reference
    level, so turning it up must not turn you up. */
@@ -1597,6 +1598,8 @@ static void essai_sonie_presets(void)
                  p[k].label);
         verifie_entre(quoi, niveau_phrase(p[k].val, in, total, sr, NULL) - ref,
                       -2.5, 2.0);
+        verifie_vrai("  and it never writes IN GAIN",
+                     p[k].val[CTL_IN_GAIN] == ctl_spec[CTL_IN_GAIN].def);
     }
     free(in);
 }
@@ -1748,6 +1751,262 @@ static void essai_ecran_programme(void)
 }
 
 /* ================================================================== */
+/* Pitch, without a pitch detector anywhere                            */
+/* ================================================================== */
+
+/* Energy at one frequency, by Goertzel: the bench has no FFT and does
+   not need one to ask "did the note move where it was told to". */
+static double energie_a(const float* x, size_t n, double f, double sr)
+{
+    const double w = 2.0 * PI * f / sr, c = 2.0 * cos(w);
+    double s1 = 0.0, s2 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double s = (double)x[i] + c * s1 - s2;
+        s2 = s1;
+        s1 = s;
+    }
+    return s1 * s1 + s2 * s2 - c * s1 * s2;
+}
+
+static void essai_pitch(void)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const size_t total = (size_t)(sr * 3.0);
+    float* in  = (float*)malloc(total * sizeof(float));
+    float* out = (float*)malloc(total * sizeof(float));
+
+    for (int cas = 0; cas < 5; ++cas) {
+        static const float demi[5] = { 0.0f, 12.0f, -12.0f, 7.0f, -5.0f };
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_PITCH]     = demi[cas];
+        b.ctl[CTL_PITCH_MIX] = 100.0f;
+
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        size_t done = 0;
+        while (done + N <= total) {
+            for (uint32_t i = 0; i < N; ++i) {
+                in[done + i] = (float)(0.25 * sin(ph + w * (double)i));
+            }
+            ph += w * (double)N;
+            memcpy(b.in[0], in + done, N * sizeof(float));
+            tourner(&b);
+            memcpy(out + done, b.out[0], N * sizeof(float));
+            done += N;
+        }
+        fermer(&b);
+
+        const size_t saute = (size_t)sr;
+        const size_t n = total - saute;
+        double ein = 0.0, eout = 0.0;
+        for (size_t i = saute; i < total; ++i) {
+            ein  += (double)in[i] * (double)in[i];
+            eout += (double)out[i] * (double)out[i];
+        }
+        const double attendue = 220.0 * pow(2.0, demi[cas] / 12.0);
+        const double e_neuve = energie_a(out + saute, n, attendue, sr);
+        const double e_vieille = energie_a(out + saute, n, 220.0, sr);
+        char quoi[80];
+
+        snprintf(quoi, sizeof(quoi), "%+.0f semitones lands on %.0f Hz",
+                 demi[cas], attendue);
+        if (cas == 0) {
+            verifie("0 semitones is exactly transparent",
+                    10.0 * log10(eout / ein), 0.0, 0.1);
+        } else {
+            verifie_vrai(quoi, e_neuve > e_vieille * 100.0);
+            snprintf(quoi, sizeof(quoi), "  and %+.0f keeps its level", demi[cas]);
+            verifie(quoi, 10.0 * log10(eout / ein), 0.0, 1.0);
+        }
+    }
+    free(in); free(out);
+
+    /* the switch, and the mix, both take it back out */
+    Banc b;
+    ouvrir(&b, 0, sr, N, 0);
+    neutre(&b);
+    b.ctl[CTL_PITCH]     = -7.0f;
+    b.ctl[CTL_PITCH_MIX] = 100.0f;
+    b.ctl[CTL_PITCH_ON]  = 0.0f;
+    chauffer(&b, 300.0);
+    verifie("PITCH OFF leaves the voice where it was",
+            gain_db(&b, 500.0, 0.2, 60, 60), 0.0, 0.2);
+    b.ctl[CTL_PITCH_ON]  = 1.0f;
+    b.ctl[CTL_PITCH_MIX] = 0.0f;
+    chauffer(&b, 300.0);
+    verifie("and so does a mix of zero",
+            gain_db(&b, 500.0, 0.2, 60, 60), 0.0, 0.2);
+    fermer(&b);
+}
+
+/* ================================================================== */
+/* The tone controls                                                   */
+/* ================================================================== */
+
+static void essai_eq(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 256, 0);
+    neutre(&b);
+
+    b.ctl[CTL_PRESENCE] = 12.0f;
+    b.ctl[CTL_MID_FREQ] = 800.0f;
+    const double bas_a_800 = gain_db(&b, 800.0, 0.1, 40, 60);
+    const double bas_a_4k  = gain_db(&b, 4000.0, 0.1, 40, 60);
+    b.ctl[CTL_MID_FREQ] = 4000.0f;
+    const double haut_a_800 = gain_db(&b, 800.0, 0.1, 40, 60);
+    const double haut_a_4k  = gain_db(&b, 4000.0, 0.1, 40, 60);
+
+    verifie_vrai("MID FREQ low lifts 800 Hz", bas_a_800 > 6.0);
+    verifie_vrai("MID FREQ high lifts 4 kHz", haut_a_4k > 6.0);
+    verifie_vrai("and each leaves the other end alone",
+                 bas_a_4k < bas_a_800 - 4.0 && haut_a_800 < haut_a_4k - 4.0);
+
+    /* the switch takes all three bands out at once */
+    b.ctl[CTL_BODY] = 12.0f;
+    b.ctl[CTL_AIR]  = 12.0f;
+    b.ctl[CTL_EQ_ON] = 0.0f;
+    chauffer(&b, 200.0);
+    verifie("EQ OFF is flat at 100 Hz", gain_db(&b, 100.0, 0.1, 40, 60), 0.0, 0.2);
+    verifie("EQ OFF is flat at 4 kHz", gain_db(&b, 4000.0, 0.1, 40, 60), 0.0, 0.2);
+    verifie("EQ OFF is flat at 12 kHz", gain_db(&b, 12000.0, 0.1, 40, 60), 0.0, 0.2);
+    fermer(&b);
+}
+
+/* ================================================================== */
+/* The four USER slots                                                 */
+/* ================================================================== */
+
+static void essai_slots(void)
+{
+    Banc b;
+    const int premier = N_PROGRAM;          /* USER 1 */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+
+    /* An empty slot leaves the knobs in charge - which is what makes
+       dialling a sound and then storing it one continuous action. */
+    b.ctl[CTL_PROGRAM]    = (float)premier;
+    b.ctl[CTL_DELAY_TIME] = 250.0f;
+    silence(&b); tourner(&b);
+    verifie("an empty USER slot leaves the knobs alone",
+            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+
+    /* store, then move the knobs: the slot must not follow them */
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_DELAY_TIME] = 900.0f;
+    silence(&b); tourner(&b);
+    verifie("once saved, the slot stops following the knobs",
+            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+
+    /* MANUAL still answers to them */
+    b.ctl[CTL_PROGRAM] = 0.0f;
+    silence(&b); tourner(&b);
+    verifie("MANUAL still answers to the knobs",
+            (double)b.ctl[CTL_TIME_OUT], 900.0, 0.01);
+
+    /* and coming back recalls what was stored */
+    b.ctl[CTL_PROGRAM] = (float)premier;
+    silence(&b); tourner(&b);
+    verifie("coming back recalls it", (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+
+    /* saving with no slot selected must do nothing at all */
+    b.ctl[CTL_PROGRAM] = 0.0f;
+    b.ctl[CTL_DELAY_TIME] = 111.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)premier;
+    silence(&b); tourner(&b);
+    verifie("SAVE outside a USER slot changes nothing",
+            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+    fermer(&b);
+}
+
+/* The slots have to survive the pedalboard being closed and reopened,
+   which means going out through the State extension and coming back. */
+static float etat_buf[512];
+static size_t etat_taille = 0;
+static uint32_t etat_type = 0;
+static LV2_URID etat_cle = 0;
+
+static LV2_State_Status f_store(LV2_State_Handle h, uint32_t key, const void* value,
+                                size_t size, uint32_t type, uint32_t flags)
+{
+    (void)h; (void)flags;
+    if (size > sizeof(etat_buf)) { return LV2_STATE_ERR_UNKNOWN; }
+    memcpy(etat_buf, value, size);
+    etat_taille = size;
+    etat_type = type;
+    etat_cle = key;
+    return LV2_STATE_SUCCESS;
+}
+
+static const void* f_retrieve(LV2_State_Handle h, uint32_t key, size_t* size,
+                              uint32_t* type, uint32_t* flags)
+{
+    (void)h;
+    if (key != etat_cle || etat_taille == 0) { return NULL; }
+    if (size)  { *size = etat_taille; }
+    if (type)  { *type = etat_type; }
+    if (flags) { *flags = 0u; }
+    return etat_buf;
+}
+
+static void essai_etat(void)
+{
+    const LV2_Descriptor* d = lv2_descriptor(0);
+    const LV2_State_Interface* st =
+        (const LV2_State_Interface*)d->extension_data(LV2_STATE__interface);
+    verifie_vrai("the plugin offers a state interface", st != NULL);
+    if (!st) { return; }
+
+    /* one instance saves a slot */
+    Banc a;
+    ouvrir(&a, 0, 48000.0, 128, 0);
+    neutre(&a);
+    a.ctl[CTL_PROGRAM]    = (float)N_PROGRAM + 2.0f;   /* USER 3 */
+    a.ctl[CTL_DELAY_TIME] = 333.0f;
+    a.ctl[CTL_REVERB_MIX] = 44.0f;
+    silence(&a); tourner(&a);
+    a.ctl[CTL_SAVE] = 1.0f; silence(&a); tourner(&a);
+    a.ctl[CTL_SAVE] = 0.0f; silence(&a); tourner(&a);
+    etat_taille = 0;
+    verifie_vrai("state saves without complaining",
+                 st->save(a.h, f_store, NULL, 0, NULL) == LV2_STATE_SUCCESS);
+    verifie_vrai("and it wrote something", etat_taille > 0);
+    fermer(&a);
+
+    /* another instance takes it back */
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    verifie_vrai("state restores without complaining",
+                 st->restore(b.h, f_retrieve, NULL, 0, NULL) == LV2_STATE_SUCCESS);
+    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 2.0f;
+    b.ctl[CTL_DELAY_TIME] = 800.0f;         /* the knobs are elsewhere */
+    silence(&b); tourner(&b);
+    verifie("a restored slot plays what was saved in it",
+            (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
+
+    /* an untouched slot must still be empty, not full of zeros */
+    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM;   /* USER 1, never saved */
+    silence(&b); tourner(&b);
+    verifie("an empty slot stays empty across a restore",
+            (double)b.ctl[CTL_TIME_OUT], 800.0, 0.01);
+
+    /* nonsense in the state must be refused rather than believed */
+    etat_taille = 8;
+    verifie_vrai("a state of the wrong size is refused",
+                 st->restore(b.h, f_retrieve, NULL, 0, NULL) != LV2_STATE_SUCCESS);
+    fermer(&b);
+}
+
+/* ================================================================== */
 
 int main(void)
 {
@@ -1769,11 +2028,14 @@ int main(void)
     printf("One switch per effect:\n");    essai_interrupteurs_effets();
                                            essai_interrupteurs_sans_clic();
     printf("Compressor level:\n");         essai_comp_niveau();
-    printf("Presets:\n");                  essai_presets();
     printf("Preset loudness, on a sung phrase:\n"); essai_sonie_presets();
     printf("The program list:\n");          essai_programme_egale_preset();
                                            essai_programme_interrupteurs();
     printf("Doubled voices:\n");            essai_voix();
+    printf("Pitch:\n");                     essai_pitch();
+    printf("Tone controls:\n");             essai_eq();
+    printf("USER slots:\n");                essai_slots();
+                                           essai_etat();
     printf("Screen - the list:\n");         essai_ecran_programme();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
