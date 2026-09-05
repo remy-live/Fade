@@ -52,8 +52,12 @@ any of them fades rather than clicks.
 
 ## The program list
 
-**PROGRAM** is a list, not a knob: MANUAL, then ten built-in sounds. Put it
-on an encoder and you can walk through them from the device.
+**PROGRAM** is a list, not a knob: MANUAL, then sixty-six built-in sounds,
+then six USER slots of your own. Put it on an encoder and you can walk
+through them from the device. The list is grouped by family — spoken
+voices first, then singing, doubling and choirs, pitched voices, grilles
+and loudspeakers, echoes and rooms, and last the instrument sounds — so
+walking it goes somewhere rather than everywhere.
 
 What a program takes over, and what stays yours, is a deliberate split:
 
@@ -86,7 +90,7 @@ not from the program, so a board comes back exactly as you left it.
 
 | Control | What it does |
 |---|---|
-| **PROGRAM** | The list: MANUAL, fourteen built-in sounds, then four USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
+| **PROGRAM** | The list: MANUAL, sixty-six built-in sounds grouped by family, then six USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
 | **SAVE** | Stores **what you are hearing** into the slot USER SLOT points at — the program you picked plus every change you made to it. |
 | **USER SLOT** | Which of the six USER slots SAVE writes to. A list of its own, so a built-in sound can be changed and kept somewhere else without the original being touched. |
 | **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. No preset and no program ever touches it. |
@@ -99,7 +103,7 @@ not from the program, so a board comes back exactly as you left it.
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation, level-matched at −12 dBFS: the colour changes, how loud you are does not. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
-| **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 21 to 46 ms late, each drifting a few cents on its own slow LFO and sitting slightly darker than the lead. |
+| **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
 | **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
 | **SPREAD** | How far apart the voices stand: their detune, their drift and how staggered their entries are. Low is one singer twice; high is a group who have never met. |
 | **NO HOWL** / **HUNT** | The anti-Larsen hunter. Sixteen filters listen for a band that rises and then just *sits* there — which is what feedback does and singing does not — and drop a narrow notch on it. At 0 it is off and costs nothing. NOTCHES says how many are in place. |
@@ -159,21 +163,23 @@ Three rules get them there, and they apply while you turn knobs too:
 
 ## Presets, and your own sounds
 
-Thirty, on both variants, and they exist twice over: as entries in the PROGRAM
-list, and as LV2 presets in the plugin's own preset menu. Both come from one
-table in `make_ttl.py`, and the bench runs a phrase through both routes and
-subtracts — picking Ballad from the menu and selecting program 3 give the
-same samples, or the build stops.
+Sixty-six, on both variants, and they exist twice over: as entries in the
+PROGRAM list, and as LV2 presets in the plugin's own preset menu. Both come
+from one table in `make_ttl.py`, and the bench runs a phrase through both
+routes and subtracts — picking Ballad from the menu and selecting the
+program of the same name give the same samples, or the build stops.
+
+The list is in this order, which is also the order of the families:
 
 | | |
 |---|---|
-| **On a stage** | Speech · Stage Dry · Ballad · Rock · Wide · Arena · Tight Double |
-| **Rooms** | Cathedral · Ambient · Dub · Slapback |
-| **Other people's voices** | Baritone · Tenor · Helium · Octave · Monster · Robot |
-| **Through a grille** | **Hygiaphone** · Telephone · Megaphone · Walkie Talkie · Radio |
-| **Choirs** | Choir · Gospel Choir · Angel Choir |
-| **Spoken** | Podcast · Whisper |
-| **Guitar** | **Guitar Solo** · Guitar Crunch · Guitar Clean |
+| **One voice on its own** | Speech · Podcast · Audiobook · Voice-Over · Desk Mic · Radio Announcer · Stage Dry |
+| **Singing in front of a band** | Ballad · Power Ballad · Warm Crooner · Modern Pop · Pop Lead · Rock · Rock Lead · Hard Rock Shout · Country · Cut Through · Whisper |
+| **Doubling yourself, and the choir** | Tight Double · Stage Double · Wide · Backing Vocals · Stacked Backing · Choir · Wide Choir · Gospel Choir · Gospel Stack · Angel Choir · Seraphim |
+| **Somebody else's voice** | Baritone · Tenor · Helium · Octave · Octave Below · Fifth Below · Monster · Robot · Alien |
+| **Out of a grille** | **Hygiaphone** · Telephone · Megaphone · Walkie Talkie · Radio |
+| **Echoes and rooms** | Slapback · Tape Slap · Eighth Notes · Dub · Dub Echo · Ambient · Ambient Wash · Arena · Stadium · Cathedral · Church · Basilica · Shimmer |
+| **An instrument instead of the microphone** | **Guitar Solo** · Lead Solo · Guitar Crunch · Guitar Clean · Clean Chime · Acoustic Piezo · Bass DI · Harmonica · Saxophone · Rotary Keys |
 
 Two of them answer questions that were asked out loud. **Hygiaphone** is
 the speaking grille at a bank counter: nothing below 320 Hz or above
@@ -182,6 +188,12 @@ the speaking grille at a bank counter: nothing below 320 Hz or above
 the noise gate tight at −38 dB for the space between phrases, and the
 anti-Larsen hunter at 70 for the part a gate can do nothing about, which
 is the howl that happens *while* you are playing.
+
+All sixty-six are measured. The bench sings a phrase through a transparent
+plugin, then through each preset, and any that lands more than 2 dB above
+or 2.5 dB below the plain voice fails the build — which is how *Monster*
+and *Dub*, both nearly 3 dB hot, were caught and trimmed before they ever
+reached a stage.
 
 Each writes every control it does not name at its default, so loading one
 lands somewhere known instead of on top of half of whatever was there
@@ -216,7 +228,7 @@ built-in sounds.
 **Naming** is the one part that is split. A control port carries a number,
 not text, so the plugin has no way to receive a name: the name you type in
 the web UI is kept **in that browser**, while the sound itself lives in the
-plugin. On the device screen a slot reads `USER 1` to `USER 4`. If you want
+plugin. On the device screen a slot reads `USER 1` to `USER 6`. If you want
 a sound named everywhere, add it to `PRESETS` in `make_ttl.py` and rebuild
 — it becomes a program *and* an LV2 preset, with its name on the screen.
 
@@ -330,10 +342,11 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-209 checks: the approximations against libm, every block of the chain
+338 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
-click it must not make, every preset for the level it lands on, the delay
-against a clock at three sample rates, and a simulated HMI screen. Without a simulated screen none of the
+click it must not make, all sixty-six presets for the level they land on,
+the delay against a clock at three sample rates, and a simulated HMI
+screen. Without a simulated screen none of the
 display code ever runs, and that is where the bugs live.
 
 ## Notes on the implementation
@@ -374,6 +387,17 @@ display code ever runs, and that is where the bugs live.
   drift, its own small vibrato, its own entry time, its own window length
   and its own filtering, top and bottom — identical spectra fuse back into
   one object however far apart they are tuned.
+- **And the vibrato itself breathes.** A vibrato of fixed depth is the one
+  thing no singer does, and it is what made four copies read as four
+  oscillators rather than as four people. Each voice's depth now rides a
+  very slow sine of its own — twelve to thirty-three seconds a cycle — so
+  it swells to its full width and relaxes back to a little over half of it.
+  The bench measures it the only way it can be measured: it sings a steady
+  note for three whole swell cycles, reads the vibrato sidebands 4.7 Hz
+  either side of the first voice's carrier in three-second windows, and
+  sorts them into the ones near a peak and the ones near a trough. The peak
+  group comes out 1.9 times louder. If it ever comes out flat, the depth
+  has stopped moving.
 - **The old doubler ran two, three or four taps**, at 21, 29, 38 and 46 ms,
   drifting a few cents each on LFOs at 0.13, 0.19, 0.27 and 0.09 Hz — rates that share no
   common period, so they never line up into one wobble. Decorrelated copies

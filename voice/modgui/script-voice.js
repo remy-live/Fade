@@ -19,8 +19,8 @@
  */
 function (event, funcs) {
 
-    var PREMIER_USER = 31;
-    var DERNIER = 36;
+    var PREMIER_USER = 67;
+    var DERNIER = 72;
     var N_SLOT = 6;
 
     function nombre(v) {

@@ -16,3 +16,6 @@ voice/test_voice.log
 # it for a bundle directory and the plugin refuses to load.
 ._*
 .DS_Store
+
+# Python bytecode from the descriptor generator.
+__pycache__/

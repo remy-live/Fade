@@ -86,7 +86,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD6_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD7_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -381,7 +381,7 @@ typedef struct {
 
 static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
-    { "program",        0.0f,   36.0f,     0.0f },
+    { "program",        0.0f,   72.0f,     0.0f },
     { "user_slot",      1.0f,    6.0f,     1.0f },
     { "save",           0.0f,    1.0f,     0.0f },
     { "in_gain",      -20.0f,   40.0f,     0.0f },
@@ -581,6 +581,11 @@ static const float choir_drift_hz[MAX_VOICES] = { 0.073f, 0.119f, 0.167f, 0.101f
    copy that wobbles hard is a chorus pedal rather than a second person. */
 static const float choir_vib[MAX_VOICES]      = { 5.0f, 4.0f, 6.0f, 4.5f };
 static const float choir_vib_hz[MAX_VOICES]   = { 4.7f, 5.3f, 6.1f, 5.7f };
+/* And the vibrato itself swells and relaxes, over half a minute or so,
+   each voice at its own rate. A vibrato of constant depth is the one
+   thing in the stack that no singer does: it is what makes four copies
+   read as four oscillators rather than as four people. */
+static const float choir_swell_hz[MAX_VOICES] = { 0.041f, 0.067f, 0.031f, 0.089f };
 /* Each voice through its own throat, top and bottom: identical spectra
    fuse back into one object however far apart they are tuned. */
 static const float choir_tone[MAX_VOICES]     = { 8500.0f, 5200.0f, 6800.0f, 4200.0f };
@@ -862,6 +867,7 @@ typedef struct {
     float ph_choir[MAX_VOICES];        /* grain phase, one per voice */
     float ph_choir_drift[MAX_VOICES];  /* the slow wander */
     float ph_choir_vib[MAX_VOICES];    /* and the vibrato on top of it */
+    float ph_choir_swell[MAX_VOICES];  /* and how deep that vibrato is now */
     float ph_mod;
 
     /* --- screen --- */
@@ -1459,10 +1465,12 @@ activate(LV2_Handle instance)
     static const float depart[MAX_VOICES]      = { 0.00f, 0.37f, 0.71f, 0.13f };
     static const float depart_lent[MAX_VOICES] = { 0.11f, 0.63f, 0.29f, 0.83f };
     static const float depart_vib[MAX_VOICES]  = { 0.47f, 0.05f, 0.79f, 0.23f };
+    static const float depart_swell[MAX_VOICES]= { 0.00f, 0.53f, 0.17f, 0.87f };
     for (int k = 0; k < MAX_VOICES; ++k) {
         self->ph_choir[k]       = depart[k];
         self->ph_choir_drift[k] = depart_lent[k];
         self->ph_choir_vib[k]   = depart_vib[k];
+        self->ph_choir_swell[k] = depart_swell[k];
     }
     self->ph_mod       = 0.0f;
     self->pitch_phase  = 0.0f;
@@ -2408,9 +2416,13 @@ run(LV2_Handle instance, uint32_t n_samples)
            moved the grain on since the last sample. */
         float d_a[MAX_VOICES], d_b[MAX_VOICES], w_a[MAX_VOICES];
         for (int k = 0; k < n_voices; ++k) {
+            /* 0.55 to 1.00 of the nominal depth, so the vibrato breathes */
+            const float swell = 0.775f
+                              + 0.225f * lfo_sin(self->ph_choir_swell[k]);
             const float cents = (choir_cents[k]
                                + choir_drift[k] * lfo_sin(self->ph_choir_drift[k])
-                               + choir_vib[k]   * lfo_sin(self->ph_choir_vib[k]))
+                               + choir_vib[k]   * swell
+                                                * lfo_sin(self->ph_choir_vib[k]))
                               * detune_scale;
             const float ratio = exp2_approx(cents * (1.0f / 1200.0f));
             float p = self->ph_choir[k] + (1.0f - ratio) / choir_win[k];
@@ -2507,6 +2519,8 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (self->ph_choir_drift[k] >= 1.0f) { self->ph_choir_drift[k] -= 1.0f; }
             self->ph_choir_vib[k] += choir_vib_hz[k] / rate;
             if (self->ph_choir_vib[k] >= 1.0f) { self->ph_choir_vib[k] -= 1.0f; }
+            self->ph_choir_swell[k] += choir_swell_hz[k] / rate;
+            if (self->ph_choir_swell[k] >= 1.0f) { self->ph_choir_swell[k] -= 1.0f; }
         }
         self->ph_mod += inc_m;
         if (self->ph_mod >= 1.0f) { self->ph_mod -= 1.0f; }

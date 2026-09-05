@@ -1094,6 +1094,17 @@ static void essai_activate_deux_fois(void)
 /* The screen                                                          */
 /* ================================================================== */
 
+/* The preset list is grouped by family and gets new entries, so a test
+   that hard-coded "program 3" broke every time the list was reordered.
+   Ask for a program by the name on the screen instead. */
+static int programme_nomme(const char* nom)
+{
+    for (int i = 1; i < N_PROGRAM; ++i) {
+        if (!strcmp(program_name[i], nom)) { return i; }
+    }
+    return -1;
+}
+
 static const LV2_HMI_PluginNotification* notif(const LV2_Descriptor* d)
 {
     return (const LV2_HMI_PluginNotification*)
@@ -1454,7 +1465,7 @@ typedef struct {
 
 static int lire_presets(Preset* p, int max)
 {
-    static char buf[600000];
+    static char buf[1200000];
     FILE* f = fopen("presets.ttl", "r");
     if (!f) {
         printf("  *** presets.ttl not found - run the bench from voice/\n");
@@ -1464,6 +1475,12 @@ static int lire_presets(Preset* p, int max)
     const size_t n = fread(buf, 1, sizeof(buf) - 1, f);
     buf[n] = '\0';
     fclose(f);
+    /* a truncated read would silently test the first half of the list */
+    if (n == sizeof(buf) - 1) {
+        printf("  *** presets.ttl is bigger than the buffer that reads it\n");
+        echec = 1;
+        return 0;
+    }
 
     int nb = 0;
     const char* cur = buf;
@@ -1579,8 +1596,8 @@ static double niveau_phrase(const float* val, const float* in, size_t total,
 
 static void essai_sonie_presets(void)
 {
-    Preset p[24];
-    const int nb = lire_presets(p, 24);
+    Preset p[N_PROGRAM];
+    const int nb = lire_presets(p, N_PROGRAM);
     const double sr = 48000.0;
     const size_t total = (size_t)(sr * 12.0);
     float* in = (float*)malloc(total * sizeof(float));
@@ -1610,8 +1627,8 @@ static void essai_sonie_presets(void)
    read straight out of programs.h. */
 static void essai_programme_egale_preset(void)
 {
-    Preset p[24];
-    const int nb = lire_presets(p, 24);
+    Preset p[N_PROGRAM];
+    const int nb = lire_presets(p, N_PROGRAM);
     const double sr = 48000.0;
     const size_t total = (size_t)(sr * 6.0);
     float* in  = (float*)malloc(total * sizeof(float));
@@ -1740,7 +1757,7 @@ static void essai_ecran_programme(void)
     adresser(&b, CTL_PROGRAM, TOUTES_CAPS, (void*)0xE1);
     verifie_vrai("the list shows MANUAL to start with",
                  !strcmp(ecran.dernier_value, "MANUAL"));
-    b.ctl[CTL_PROGRAM] = 3.0f;
+    b.ctl[CTL_PROGRAM] = (float)programme_nomme("BALLAD");
     for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
     verifie_vrai("and the name of whatever is picked",
                  !strcmp(ecran.dernier_value, "BALLAD"));
@@ -1947,10 +1964,17 @@ static void essai_retouche(void)
     ouvrir(&b, 0, 48000.0, 128, 0);
     neutre(&b);
 
-    b.ctl[CTL_PROGRAM] = 3.0f;              /* Ballad: a 420 ms delay */
+    const int p_ballad = programme_nomme("BALLAD");
+    const int p_rock   = programme_nomme("ROCK");
+    const double t_ballad = (double)program_value[p_ballad][program_col[CTL_DELAY_TIME]];
+    const double t_rock   = (double)program_value[p_rock][program_col[CTL_DELAY_TIME]];
+    verifie_vrai("the two programs the test needs are in the list",
+                 p_ballad > 0 && p_rock > 0 && t_ballad != t_rock);
+
+    b.ctl[CTL_PROGRAM] = (float)p_ballad;
     silence(&b); tourner(&b);
     verifie("a program owns its controls to start with",
-            (double)b.ctl[CTL_TIME_OUT], 420.0, 0.01);
+            (double)b.ctl[CTL_TIME_OUT], t_ballad, 0.01);
 
     b.ctl[CTL_DELAY_TIME] = 180.0f;         /* the player turns the knob */
     silence(&b); tourner(&b);
@@ -1960,7 +1984,7 @@ static void essai_retouche(void)
     /* ... and ONLY that one: the rest of the program is still in force */
     b.ctl[CTL_REVERB_MIX] = 0.0f;           /* untouched so far */
     verifie_vrai("the rest of the program is still in force",
-                 program_value[3][program_col[CTL_REVERB_MIX]] > 0.0f);
+                 program_value[p_ballad][program_col[CTL_REVERB_MIX]] > 0.0f);
 
     /* the edited sound is what SAVE keeps */
     b.ctl[CTL_USER_SLOT] = 2.0f;
@@ -1975,10 +1999,10 @@ static void essai_retouche(void)
             (double)b.ctl[CTL_TIME_OUT], 180.0, 0.01);
 
     /* choosing another program hands everything back to it */
-    b.ctl[CTL_PROGRAM] = 4.0f;              /* Rock: 120 ms */
+    b.ctl[CTL_PROGRAM] = (float)p_rock;
     silence(&b); tourner(&b);
     verifie("a new program takes every control back",
-            (double)b.ctl[CTL_TIME_OUT], 120.0, 0.01);
+            (double)b.ctl[CTL_TIME_OUT], t_rock, 0.01);
     fermer(&b);
 }
 
@@ -2282,6 +2306,68 @@ static void essai_choeur(void)
                  centre[1] > cote[1] * 4.0);
 }
 
+/* The vibrato of each voice swells and relaxes. A vibrato of fixed depth
+   is the giveaway of a machine, so the depth itself rides a very slow
+   sine - a third of a minute for the first voice. Sung at 220 Hz, voice
+   one sits seven cents low and wobbles at 4.7 Hz, which puts a pair of
+   sidebands 4.7 Hz either side of ITS carrier; how strong they are IS
+   the depth. One window is not enough - the slow drift walks the carrier
+   through the bins and the grains turn over every fourteen seconds, so a
+   single reading is noise. Three whole swell cycles are measured in
+   three-second windows and sorted into the ones near the peak and the
+   ones near the trough; the peak group has to come out clearly louder.
+   If it does not, the depth is constant and this comment sits over dead
+   code. */
+static void essai_choeur_souffle(void)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const double duree = 75.0;
+    const size_t total = (size_t)(sr * duree);
+    float* out = (float*)malloc(total * sizeof(float));
+    Banc b;
+
+    ouvrir(&b, 0, sr, N, 0);
+    neutre(&b);
+    b.ctl[CTL_DOUBLER] = 100.0f;
+    b.ctl[CTL_VOICES]  = 2.0f;
+    b.ctl[CTL_SPREAD]  = 50.0f;
+
+    double ph = 0.0;
+    const double w = 2.0 * PI * 220.0 / sr;
+    size_t done = 0;
+    while (done + N <= total) {
+        for (uint32_t i = 0; i < N; ++i) {
+            b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+        }
+        ph += w * (double)N;
+        tourner(&b);
+        memcpy(out + done, b.out[0], N * sizeof(float));
+        done += N;
+    }
+    fermer(&b);
+
+    double haut = 0.0, bas = 0.0;
+    int n_haut = 0, n_bas = 0;
+    for (double t = 2.0; t + 3.0 < duree; t += 0.5) {
+        const size_t deb = (size_t)(sr * t);
+        const size_t n   = (size_t)(sr * 3.0);
+        double e = 0.0;
+        for (int j = -4; j <= 4; ++j) {
+            const double d = 0.25 * (double)j;
+            e += energie_a(out + deb, n, 214.41 + d, sr)
+               + energie_a(out + deb, n, 223.81 + d, sr);
+        }
+        const double s = 0.775 + 0.225 * sin(2.0 * PI * 0.041 * (t + 1.5));
+        if (s > 0.93)      { haut += e; ++n_haut; }
+        else if (s < 0.63) { bas  += e; ++n_bas;  }
+    }
+    free(out);
+    verifie_entre("the vibrato swells and relaxes instead of running flat",
+                  (haut / (double)n_haut) / (bas / (double)n_bas),
+                  1.35, 8.0);
+}
+
 /* ================================================================== */
 
 int main(void)
@@ -2309,6 +2395,7 @@ int main(void)
                                            essai_programme_interrupteurs();
     printf("Doubled voices:\n");            essai_voix();
                                            essai_choeur();
+                                           essai_choeur_souffle();
     printf("Anti-Larsen:\n");               essai_larsen();
                                            essai_larsen_relache();
                                            essai_larsen_rendu();
