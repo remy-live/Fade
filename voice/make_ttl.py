@@ -765,7 +765,16 @@ SCALE = {
 
 # Triggers are left out on purpose: a preset that presses TAP would set a
 # tempo the moment it loads.
-PRESET_SKIP = ("save", "tap")
+# What a preset must NOT write. The two triggers, because a preset that
+# pressed TAP would set a tempo as it loaded; IN GAIN and OUTPUT, because
+# they are rig levels and not part of a sound - a preset that reset the
+# input gain would make every preset sound like a level change; USER SLOT,
+# because where the next SAVE goes is nobody's business but the player's;
+# and FX and FX 2, because they are two ways into ONE state - writing both
+# at once makes the second cancel the first and the effects arrive muted.
+# PROGRAM is written, at MANUAL: it is what hands the ports control when a
+# preset is picked from the plugin's own menu.
+PRESET_SKIP = ("save", "tap", "in_gain", "output", "user_slot", "fx", "fx_2")
 
 PRESET_HEAD = """@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
 @prefix pset:  <http://lv2plug.in/ns/ext/presets#> .

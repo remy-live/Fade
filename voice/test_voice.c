@@ -505,6 +505,34 @@ static void essai_coupe_bas(void)
     verifie("low cut off leaves 200 Hz alone",
             gain_db(&b, 200.0, 0.2, 40, 60), 0.0, 0.15);
     fermer(&b);
+
+    /* Turning it off used to freeze the filter's state at whatever was in
+       it and go on subtracting that for ever. The output survived - there
+       is a DC blocker further down - but the gate and the compressor read
+       the signal BEFORE it, so a stuck offset held the gate open on
+       silence and made the compressor duck a voice that was not there. */
+    ouvrir(&b, 0, 48000.0, 256, 0);
+    neutre(&b);
+    b.ctl[CTL_LOW_CUT] = 400.0f;      /* a corner the 50 Hz tone sits under */
+    b.ctl[CTL_GATE]    = -40.0f;
+    double ph = 0.0;
+    const double w = 2.0 * PI * 50.0 / 48000.0;
+    for (int k = 0; k < 200; ++k) {       /* charge the state */
+        for (uint32_t j = 0; j < b.bloc; ++j) {
+            b.in[0][j] = (float)(0.5 * sin(ph));
+            ph += w;
+        }
+        tourner(&b);
+    }
+    verifie_vrai("the gate is open while the tone is there",
+                 b.ctl[CTL_GATE_OPEN] > 0.5f);
+    b.ctl[CTL_LOW_CUT] = 0.0f;            /* off, mid-note */
+    for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and turning LOW CUT off in silence still closes it",
+                 b.ctl[CTL_GATE_OPEN] < 0.5f);
+    verifie("with nothing left behind it", (double)crete(b.out[0], b.bloc),
+            0.0, 1.0e-6);
+    fermer(&b);
 }
 
 static void essai_bandes(void)
@@ -1386,7 +1414,12 @@ static void essai_interrupteurs_effets(void)
     chauffer(&b, 200.0);          /* let the switch ramp reach zero first */
     for (int k = 0; k < 200; ++k) { sinus(&b, 600.0, 0.3); tourner(&b); }
     chauffer(&b, 300.0);
-    verifie("REVERB OFF: no tail at all", crete(b.out[0], b.bloc), 0.0, 1.0e-7);
+    /* -100 dBFS, not exact zero: LOW CUT reads 0 here, which is off, and
+       off is a one-hertz high pass rather than a frozen one - so a few
+       microvolts of the tone's start are still walking back to nothing
+       160 ms later. A reverb tail at this point would be a thousand times
+       bigger. */
+    verifie("REVERB OFF: no tail at all", crete(b.out[0], b.bloc), 0.0, 1.0e-5);
     b.ctl[CTL_REVERB_ON] = 1.0f;
     for (int k = 0; k < 200; ++k) { sinus(&b, 600.0, 0.3); tourner(&b); }
     chauffer(&b, 300.0);
@@ -1450,6 +1483,104 @@ static void essai_interrupteurs_sans_clic(void)
         char quoi[64];
         snprintf(quoi, sizeof(quoi), "throwing %s does not click", noms[j]);
         verifie_vrai(quoi, bascule < calme * 1.5);
+        fermer(&b);
+    }
+}
+
+/* Same measurement, for the knobs that used to be read once a block and
+   applied whole: the compressor's makeup gain, SPREAD, the chorus depth
+   and the number of voices. A program change turns all four at once,
+   which is where it was heard - selecting a sound with a doubler in it
+   banged. */
+static void essai_boutons_sans_clic(void)
+{
+    static const int    commandes[] = { CTL_COMP, CTL_SPREAD, CTL_VOICES,
+                                        CTL_MOD };
+    static const float  depuis[]    = { 0.0f, 0.0f, 2.0f, 0.0f };
+    static const float  vers[]      = { 70.0f, 100.0f, 4.0f, 80.0f };
+    static const char*  noms[]      = { "COMP", "SPREAD", "VOICES", "MOD" };
+
+    for (int j = 0; j < 4; ++j) {
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 64, 0);
+        b.ctl[CTL_LOW_CUT]    = 80.0f;
+        b.ctl[CTL_GATE]       = -60.0f;
+        b.ctl[CTL_DOUBLER]    = 60.0f;
+        b.ctl[CTL_MOD]        = 30.0f;
+        b.ctl[CTL_REVERB_MIX] = 20.0f;
+        b.ctl[commandes[j]]   = depuis[j];
+        chauffer(&b, 1500.0);
+
+        double calme = 0.0, precedent = 0.0;
+        for (int k = 0; k < 1200; ++k) {
+            sinus(&b, 500.0, 0.3);
+            tourner(&b);
+            for (uint32_t i = 0; i < b.bloc; ++i) {
+                const double d = fabs((double)b.out[0][i] - precedent);
+                if (k > 900 && d > calme) { calme = d; }
+                precedent = b.out[0][i];
+            }
+        }
+
+        double saut = 0.0;
+        for (int tour = 0; tour < 2; ++tour) {
+            b.ctl[commandes[j]] = tour ? vers[j] : depuis[j];
+            for (int k = 0; k < 120; ++k) {
+                sinus(&b, 500.0, 0.3);
+                tourner(&b);
+                for (uint32_t i = 0; i < b.bloc; ++i) {
+                    const double d = fabs((double)b.out[0][i] - precedent);
+                    if (d > saut) { saut = d; }
+                    precedent = b.out[0][i];
+                }
+            }
+        }
+        char quoi[64];
+        snprintf(quoi, sizeof(quoi), "turning %s does not click", noms[j]);
+        if (getenv("TRACE_CLIC")) {
+            printf("    %s: calme=%.6f saut=%.6f (x%.2f)\n",
+                   noms[j], calme, saut, saut / (calme > 0 ? calme : 1));
+        }
+        verifie_vrai(quoi, saut < calme * 1.5);
+        fermer(&b);
+    }
+
+    /* And the case a singer actually meets: picking a sound from the
+       list turns every one of those knobs at once. */
+    {
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 64, 0);
+        neutre(&b);
+        chauffer(&b, 1500.0);
+
+        double calme = 0.0, precedent = 0.0;
+        for (int k = 0; k < 1200; ++k) {
+            sinus(&b, 500.0, 0.3);
+            tourner(&b);
+            for (uint32_t i = 0; i < b.bloc; ++i) {
+                const double d = fabs((double)b.out[0][i] - precedent);
+                if (k > 900 && d > calme) { calme = d; }
+                precedent = b.out[0][i];
+            }
+        }
+
+        double saut = 0.0;
+        b.ctl[CTL_PROGRAM] = (float)programme_nomme("CHOIR");
+        for (int k = 0; k < 400; ++k) {
+            sinus(&b, 500.0, 0.3);
+            tourner(&b);
+            for (uint32_t i = 0; i < b.bloc; ++i) {
+                const double d = fabs((double)b.out[0][i] - precedent);
+                if (d > saut) { saut = d; }
+                precedent = b.out[0][i];
+            }
+        }
+        if (getenv("TRACE_CLIC")) {
+            printf("    PROGRAM: calme=%.6f saut=%.6f (x%.2f)\n",
+                   calme, saut, saut / (calme > 0 ? calme : 1));
+        }
+        verifie_vrai("and picking a program does not click",
+                     saut < calme * 2.0);
         fermer(&b);
     }
 }
@@ -2118,7 +2249,7 @@ typedef struct {
     double notches;
 } Larsen;
 
-static Larsen larsen_essai(float hunt, double loop_gain, int note)
+static Larsen larsen_essai(float hunt, double loop_gain, int note, double hz)
 {
     const double sr = 48000.0;
     const uint32_t N = 64;
@@ -2136,15 +2267,15 @@ static Larsen larsen_essai(float hunt, double loop_gain, int note)
        one is exactly on the edge of howling */
     double norm = 0.0;
     {
-        Biquad t; bq_bandpass(&t, 1200.0, 3.0, sr, 1.0);
+        Biquad t; bq_bandpass(&t, hz, 3.0, sr, 1.0);
         double p = 0.0;
         for (int i = 0; i < 20000; ++i) {
-            p += 2.0 * PI * 1200.0 / sr;
+            p += 2.0 * PI * hz / sr;
             const double y = bq_run(&t, sin(p));
             if (i > 10000 && fabs(y) > norm) { norm = fabs(y); }
         }
     }
-    bq_bandpass(&room, 1200.0, 3.0, sr, loop_gain / (norm > 0.0 ? norm : 1.0));
+    bq_bandpass(&room, hz, 3.0, sr, loop_gain / (norm > 0.0 ? norm : 1.0));
 
     Larsen r = { 0.0, 0.0, 0.0 };
     double ph = 0.0;
@@ -2161,7 +2292,7 @@ static Larsen larsen_essai(float hunt, double loop_gain, int note)
                 src = 0.22 * (sin(ph) + 0.55 * sin(2 * ph) + 0.30 * sin(3 * ph)
                             + 0.15 * sin(4 * ph)) * (0.85 + 0.15 * sin(2.0 * PI * 0.7 * t));
             } else {
-                ph += 2.0 * PI * 1200.0 / sr;
+                ph += 2.0 * PI * hz / sr;
                 src = (t < 0.6 ? 0.20 : 0.004) * sin(ph);
             }
             int rd = w + (int)i - D;
@@ -2191,10 +2322,10 @@ static Larsen larsen_essai(float hunt, double loop_gain, int note)
 
 static void essai_larsen(void)
 {
-    const Larsen libre  = larsen_essai(0.0f,  1.6, 0);
-    const Larsen chasse = larsen_essai(60.0f, 1.6, 0);
-    const Larsen dur    = larsen_essai(90.0f, 1.6, 0);
-    const Larsen chante = larsen_essai(90.0f, 0.0, 1);
+    const Larsen libre  = larsen_essai(0.0f,  1.6, 0, 1200.0);
+    const Larsen chasse = larsen_essai(60.0f, 1.6, 0, 1200.0);
+    const Larsen dur    = larsen_essai(90.0f, 1.6, 0, 1200.0);
+    const Larsen chante = larsen_essai(90.0f, 0.0, 1, 1200.0);
 
     verifie_vrai("without the hunter the room howls and stays there",
                  libre.pic_fin > 0.5 && libre.notches == 0.0);
@@ -2205,6 +2336,28 @@ static void essai_larsen(void)
     verifie("a sung note with harmonics and vibrato is not notched",
             chante.notches, 0.0, 0.001);
     verifie_vrai("and it comes through untouched", chante.pic_fin > 0.2);
+
+    /* The top of the bank had a bug worth a test of its own. The test
+       that keeps a harmonic out of the notches asks "is my octave
+       partner three bands up loud too?", and the top three bands have no
+       partner up there, so they asked it backwards - "is the band three
+       BELOW me loud?" - which is true of every voice ever recorded,
+       there being always more energy low than high. The top three bands
+       were therefore vetoed on every block and could never be notched,
+       and five kilohertz is exactly where a bright PA sings. */
+    const Larsen aigu_libre  = larsen_essai(0.0f,  1.6, 1, 5200.0);
+    const Larsen aigu_chasse = larsen_essai(60.0f, 1.6, 1, 5200.0);
+    if (getenv("TRACE_LARSEN")) {
+        printf("    aigu libre  pic_fin=%.4f notches=%.1f\n",
+               aigu_libre.pic_fin, aigu_libre.notches);
+        printf("    aigu chasse pic_fin=%.4f notches=%.1f\n",
+               aigu_chasse.pic_fin, aigu_chasse.notches);
+    }
+    verifie_vrai("a howl at five kilohertz over a sung note builds up too",
+                 aigu_libre.pic_fin > 0.5 && aigu_libre.notches == 0.0);
+    verifie_vrai("and the hunter catches that one as well",
+                 aigu_chasse.pic_fin < aigu_libre.pic_fin * 0.5
+                 && aigu_chasse.notches > 0.0);
 }
 
 /* A notch has to be GIVEN BACK, at every sample rate. The first version
@@ -2254,6 +2407,65 @@ static void essai_larsen_relache(void)
     verifie_vrai("and the frequency comes back with them",
                  gain_db(&b, 1241.0, 0.4, 40, 60) > avec + 3.0);
     fermer(&b);
+}
+
+/* Switching the hunter off has to forget what it was about to do. A slot
+   that still owes a notch to a band plants one the moment the hunter
+   comes back, on a room it has not listened to since. */
+static void essai_larsen_oubli(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_FEEDBACK] = 100.0f;
+    for (int k = 0; k < 800; ++k) { sinus(&b, 1241.0, 0.4); tourner(&b); }
+    verifie_vrai("a tone is notched, and a slot may owe another band",
+                 b.ctl[CTL_NOTCHES] > 0.0f);
+
+    b.ctl[CTL_FEEDBACK_ON] = 0.0f;
+    chauffer(&b, 400.0);
+    b.ctl[CTL_FEEDBACK_ON] = 1.0f;
+    chauffer(&b, 200.0);            /* silence, and the hunter back on */
+    verifie("coming back on in silence plants nothing",
+            (double)b.ctl[CTL_NOTCHES], 0.0, 0.001);
+    fermer(&b);
+}
+
+/* One non-finite sample from a plugin upstream used to be the end of the
+   session: it latched into the first filter state and was subtracted from
+   every sample after it, for ever. */
+static void essai_non_fini(void)
+{
+    const float valeurs[2] = { (float)(1.0 / 0.0), (float)(0.0 / 0.0) };
+    const char* noms[2] = { "an infinity", "a NaN" };
+
+    for (int j = 0; j < 2; ++j) {
+        Banc b;
+        char quoi[80];
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        chauffer(&b, 200.0);
+        for (int k = 0; k < 20; ++k) { sinus(&b, 440.0, 0.3); tourner(&b); }
+
+        sinus(&b, 440.0, 0.3);
+        b.in[0][64] = valeurs[j];
+        tourner(&b);
+
+        int fini = 1;
+        for (int k = 0; k < 400; ++k) {
+            sinus(&b, 440.0, 0.3);
+            tourner(&b);
+            for (uint32_t i = 0; i < b.bloc; ++i) {
+                const float y = b.out[0][i];
+                if (!(y > -8.0f && y < 8.0f)) { fini = 0; }
+            }
+        }
+        snprintf(quoi, sizeof(quoi),
+                 "%s on the input does not kill the channel", noms[j]);
+        verifie_vrai(quoi, fini);
+        verifie_vrai("  and the voice is still there",
+                     crete(b.out[0], b.bloc) > 0.05f);
+        fermer(&b);
+    }
 }
 
 /* ================================================================== */
@@ -2385,6 +2597,7 @@ typedef struct { double b1, b2, y1, y2, c, r; } Reso;
 
 static void reso_set(Reso* f, double hz, double bw, double sr)
 {
+    f->y1 = f->y2 = 0.0;
     f->r  = exp(-PI * bw / sr);
     f->c  = 2.0 * f->r * cos(2.0 * PI * hz / sr);
     f->b1 = f->c;
@@ -2555,6 +2768,7 @@ int main(int argc, char** argv)
     printf("One switch per effect:\n");    essai_interrupteurs_effets();
                                            essai_interrupteurs_sans_clic();
     printf("Compressor level:\n");         essai_comp_niveau();
+                                           essai_boutons_sans_clic();
     printf("Preset loudness, on a sung phrase:\n"); essai_sonie_presets();
     printf("The program list:\n");          essai_programme_egale_preset();
                                            essai_programme_interrupteurs();
@@ -2564,6 +2778,8 @@ int main(int argc, char** argv)
     printf("Anti-Larsen:\n");               essai_larsen();
                                            essai_larsen_relache();
                                            essai_larsen_rendu();
+                                           essai_larsen_oubli();
+    printf("Rubbish on the input:\n");      essai_non_fini();
     printf("Pitch:\n");                     essai_pitch();
     printf("Tone controls:\n");             essai_eq();
     printf("USER slots:\n");                essai_slots();

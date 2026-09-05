@@ -301,6 +301,15 @@ dire("every program matches the preset of the same name", not desaccord,
 dire("presets leave PROGRAM on MANUAL, so the ports rule when one is loaded",
      all(re.search(r'lv2:symbol "program" ;\s*\n\s*pset:value 0', b[3]) is not None
          for b in blocs), "a preset that selected a program would fight itself")
+# IN GAIN and OUTPUT are how loud the microphone and the rig are, not what
+# the sound is; USER SLOT is where the player's next SAVE goes; and FX and
+# FX 2 are two ways into ONE state, so writing both makes the second cancel
+# the first and every preset arrives with its effects muted.
+_interdit = [sym for sym in ("in_gain", "output", "user_slot", "fx", "fx_2",
+                             "save", "tap")
+             if any('lv2:symbol "%s"' % sym in b[3] for b in blocs)]
+dire("and never write the ports that are the player's, not the sound's",
+     not _interdit, " ".join(_interdit))
 
 # --- the web UI is checked by check_modgui.js; here, only that the
 #     bundle will actually carry it ---

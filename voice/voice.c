@@ -708,6 +708,12 @@ typedef enum {
     SM_IN = 0, SM_OUT, SM_BODY, SM_PRESENCE, SM_AIR,
     SM_DRIVE_PRE, SM_DRIVE_POST, SM_DRIVE_MIX, SM_PITCH,
     SM_DOUBLER, SM_MOD, SM_DELAY, SM_REVERB,
+    /* These four used to be read once a block and applied whole. Each of
+       them steps the sound when it moves: the makeup gain by up to 8 dB
+       when COMP turns, the detune and the entries when SPREAD does - and
+       a program change turns all of them at once, which is a bang. */
+    SM_MAKEUP, SM_COMP_THR, SM_COMP_SLOPE, SM_SPREAD, SM_MOD_DEPTH,
+    SM_VOICE_GAIN,
     SM_COUNT
 } SmoothIndex;
 
@@ -773,6 +779,9 @@ typedef struct {
 
     /* --- smoothed controls --- */
     float sm[SM_COUNT];
+    /* One gain per doubled voice, so a voice that VOICES has just added
+       fades in over a block instead of arriving at full level. */
+    float vg[MAX_VOICES];
 
     /* --- dynamics --- */
     float    gate_env;
@@ -814,6 +823,7 @@ typedef struct {
     float    tap_ms;
     float    knob_ms_prev;
     float    delay_ms;        /* the time in force, glided towards its target */
+    float    spread_entry;    /* SPREAD as the entry times have reached it */
 
     /* --- the anti-Larsen hunter. It listens to the mono sum, once, and
            the notches it places are applied to every channel: a howl is a
@@ -847,6 +857,7 @@ typedef struct {
     /* --- the pitch shifter: one phase, shared by both channels, or the
            image would drift apart --- */
     float pitch_phase;
+    int   pitch_was_moving;   /* so crossing zero can restart the grain */
 
     /* --- the four slots the player fills in. Saved with the pedalboard
            through the State extension, which is the only reason this
@@ -1045,9 +1056,17 @@ hunt_decide(Voice* self, float sensitivity)
            am I myself the octave of something loud below? - which is the
            same test read backwards and keeps the top of the bank from
            being the trigger-happy end of it. */
+        /* Read backwards, the question has to be asked with the other
+           threshold. "Is there a fifth of my energy three bands below
+           me?" is true of practically any voice - there is always more
+           energy low than high - so the top three bands were vetoed on
+           every block and could never be notched at all, which is
+           precisely where a bright PA howls. What makes a high band a
+           harmonic rather than a howl is a fundamental that is LOUDER
+           than it. */
         const int harmonique = (b + 3 < N_BAND)
                              ? (self->band_env[b + 3] > 0.20f * e)
-                             : (self->band_env[b - 3] > 0.20f * e);
+                             : (self->band_env[b - 3] > e);
 
         if (fort && stable && !harmonique) {
             if (self->band_steady[b] < 0xFFFFu) { self->band_steady[b]++; }
@@ -1333,6 +1352,36 @@ static float param_read(const Voice* self, int i)
     return ctl_read(self, i);
 }
 
+/* The three values below are needed in two places - activate(), which
+   must land on them with no ramp at all, and run(), which walks to them
+   across the block. Written once so the two cannot drift apart. */
+static int voices_of(const Voice* self)
+{
+    int n = (int)(param_read(self, CTL_VOICES) + 0.5f);
+    if (n < 2)          { n = 2; }
+    if (n > MAX_VOICES) { n = MAX_VOICES; }
+    return n;
+}
+
+static float voice_gain_of(const Voice* self, uint32_t n_ch)
+{
+    const int n = voices_of(self);
+    return (n_ch == 1u) ? double_gain[n] : double_gain_st[n];
+}
+
+static float comp_slope_of(const Voice* self)
+{
+    const float amt = param_read(self, CTL_COMP);
+    return 1.0f - 1.0f / (1.0f + amt * 0.05f);       /* 1 .. 6 : 1 */
+}
+
+static float comp_makeup_of(const Voice* self)
+{
+    const float thr = -param_read(self, CTL_COMP) * 0.4f;
+    return comp_reduction(REF_DB - thr, comp_slope_of(self), 6.0f);
+}
+
+
 static void
 activate(LV2_Handle instance)
 {
@@ -1413,6 +1462,19 @@ activate(LV2_Handle instance)
     self->sm[SM_MOD]        = param_read(self, CTL_MOD)        * 0.01f;
     self->sm[SM_DELAY]      = param_read(self, CTL_DELAY_MIX)  * 0.01f;
     self->sm[SM_REVERB]     = param_read(self, CTL_REVERB_MIX) * 0.01f;
+    self->sm[SM_MAKEUP]     = comp_makeup_of(self);
+    self->sm[SM_COMP_THR]   = -param_read(self, CTL_COMP) * 0.4f;
+    self->sm[SM_COMP_SLOPE] = comp_slope_of(self);
+    self->sm[SM_SPREAD]     = param_read(self, CTL_SPREAD) * 0.01f;
+    self->spread_entry      = self->sm[SM_SPREAD];
+    self->sm[SM_MOD_DEPTH]  = 0.5f + 3.5f * param_read(self, CTL_MOD) * 0.01f;
+    self->sm[SM_VOICE_GAIN] = voice_gain_of(self, self->n_ch);
+    {
+        const int n = voices_of(self);
+        for (int k = 0; k < MAX_VOICES; ++k) {
+            self->vg[k] = (k < n) ? 1.0f : 0.0f;
+        }
+    }
 
     for (int b = 0; b < N_BAND; ++b) {
         self->band[b].ic1 = self->band[b].ic2 = 0.0f;
@@ -1474,6 +1536,7 @@ activate(LV2_Handle instance)
     }
     self->ph_mod       = 0.0f;
     self->pitch_phase  = 0.0f;
+    self->pitch_was_moving = 0;
 
     self->screen_left = 1u;
     self->forget_left = self->forget_period;
@@ -1833,36 +1896,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float    rate = self->rate;
     const float    ms2n = rate * 0.001f;     /* milliseconds to samples */
 
-    /* ---------------- controls, read and clamped once ---------------- */
-    const float lowcut_hz = param_read(self, CTL_LOW_CUT);
-    const float gate_db   = param_read(self, CTL_GATE);
-    const float comp_amt  = param_read(self, CTL_COMP);
-    const float deess_amt = param_read(self, CTL_DE_ESS);
-    const float drive_amt = param_read(self, CTL_DRIVE);
-    const float mod_speed = param_read(self, CTL_MOD_SPEED);
-    const float mod_amt   = param_read(self, CTL_MOD) * 0.01f;
-    const float fb_amt    = param_read(self, CTL_DELAY_REPEATS) * 0.01f;
-    const float rev_amt   = param_read(self, CTL_REVERB) * 0.01f;
-    /* The anti-Larsen hunter. Off by default and free when off: nothing
-       in the bank runs unless the control is up. */
-    const float hunt_amt = param_read(self, CTL_FEEDBACK) * 0.01f;
-    const int   hunt_on  = (hunt_amt > 0.005f) && self->sw_state[SW_FEEDBACK];
-    const float notch_step = 1.0f / (0.12f * rate);   /* a notch fades in */
-
-    /* Pitch. At zero semitones the two grains would sit still and comb
-       the signal, so the whole block steps aside instead - which is also
-       what makes PITCH at 0 exactly transparent. */
-    const float semitones  = param_read(self, CTL_PITCH);
-    const int   pitch_moves = (semitones > 0.01f || semitones < -0.01f);
-    const float pitch_ratio = exp2_approx(semitones * (1.0f / 12.0f));
-    const float pitch_win   = PITCH_WIN_MS * ms2n;
-    const float pitch_step  = (1.0f - pitch_ratio) / pitch_win;
-
-    int n_voices = (int)(param_read(self, CTL_VOICES) + 0.5f);
-    if (n_voices < 2)          { n_voices = 2; }
-    if (n_voices > MAX_VOICES) { n_voices = MAX_VOICES; }
-    const float out_db    = ctl_read(self, CTL_OUTPUT);
-
     /* ---------------- the program list ----------------
        Changing programs is the only moment the switch positions are taken
        from the table. After that the ports own them again, so a foot on a
@@ -1907,6 +1940,41 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->ctl_mine[i] = 1u;
         }
     }
+
+    /* ---------------- controls, read and clamped once ---------------- */
+    const float lowcut_hz = param_read(self, CTL_LOW_CUT);
+    const float gate_db   = param_read(self, CTL_GATE);
+    const float comp_amt  = param_read(self, CTL_COMP);
+    const float deess_amt = param_read(self, CTL_DE_ESS);
+    const float drive_amt = param_read(self, CTL_DRIVE);
+    const float mod_speed = param_read(self, CTL_MOD_SPEED);
+    const float mod_amt   = param_read(self, CTL_MOD) * 0.01f;
+    const float fb_amt    = param_read(self, CTL_DELAY_REPEATS) * 0.01f;
+    const float rev_amt   = param_read(self, CTL_REVERB) * 0.01f;
+    /* The anti-Larsen hunter. Off by default and free when off: nothing
+       in the bank runs unless the control is up. */
+    const float hunt_amt = param_read(self, CTL_FEEDBACK) * 0.01f;
+    const int   hunt_on  = (hunt_amt > 0.005f) && self->sw_state[SW_FEEDBACK];
+    const float notch_step = 1.0f / (0.12f * rate);   /* a notch fades in */
+
+    /* Pitch. At zero semitones the two grains would sit still and comb
+       the signal, so the whole block steps aside instead - which is also
+       what makes PITCH at 0 exactly transparent. */
+    const float semitones  = param_read(self, CTL_PITCH);
+    const int   pitch_moves = (semitones > 0.01f || semitones < -0.01f);
+    /* Crossing zero - a knob swept from -1 to +1, or a program that turns
+       PITCH on - restarts the grain at the newest sample. Left where it
+       was, the first sample after the step is spliced to one up to
+       fifty-five milliseconds old, which is a click and then a stutter. */
+    if (pitch_moves && !self->pitch_was_moving) { self->pitch_phase = 0.0f; }
+    self->pitch_was_moving = pitch_moves;
+    const float pitch_ratio = exp2_approx(semitones * (1.0f / 12.0f));
+    const float pitch_win   = PITCH_WIN_MS * ms2n;
+    const float pitch_step  = (1.0f - pitch_ratio) / pitch_win;
+
+    const int n_voices = voices_of(self);
+    const float out_db    = ctl_read(self, CTL_OUTPUT);
+
 
     for (int k = 0; k < (int)SW_COUNT; ++k) {
         const int now = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
@@ -2000,7 +2068,13 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float time_target = self->tap_active ? self->tap_ms : knob_ms;
 
     /* ---------------- coefficients ---------------- */
-    const float lc_c     = onepole_coef(lowcut_hz, rate);
+    /* LOW CUT at 0 means off - but a coefficient of exactly zero freezes
+       the low pass and goes on subtracting whatever was in it, for ever:
+       the gate and the compressor read that stuck offset and never let
+       go. One hertz is inaudible and still lets the state find its way
+       back to nothing. */
+    const float lc_c     = onepole_coef(lowcut_hz > 1.0f ? lowcut_hz : 1.0f,
+                                        rate);
     const float de_c     = onepole_coef(5500.0f, rate);
     /* The middle band is the difference of two low passes an octave and a
        half apart, centred wherever MID FREQ says. That difference peaks at
@@ -2044,7 +2118,8 @@ run(LV2_Handle instance, uint32_t n_samples)
        what this did first - handed a preset with COMP at 65 nearly 12 dB
        of makeup on top of everything else, and the whole preset came out
        shouting. */
-    const int   comp_on     = comp_amt > 0.5f;
+    const int   comp_on     = comp_amt > 0.5f
+                              || self->sm[SM_COMP_SLOPE] > 1.0e-4f;
     const float comp_thr    = -comp_amt * 0.4f;              /* 0 .. -40 dB */
     const float comp_ratio  = 1.0f + comp_amt * 0.05f;       /* 1 .. 6 : 1 */
     const float comp_slope  = 1.0f - 1.0f / comp_ratio;
@@ -2078,8 +2153,7 @@ run(LV2_Handle instance, uint32_t n_samples)
        separate voices and add coherently into one static comb - louder AND
        worse than no doubler at all, at the one setting a player will try
        first. */
-    const float detune_scale = 0.45f + 1.10f * spread_amt;
-    const float entry_scale  = 0.70f + 0.30f * spread_amt;
+
     float choir_win[MAX_VOICES], choir_lp_c[MAX_VOICES], choir_hp_c[MAX_VOICES];
     for (int k = 0; k < MAX_VOICES; ++k) {
         choir_win[k]  = choir_win_ms[k] * ms2n;
@@ -2117,6 +2191,12 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_MOD]        = mod_amt;
     target[SM_DELAY]      = param_read(self, CTL_DELAY_MIX)  * 0.01f;
     target[SM_REVERB]     = param_read(self, CTL_REVERB_MIX) * 0.01f;
+    target[SM_MAKEUP]     = comp_makeup;
+    target[SM_COMP_THR]   = comp_thr;
+    target[SM_COMP_SLOPE] = comp_slope;
+    target[SM_SPREAD]     = spread_amt;
+    target[SM_MOD_DEPTH]  = 0.5f + 3.5f * mod_amt;
+    target[SM_VOICE_GAIN] = voice_gain_of(self, n_ch);
 
     float sm[SM_COUNT], sm_step[SM_COUNT];
     for (int k = 0; k < (int)SM_COUNT; ++k) {
@@ -2127,10 +2207,25 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float fx_target = self->fx_state ? 1.0f : 0.0f;
     const float fx_step   = 1.0f / (FX_RAMP_MS * 0.001f * rate);
     const float glide     = env_coef(120.0f, rate);
+    const float glide_lent = env_coef(400.0f, rate);
 
     float sw_target[SW_COUNT];
     for (int k = 0; k < (int)SW_COUNT; ++k) {
         sw_target[k] = self->sw_state[k] ? 1.0f : 0.0f;
+    }
+
+    /* A voice VOICES has just added fades in across the block rather than
+       arriving at full level, and one it has dropped fades out - so the
+       loop below still has to run every voice that is not yet silent. */
+    float vg_step[MAX_VOICES];
+    int   n_run = n_voices;
+    for (int k = 0; k < MAX_VOICES; ++k) {
+        const float cible = (k < n_voices) ? 1.0f : 0.0f;
+        vg_step[k] = (n_samples > 0u)
+                   ? (cible - self->vg[k]) / (float)n_samples : 0.0f;
+        if (k >= n_run && (self->vg[k] > 0.0f || vg_step[k] != 0.0f)) {
+            n_run = k + 1;
+        }
     }
 
     /* The three doubled voices drift on their own slow LFO. The rates are
@@ -2145,6 +2240,9 @@ run(LV2_Handle instance, uint32_t n_samples)
     for (uint32_t i = 0; i < n_samples; ++i) {
         for (int k = 0; k < (int)SM_COUNT; ++k) {
             sm[k] += sm_step[k];
+        }
+        for (int k = 0; k < n_run; ++k) {
+            self->vg[k] += vg_step[k];
         }
 
         if (self->fx_gain < fx_target) {
@@ -2165,6 +2263,12 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
 
         self->delay_ms += glide * (time_target - self->delay_ms);
+        /* SPREAD moves the entries, and an entry is a delay: ramping one
+           across a block moves the read point fifteen milliseconds in
+           one, which is not a ramp, it is a jump at twelve times speed.
+           It glides like the delay time instead, and the detune - a pitch
+           offset, not a position - keeps the fast ramp. */
+        self->spread_entry += glide_lent * (spread_amt - self->spread_entry);
         const float delay_n = self->delay_ms * ms2n;
 
         /* --- input gain and low cut --- */
@@ -2172,7 +2276,14 @@ run(LV2_Handle instance, uint32_t n_samples)
         float det = 0.0f;
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
+            /* Whatever the pedalboard hands us. One NaN or infinity from
+               a plugin upstream, latched into the first filter state, is
+               subtracted from every sample after it for the rest of the
+               session: the channel is dead until the board is reloaded.
+               The comparison is written so that a NaN, which compares
+               false against everything, comes out as silence. */
             float v = self->in[c] ? self->in[c][i] : 0.0f;
+            if (!(v > -64.0f && v < 64.0f)) { v = 0.0f; }
             v *= sm[SM_IN];
             ch->lc_z = flush(ch->lc_z + lc_c * (v - ch->lc_z));
             v -= ch->lc_z;                 /* high pass = input minus its low pass */
@@ -2248,8 +2359,13 @@ run(LV2_Handle instance, uint32_t n_samples)
                 } else {
                     self->notch[i].active = 0;
                 }
+                /* And nothing is owed to a band any more: a slot still
+                   holding one would plant a notch on it the instant the
+                   hunter came back, on a room it has not listened to. */
+                self->notch[i].pending = -1;
             }
             self->n_notch = reste;
+            for (int b = 0; b < N_BAND; ++b) { self->band_steady[b] = 0u; }
         }
 
         /* --- gate --- */
@@ -2280,19 +2396,24 @@ run(LV2_Handle instance, uint32_t n_samples)
         det *= self->gate_gain;
 
         /* --- compressor --- */
-        if (comp_on) {
+        /* The detector runs whether or not the compressor is working.
+           Entering with a cold envelope means the full makeup gain and no
+           reduction at all for the first few milliseconds, which is a
+           jump UP of several decibels the moment COMP leaves zero. */
+        {
             const float ce = (det > self->comp_env) ? comp_att : comp_rel;
             self->comp_env = flush(self->comp_env + ce * (det - self->comp_env));
-
-            const float over = lin_to_db(self->comp_env) - comp_thr;
+        }
+        if (comp_on) {
+            const float over = lin_to_db(self->comp_env) - sm[SM_COMP_THR];
             /* The switch scales what the compressor does rather than
                branching around it, so a foot on it fades instead of
                stepping, and the detector stays warm either way. */
-            const float red = comp_reduction(over, comp_slope, knee)
+            const float red = comp_reduction(over, sm[SM_COMP_SLOPE], knee)
                             * self->sw[SW_COMP];
             if (red > gr_worst) { gr_worst = red; }
 
-            const float g = db_to_lin(comp_makeup * self->sw[SW_COMP] - red);
+            const float g = db_to_lin(sm[SM_MAKEUP] * self->sw[SW_COMP] - red);
             for (uint32_t c = 0; c < n_ch; ++c) {
                 x[c] *= g;
             }
@@ -2415,10 +2536,12 @@ run(LV2_Handle instance, uint32_t n_samples)
            of the crossfade are weighted, and how far its own detune has
            moved the grain on since the last sample. */
         float d_a[MAX_VOICES], d_b[MAX_VOICES], w_a[MAX_VOICES];
-        for (int k = 0; k < n_voices; ++k) {
+        for (int k = 0; k < n_run; ++k) {
             /* 0.55 to 1.00 of the nominal depth, so the vibrato breathes */
             const float swell = 0.775f
                               + 0.225f * lfo_sin(self->ph_choir_swell[k]);
+            const float detune_scale = 0.45f + 1.10f * sm[SM_SPREAD];
+            const float entry_scale  = 0.70f + 0.30f * self->spread_entry;
             const float cents = (choir_cents[k]
                                + choir_drift[k] * lfo_sin(self->ph_choir_drift[k])
                                + choir_vib[k]   * swell
@@ -2437,7 +2560,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             d_b[k] = base + q * choir_win[k];
             w_a[k] = 0.5f - 0.5f * lfo_sin(p + 0.25f);
         }
-        const float depth = 0.5f + 3.5f * mod_amt;
+        const float depth = sm[SM_MOD_DEPTH];
 
         float wet[MAX_CH];
         float dly_sum = 0.0f;
@@ -2446,7 +2569,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             ring_write(&ch->shortline, send[c]);
 
             float w = 0.0f;
-            for (int k = 0; k < n_voices; ++k) {
+            for (int k = 0; k < n_run; ++k) {
                 float v = ring_read(&ch->shortline, d_a[k]) * w_a[k]
                         + ring_read(&ch->shortline, d_b[k]) * (1.0f - w_a[k]);
                 /* each voice through its own throat: one bright, one
@@ -2458,6 +2581,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                                                        - ch->choir_hp[k]));
                 v = ch->choir_lp[k] - ch->choir_hp[k];
 
+                v *= self->vg[k];       /* 0 while this voice fades in or out */
                 if (n_ch == 1u) {
                     w += v;
                 } else if ((n_voices & 1) && k == n_voices - 1) {
@@ -2466,7 +2590,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                     w += v;                 /* even voices left, odd voices right */
                 }
             }
-            w *= (n_ch == 1u) ? double_gain[n_voices] : double_gain_st[n_voices];
+            w *= sm[SM_VOICE_GAIN];
             wet[c] = w * sm[SM_DOUBLER] * self->sw[SW_DOUBLER];
 
             const float mod_ph = self->ph_mod + (c ? 0.25f : 0.0f);

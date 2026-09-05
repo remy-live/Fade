@@ -10,12 +10,6 @@
         lv2:symbol "program" ;
         pset:value 0.0
     ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
-        pset:value 0.0
-    ] , [
         lv2:symbol "low_cut" ;
         pset:value 120.0
     ] , [
@@ -114,15 +108,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_podcast>
@@ -133,12 +118,6 @@
         lv2:symbol "program" ;
         pset:value 0.0
     ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
-        pset:value 0.0
-    ] , [
         lv2:symbol "low_cut" ;
         pset:value 110.0
     ] , [
@@ -237,15 +216,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_audiobook>
@@ -254,12 +224,6 @@
     rdfs:label "Audiobook" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -360,15 +324,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 7.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_voiceover>
@@ -377,12 +332,6 @@
     rdfs:label "Voice-Over" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -483,15 +432,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_desk>
@@ -500,12 +440,6 @@
     rdfs:label "Desk Mic" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -606,15 +540,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_announcer>
@@ -623,12 +548,6 @@
     rdfs:label "Radio Announcer" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -729,15 +648,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stage>
@@ -746,12 +656,6 @@
     rdfs:label "Stage Dry" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -852,15 +756,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_ballad>
@@ -869,12 +764,6 @@
     rdfs:label "Ballad" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -975,15 +864,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_powerballad>
@@ -992,12 +872,6 @@
     rdfs:label "Power Ballad" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1098,15 +972,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_crooner>
@@ -1115,12 +980,6 @@
     rdfs:label "Warm Crooner" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1221,15 +1080,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_pop>
@@ -1238,12 +1088,6 @@
     rdfs:label "Modern Pop" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1344,15 +1188,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_poplead>
@@ -1361,12 +1196,6 @@
     rdfs:label "Pop Lead" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1467,15 +1296,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rock>
@@ -1484,12 +1304,6 @@
     rdfs:label "Rock" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1590,15 +1404,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rocklead>
@@ -1607,12 +1412,6 @@
     rdfs:label "Rock Lead" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1713,15 +1512,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 9.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_shout>
@@ -1730,12 +1520,6 @@
     rdfs:label "Hard Rock Shout" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1836,15 +1620,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_country>
@@ -1853,12 +1628,6 @@
     rdfs:label "Country" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -1959,15 +1728,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_cutthru>
@@ -1976,12 +1736,6 @@
     rdfs:label "Cut Through" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2082,15 +1836,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_whisper>
@@ -2099,12 +1844,6 @@
     rdfs:label "Whisper" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2205,15 +1944,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tight>
@@ -2222,12 +1952,6 @@
     rdfs:label "Tight Double" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2328,15 +2052,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stagedouble>
@@ -2345,12 +2060,6 @@
     rdfs:label "Stage Double" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2451,15 +2160,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_wide>
@@ -2468,12 +2168,6 @@
     rdfs:label "Wide" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2574,15 +2268,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_backing>
@@ -2591,12 +2276,6 @@
     rdfs:label "Backing Vocals" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2697,15 +2376,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stack>
@@ -2714,12 +2384,6 @@
     rdfs:label "Stacked Backing" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2820,15 +2484,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_choir>
@@ -2837,12 +2492,6 @@
     rdfs:label "Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -2943,15 +2592,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_widechoir>
@@ -2960,12 +2600,6 @@
     rdfs:label "Wide Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3066,15 +2700,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_gospel>
@@ -3083,12 +2708,6 @@
     rdfs:label "Gospel Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3189,15 +2808,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_gospelstack>
@@ -3206,12 +2816,6 @@
     rdfs:label "Gospel Stack" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3312,15 +2916,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_angel>
@@ -3329,12 +2924,6 @@
     rdfs:label "Angel Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3435,15 +3024,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_seraphim>
@@ -3452,12 +3032,6 @@
     rdfs:label "Seraphim" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3558,15 +3132,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 28.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_baritone>
@@ -3575,12 +3140,6 @@
     rdfs:label "Baritone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3681,15 +3240,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tenor>
@@ -3698,12 +3248,6 @@
     rdfs:label "Tenor" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3804,15 +3348,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_helium>
@@ -3821,12 +3356,6 @@
     rdfs:label "Helium" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -3927,15 +3456,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_octave>
@@ -3944,12 +3464,6 @@
     rdfs:label "Octave" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4050,15 +3564,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_octavebelow>
@@ -4067,12 +3572,6 @@
     rdfs:label "Octave Below" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4173,15 +3672,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_fifthbelow>
@@ -4190,12 +3680,6 @@
     rdfs:label "Fifth Below" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4296,15 +3780,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_monster>
@@ -4313,12 +3788,6 @@
     rdfs:label "Monster" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4419,15 +3888,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_robot>
@@ -4436,12 +3896,6 @@
     rdfs:label "Robot" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4542,15 +3996,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_alien>
@@ -4559,12 +4004,6 @@
     rdfs:label "Alien" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4665,15 +4104,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_hygiaphone>
@@ -4682,12 +4112,6 @@
     rdfs:label "Hygiaphone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4788,15 +4212,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_telephone>
@@ -4805,12 +4220,6 @@
     rdfs:label "Telephone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -4911,15 +4320,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_megaphone>
@@ -4928,12 +4328,6 @@
     rdfs:label "Megaphone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5034,15 +4428,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_walkie>
@@ -5051,12 +4436,6 @@
     rdfs:label "Walkie Talkie" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5157,15 +4536,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_radio>
@@ -5174,12 +4544,6 @@
     rdfs:label "Radio" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5280,15 +4644,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_slap>
@@ -5297,12 +4652,6 @@
     rdfs:label "Slapback" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5403,15 +4752,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tapeslap>
@@ -5420,12 +4760,6 @@
     rdfs:label "Tape Slap" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5526,15 +4860,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_eighths>
@@ -5543,12 +4868,6 @@
     rdfs:label "Eighth Notes" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5649,15 +4968,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_dub>
@@ -5666,12 +4976,6 @@
     rdfs:label "Dub" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5772,15 +5076,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 13.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_dubecho>
@@ -5789,12 +5084,6 @@
     rdfs:label "Dub Echo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -5895,15 +5184,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_ambient>
@@ -5912,12 +5192,6 @@
     rdfs:label "Ambient" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6018,15 +5292,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_wash>
@@ -6035,12 +5300,6 @@
     rdfs:label "Ambient Wash" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6141,15 +5400,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 32.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_arena>
@@ -6158,12 +5408,6 @@
     rdfs:label "Arena" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6264,15 +5508,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stadium>
@@ -6281,12 +5516,6 @@
     rdfs:label "Stadium" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6387,15 +5616,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_cathedral>
@@ -6404,12 +5624,6 @@
     rdfs:label "Cathedral" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6510,15 +5724,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_church>
@@ -6527,12 +5732,6 @@
     rdfs:label "Church" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6633,15 +5832,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_basilica>
@@ -6650,12 +5840,6 @@
     rdfs:label "Basilica" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6756,15 +5940,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_shimmer>
@@ -6773,12 +5948,6 @@
     rdfs:label "Shimmer" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -6879,15 +6048,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 30.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_solo>
@@ -6896,12 +6056,6 @@
     rdfs:label "Guitar Solo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7002,15 +6156,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_lead_solo>
@@ -7019,12 +6164,6 @@
     rdfs:label "Lead Solo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7125,15 +6264,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_crunch>
@@ -7142,12 +6272,6 @@
     rdfs:label "Guitar Crunch" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7248,15 +6372,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_clean>
@@ -7265,12 +6380,6 @@
     rdfs:label "Guitar Clean" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7371,15 +6480,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_chime>
@@ -7388,12 +6488,6 @@
     rdfs:label "Clean Chime" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7494,15 +6588,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_acoustic>
@@ -7511,12 +6596,6 @@
     rdfs:label "Acoustic Piezo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7617,15 +6696,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_bass>
@@ -7634,12 +6704,6 @@
     rdfs:label "Bass DI" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7740,15 +6804,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_harp>
@@ -7757,12 +6812,6 @@
     rdfs:label "Harmonica" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7863,15 +6912,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_sax>
@@ -7880,12 +6920,6 @@
     rdfs:label "Saxophone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -7986,15 +7020,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rotary>
@@ -8003,12 +7028,6 @@
     rdfs:label "Rotary Keys" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8109,15 +7128,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_speech_stereo>
@@ -8126,12 +7136,6 @@
     rdfs:label "Speech" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8232,15 +7236,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_podcast_stereo>
@@ -8249,12 +7244,6 @@
     rdfs:label "Podcast" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8355,15 +7344,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_audiobook_stereo>
@@ -8372,12 +7352,6 @@
     rdfs:label "Audiobook" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8478,15 +7452,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 7.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_voiceover_stereo>
@@ -8495,12 +7460,6 @@
     rdfs:label "Voice-Over" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8601,15 +7560,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_desk_stereo>
@@ -8618,12 +7568,6 @@
     rdfs:label "Desk Mic" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8724,15 +7668,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_announcer_stereo>
@@ -8741,12 +7676,6 @@
     rdfs:label "Radio Announcer" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8847,15 +7776,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stage_stereo>
@@ -8864,12 +7784,6 @@
     rdfs:label "Stage Dry" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -8970,15 +7884,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_ballad_stereo>
@@ -8987,12 +7892,6 @@
     rdfs:label "Ballad" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9093,15 +7992,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_powerballad_stereo>
@@ -9110,12 +8000,6 @@
     rdfs:label "Power Ballad" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9216,15 +8100,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_crooner_stereo>
@@ -9233,12 +8108,6 @@
     rdfs:label "Warm Crooner" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9339,15 +8208,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_pop_stereo>
@@ -9356,12 +8216,6 @@
     rdfs:label "Modern Pop" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9462,15 +8316,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_poplead_stereo>
@@ -9479,12 +8324,6 @@
     rdfs:label "Pop Lead" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9585,15 +8424,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rock_stereo>
@@ -9602,12 +8432,6 @@
     rdfs:label "Rock" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9708,15 +8532,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rocklead_stereo>
@@ -9725,12 +8540,6 @@
     rdfs:label "Rock Lead" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9831,15 +8640,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 9.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_shout_stereo>
@@ -9848,12 +8648,6 @@
     rdfs:label "Hard Rock Shout" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -9954,15 +8748,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_country_stereo>
@@ -9971,12 +8756,6 @@
     rdfs:label "Country" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10077,15 +8856,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_cutthru_stereo>
@@ -10094,12 +8864,6 @@
     rdfs:label "Cut Through" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10200,15 +8964,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_whisper_stereo>
@@ -10217,12 +8972,6 @@
     rdfs:label "Whisper" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10323,15 +9072,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tight_stereo>
@@ -10340,12 +9080,6 @@
     rdfs:label "Tight Double" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10446,15 +9180,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stagedouble_stereo>
@@ -10463,12 +9188,6 @@
     rdfs:label "Stage Double" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10569,15 +9288,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_wide_stereo>
@@ -10586,12 +9296,6 @@
     rdfs:label "Wide" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10692,15 +9396,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_backing_stereo>
@@ -10709,12 +9404,6 @@
     rdfs:label "Backing Vocals" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10815,15 +9504,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stack_stereo>
@@ -10832,12 +9512,6 @@
     rdfs:label "Stacked Backing" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -10938,15 +9612,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_choir_stereo>
@@ -10955,12 +9620,6 @@
     rdfs:label "Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11061,15 +9720,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_widechoir_stereo>
@@ -11078,12 +9728,6 @@
     rdfs:label "Wide Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11184,15 +9828,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_gospel_stereo>
@@ -11201,12 +9836,6 @@
     rdfs:label "Gospel Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11307,15 +9936,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_gospelstack_stereo>
@@ -11324,12 +9944,6 @@
     rdfs:label "Gospel Stack" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11430,15 +10044,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_angel_stereo>
@@ -11447,12 +10052,6 @@
     rdfs:label "Angel Choir" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11553,15 +10152,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_seraphim_stereo>
@@ -11570,12 +10160,6 @@
     rdfs:label "Seraphim" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11676,15 +10260,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 28.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_baritone_stereo>
@@ -11693,12 +10268,6 @@
     rdfs:label "Baritone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11799,15 +10368,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tenor_stereo>
@@ -11816,12 +10376,6 @@
     rdfs:label "Tenor" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -11922,15 +10476,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_helium_stereo>
@@ -11939,12 +10484,6 @@
     rdfs:label "Helium" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12045,15 +10584,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_octave_stereo>
@@ -12062,12 +10592,6 @@
     rdfs:label "Octave" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12168,15 +10692,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_octavebelow_stereo>
@@ -12185,12 +10700,6 @@
     rdfs:label "Octave Below" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12291,15 +10800,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_fifthbelow_stereo>
@@ -12308,12 +10808,6 @@
     rdfs:label "Fifth Below" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12414,15 +10908,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_monster_stereo>
@@ -12431,12 +10916,6 @@
     rdfs:label "Monster" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12537,15 +11016,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_robot_stereo>
@@ -12554,12 +11024,6 @@
     rdfs:label "Robot" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12660,15 +11124,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_alien_stereo>
@@ -12677,12 +11132,6 @@
     rdfs:label "Alien" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12783,15 +11232,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_hygiaphone_stereo>
@@ -12800,12 +11240,6 @@
     rdfs:label "Hygiaphone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -12906,15 +11340,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_telephone_stereo>
@@ -12923,12 +11348,6 @@
     rdfs:label "Telephone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13029,15 +11448,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_megaphone_stereo>
@@ -13046,12 +11456,6 @@
     rdfs:label "Megaphone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13152,15 +11556,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_walkie_stereo>
@@ -13169,12 +11564,6 @@
     rdfs:label "Walkie Talkie" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13275,15 +11664,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_radio_stereo>
@@ -13292,12 +11672,6 @@
     rdfs:label "Radio" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13398,15 +11772,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_slap_stereo>
@@ -13415,12 +11780,6 @@
     rdfs:label "Slapback" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13521,15 +11880,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_tapeslap_stereo>
@@ -13538,12 +11888,6 @@
     rdfs:label "Tape Slap" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13644,15 +11988,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_eighths_stereo>
@@ -13661,12 +11996,6 @@
     rdfs:label "Eighth Notes" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13767,15 +12096,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_dub_stereo>
@@ -13784,12 +12104,6 @@
     rdfs:label "Dub" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -13890,15 +12204,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 13.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_dubecho_stereo>
@@ -13907,12 +12212,6 @@
     rdfs:label "Dub Echo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14013,15 +12312,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_ambient_stereo>
@@ -14030,12 +12320,6 @@
     rdfs:label "Ambient" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14136,15 +12420,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_wash_stereo>
@@ -14153,12 +12428,6 @@
     rdfs:label "Ambient Wash" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14259,15 +12528,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 32.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_arena_stereo>
@@ -14276,12 +12536,6 @@
     rdfs:label "Arena" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14382,15 +12636,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_stadium_stereo>
@@ -14399,12 +12644,6 @@
     rdfs:label "Stadium" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14505,15 +12744,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_cathedral_stereo>
@@ -14522,12 +12752,6 @@
     rdfs:label "Cathedral" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14628,15 +12852,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_church_stereo>
@@ -14645,12 +12860,6 @@
     rdfs:label "Church" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14751,15 +12960,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_basilica_stereo>
@@ -14768,12 +12968,6 @@
     rdfs:label "Basilica" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14874,15 +13068,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_shimmer_stereo>
@@ -14891,12 +13076,6 @@
     rdfs:label "Shimmer" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -14997,15 +13176,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 30.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_solo_stereo>
@@ -15014,12 +13184,6 @@
     rdfs:label "Guitar Solo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15120,15 +13284,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_lead_solo_stereo>
@@ -15137,12 +13292,6 @@
     rdfs:label "Lead Solo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15243,15 +13392,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_crunch_stereo>
@@ -15260,12 +13400,6 @@
     rdfs:label "Guitar Crunch" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15366,15 +13500,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_clean_stereo>
@@ -15383,12 +13508,6 @@
     rdfs:label "Guitar Clean" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15489,15 +13608,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_chime_stereo>
@@ -15506,12 +13616,6 @@
     rdfs:label "Clean Chime" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15612,15 +13716,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_acoustic_stereo>
@@ -15629,12 +13724,6 @@
     rdfs:label "Acoustic Piezo" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15735,15 +13824,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_bass_stereo>
@@ -15752,12 +13832,6 @@
     rdfs:label "Bass DI" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15858,15 +13932,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_harp_stereo>
@@ -15875,12 +13940,6 @@
     rdfs:label "Harmonica" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -15981,15 +14040,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_sax_stereo>
@@ -15998,12 +14048,6 @@
     rdfs:label "Saxophone" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -16104,15 +14148,6 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
 
 <http://remy-live.github.io/lv2/voice#preset_rotary_stereo>
@@ -16121,12 +14156,6 @@
     rdfs:label "Rotary Keys" ;
     lv2:port [
         lv2:symbol "program" ;
-        pset:value 0.0
-    ] , [
-        lv2:symbol "user_slot" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "in_gain" ;
         pset:value 0.0
     ] , [
         lv2:symbol "low_cut" ;
@@ -16227,13 +14256,4 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
-    ] , [
-        lv2:symbol "fx" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "fx_2" ;
-        pset:value 1.0
-    ] , [
-        lv2:symbol "output" ;
-        pset:value 0.0
     ] .
