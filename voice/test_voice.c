@@ -2368,10 +2368,175 @@ static void essai_choeur_souffle(void)
                   1.35, 8.0);
 }
 
+/* ==================================================================
+   A demo you can listen to.
+
+   Everything else in this file measures; a doubler is judged by ear.
+   "./test_voice --demo" writes voice-demo.wav: one sung phrase, played
+   first dry and then through the sounds where the choir does the work,
+   each announced by its own little gap. The source is not a recording -
+   it is a glottal pulse train through three formants, with vibrato, a
+   little jitter and a breath - but it is close enough to a voice for the
+   question being asked, which is whether four copies sound like four
+   people.
+   ================================================================== */
+
+typedef struct { double b1, b2, y1, y2, c, r; } Reso;
+
+static void reso_set(Reso* f, double hz, double bw, double sr)
+{
+    f->r  = exp(-PI * bw / sr);
+    f->c  = 2.0 * f->r * cos(2.0 * PI * hz / sr);
+    f->b1 = f->c;
+    f->b2 = -f->r * f->r;
+}
+
+static double reso(Reso* f, double x)
+{
+    const double y = x + f->b1 * f->y1 + f->b2 * f->y2;
+    f->y2 = f->y1;
+    f->y1 = y;
+    return y;
+}
+
+/* A phrase in A minor, sung on "ah": eight notes, legato, with the
+   vibrato arriving a moment after each note rather than with it. */
+static void chant(float* buf, size_t n, double sr)
+{
+    static const double notes[8] = { 220.00, 246.94, 261.63, 329.63,
+                                     293.66, 261.63, 246.94, 220.00 };
+    const double duree = 0.62;
+    Reso f1, f2, f3;
+    reso_set(&f1,  700.0,  90.0, sr);
+    reso_set(&f2, 1220.0, 110.0, sr);
+    reso_set(&f3, 2600.0, 160.0, sr);
+
+    double ph = 0.0, f_liss = notes[0];
+    unsigned int graine = 12345u;
+    for (size_t i = 0; i < n; ++i) {
+        const double t   = (double)i / sr;
+        const size_t k   = (size_t)(t / duree);
+        const double dans = t - (double)k * duree;
+        if (k >= 8) { buf[i] = 0.0f; continue; }
+
+        /* the note, reached rather than jumped to */
+        const double vib = (dans > 0.18)
+                         ? 0.02 * sin(2.0 * PI * 5.2 * (t - 0.18))
+                                * (dans > 0.34 ? 1.0 : (dans - 0.18) / 0.16)
+                         : 0.0;
+        graine = graine * 1103515245u + 12345u;
+        const double bruit = (double)((graine >> 9) & 0xFFFFu) / 32768.0 - 1.0;
+        const double cible = notes[k] * (1.0 + vib + 0.0012 * bruit);
+        f_liss += (cible - f_liss) * 0.0016;
+        ph += 2.0 * PI * f_liss / sr;
+        if (ph > 2.0 * PI) { ph -= 2.0 * PI; }
+
+        /* a glottal pulse: harmonics falling away, not a sine */
+        double src = 0.0;
+        for (int h = 1; h <= 24; ++h) {
+            if (f_liss * (double)h > sr * 0.45) { break; }
+            src += sin(ph * (double)h) / pow((double)h, 1.15);
+        }
+        src *= 0.25;
+        src += 0.012 * bruit;                      /* breath */
+
+        /* attack, sustain, release, and a little push mid-note */
+        const double env = (dans < 0.035) ? dans / 0.035
+                         : (dans > duree - 0.10) ? (duree - dans) / 0.10
+                         : 0.85 + 0.15 * sin(2.0 * PI * 1.7 * dans);
+
+        const double v = reso(&f1, src) * 1.0
+                       + reso(&f2, src) * 0.45
+                       + reso(&f3, src) * 0.18;
+        buf[i] = (float)(0.0045 * env * v);
+    }
+}
+
+static void ecrire_wav(const char* nom, const float* x, size_t n, double sr)
+{
+    FILE* f = fopen(nom, "wb");
+    if (!f) { printf("  *** cannot write %s\n", nom); return; }
+    const unsigned int taille = (unsigned int)(n * 2u);
+    const unsigned int debit  = (unsigned int)sr * 2u;
+    unsigned char e[44] = {
+        'R','I','F','F', 0,0,0,0, 'W','A','V','E', 'f','m','t',' ',
+        16,0,0,0, 1,0, 1,0, 0,0,0,0, 0,0,0,0, 2,0, 16,0,
+        'd','a','t','a', 0,0,0,0 };
+    const unsigned int riff = taille + 36u, sr_i = (unsigned int)sr;
+    memcpy(e + 4,  &riff,   4);
+    memcpy(e + 24, &sr_i,   4);
+    memcpy(e + 28, &debit,  4);
+    memcpy(e + 40, &taille, 4);
+    fwrite(e, 1, 44, f);
+    for (size_t i = 0; i < n; ++i) {
+        double v = (double)x[i];
+        if (v >  0.999) { v =  0.999; }
+        if (v < -0.999) { v = -0.999; }
+        const short s = (short)(v * 32767.0);
+        fwrite(&s, 2, 1, f);
+    }
+    fclose(f);
+    printf("%s: %.1f s\n", nom, (double)n / sr);
+}
+
+static void demo(void)
+{
+    static const char* const suite[] = { "MANUAL", "TIGHT", "CHOIR",
+                                         "WIDECHOR", "ANGEL", "GOSPEL" };
+    const int nb = (int)(sizeof(suite) / sizeof(suite[0]));
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const size_t un   = (size_t)(sr * 5.0);       /* the phrase */
+    const size_t trou = (size_t)(sr * 0.8);       /* the gap after it */
+    const size_t total = (size_t)nb * (un + trou);
+
+    float* in  = (float*)calloc(un, sizeof(float));
+    float* out = (float*)calloc(total, sizeof(float));
+    chant(in, un, sr);
+
+    size_t ou = 0;
+    for (int k = 0; k < nb; ++k) {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        const int p = strcmp(suite[k], "MANUAL") ? programme_nomme(suite[k]) : 0;
+        if (p < 0) {
+            printf("  *** no program called %s\n", suite[k]);
+            fermer(&b);
+            ou += un + trou;
+            continue;
+        }
+        b.ctl[CTL_PROGRAM] = (float)p;
+        printf("  %-9s program %2d\n", suite[k], p);
+
+        size_t done = 0;
+        while (done + N <= un) {
+            memcpy(b.in[0], in + done, N * sizeof(float));
+            tourner(&b);
+            memcpy(out + ou + done, b.out[0], N * sizeof(float));
+            done += N;
+        }
+        /* let the tails ring into the gap rather than cutting them */
+        size_t reste = 0;
+        while (reste + N <= trou) {
+            memset(b.in[0], 0, N * sizeof(float));
+            tourner(&b);
+            memcpy(out + ou + un + reste, b.out[0], N * sizeof(float));
+            reste += N;
+        }
+        fermer(&b);
+        ou += un + trou;
+    }
+    ecrire_wav("voice-demo.wav", out, total, sr);
+    free(in);
+    free(out);
+}
+
 /* ================================================================== */
 
-int main(void)
+int main(int argc, char** argv)
 {
+    if (argc > 1 && !strcmp(argv[1], "--demo")) { demo(); return 0; }
+
     printf("Maths, against the libm this build is not allowed to link:\n");
     essai_maths();
     printf("Level:\n");                    essai_gain();

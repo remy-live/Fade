@@ -349,6 +349,18 @@ the delay against a clock at three sample rates, and a simulated HMI
 screen. Without a simulated screen none of the
 display code ever runs, and that is where the bugs live.
 
+A doubler is judged by ear, though, and no test can do that:
+
+```sh
+./test_voice --demo        # writes voice-demo.wav
+```
+
+One phrase sung on "ah" - a glottal pulse train through three formants,
+with vibrato, a little jitter and a breath, which is not a recording but
+is close enough for the question - played dry, then through Tight Double,
+Choir, Wide Choir, Angel Choir and Gospel Choir, each with its tail
+ringing into the gap that follows it.
+
 ## Notes on the implementation
 
 - **No libm.** The bundle must link against libc alone, so `log2` and
