@@ -38,6 +38,15 @@
         <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"
              title="Store what you are hearing into the USER slot on the left">SAVE</div>
 
+        <div class="voice-ab{{{cns}}} voice-ab" mod-port-symbol="ab"
+             title="Back to the program you were on before this one">A/B</div>
+
+        <div class="voice-mute{{{cns}}}">
+            <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="mute" mod-widget="switch"></div>
+            <div class="voice-mute-cap{{{cns}}}">MUTE</div>
+        </div>
+
         <div class="voice-prog-dial{{{cns}}}"
              mod-role="input-control-port"
              mod-port-symbol="program"
@@ -80,7 +89,7 @@
             </div>
         </div>
 
-        <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
+        <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DE-ESS</span>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
@@ -92,6 +101,13 @@
                 <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="de_ess"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="de_ess_freq" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">S Hz</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="de_ess_freq"></div>
             </div>
         </div>
 
@@ -171,6 +187,38 @@
             </div>
         </div>
 
+        <div class="voice-section{{{cns}}} voice-w3{{{cns}}}">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">HARMONY</span>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="harm_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="harm_1" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">VOICE 1</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="harm_1"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="harm_2" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">VOICE 2</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="harm_2"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="harm_mix" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="harm_mix"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------- doubling ---------------- -->
+    <div class="voice-row{{{cns}}} voice-row-double{{{cns}}}">
         <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DOUBLE</span>

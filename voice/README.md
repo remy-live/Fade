@@ -33,13 +33,18 @@ out.
 ```
         [on] [on]  [on]    [on]                    [on]
 IN GAIN → LOW CUT → NO HOWL → GATE → COMP → DE-ESS → EQ → DRIVE → PITCH
-     ┬─→ (dry) ────────────────────────────────────────────────┬─→ OUTPUT
+                                                     + [on] HARMONY x2
+     ┬─→ (dry) ────────────────────────────────────────────────┬─→ MUTE → OUTPUT
      ├─→ [on] DOUBLE ──────────────────────────────────────────┤
      ├─→ [on] MOD ─────────────────────────────────────────────┤
      └─→ [on] DELAY ─┬────────────────────────────────────────┤
                      └─→ [on] REVERB ─────────────────────────┘
                           all four also under one master FX switch
 ```
+
+PITCH is *in* the chain, because a baritone is the voice and not something
+added to it. HARMONY is *beside* it, because a harmony is somebody else
+singing.
 
 **Every effect has its own switch**, made for a footswitch, and each one
 sits immediately in front of the controls it switches. On top of them, the
@@ -52,7 +57,7 @@ any of them fades rather than clicks.
 
 ## The program list
 
-**PROGRAM** is a list, not a knob: MANUAL, then sixty-six built-in sounds,
+**PROGRAM** is a list, not a knob: MANUAL, then seventy-two built-in sounds,
 then six USER slots of your own. Put it on an encoder and you can walk
 through them from the device. The list is grouped by family — spoken
 voices first, then singing, doubling and choirs, pitched voices, grilles
@@ -90,19 +95,21 @@ not from the program, so a board comes back exactly as you left it.
 
 | Control | What it does |
 |---|---|
-| **PROGRAM** | The list: MANUAL, sixty-six built-in sounds grouped by family, then six USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
+| **PROGRAM** | The list: MANUAL, seventy-two built-in sounds grouped by family, then six USER slots of your own. MANUAL means the controls below are yours; anything else overrides them while it is selected. Address it to an encoder and walk the list from the device. |
 | **SAVE** | Stores **what you are hearing** into the slot USER SLOT points at — the program you picked plus every change you made to it. |
 | **USER SLOT** | Which of the six USER slots SAVE writes to. A list of its own, so a built-in sound can be changed and kept somewhere else without the original being touched. |
 | **IN GAIN** | −20 to +40 dB. A dynamic microphone straight into the Dwarf usually wants +20 to +30. No preset and no program ever touches it. |
 | **LOW CUT** | 0–400 Hz, 6 dB/octave. Rumble, handling noise and plosives, before they reach the gate. At 0 it is off. |
 | **GATE** | Threshold, −80 to −20 dB. 6 dB of hysteresis and an 80 ms hold, so a held note does not chatter. At −80 dB it is off. |
 | **COMP** | 0–100 %. One control: it lowers the threshold and raises the ratio together, from off to −40 dB at 6:1. What it gives back is what it takes off a voice at −12 dBFS, so turning it up changes the sound, not how loud you are. |
-| **DE-ESS** | 0–100 %. Compresses the band above 5.5 kHz alone: an S loses its edge, the word does not go dull. |
+| **DE-ESS** | 0–100 %. Compresses the band above DE-ESS FREQ alone: an S loses its edge, the word does not go dull. |
+| **DE-ESS FREQ** | 2–12 kHz. Where the sibilance actually is, which is not the same for every voice or every microphone. Around 5–7 kHz for most singers; up if the de-esser starts eating the word rather than the S. |
 | **BODY** | ±12 dB below ~240 Hz. |
 | **PRESENCE** | ±12 dB between ~1 and 4.5 kHz. Where a voice cuts through a band. |
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation that measures itself either side of the saturator, twice a second, and corrects the difference: the colour changes, how loud you are does not — at any input level, which a fixed reference could not do. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
+| **HARMONY** / **VOICE 1** / **VOICE 2** | Two more singers, at fixed intervals in semitones from what *you* sing — +4 a major third above, −5 a fourth below, ±12 an octave. Nothing detects your note, so they follow the song wherever it stays in one key, which is what a chorus usually does. A voice at 0 is silent and costs nothing. Both are counted from the sung note, not from where PITCH has put you: PITCH −12 with a third above gives you both. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
 | **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
 | **SPREAD** | How far apart the voices stand: their detune, their drift and how staggered their entries are. Low is one singer twice; high is a group who have never met. |
@@ -113,13 +120,15 @@ not from the program, so a board comes back exactly as you left it.
 | **FX** | The master switch: on, all four effects are fed; off, their send is cut over 40 ms and the tails ring out. It sits on top of the individual switches, not instead of them. Meant for a footswitch. |
 | **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
+| **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
+| **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
 
-And five outputs, for the screen, the web UI and anything else that
+And six outputs, for the screen, the web UI and anything else that
 watches: **GR** (compressor reduction in dB), **LEVEL** (peak out),
-**GATE OPEN**, **FX STATE**, and **TIME** (the delay time actually in
-force).
+**GATE OPEN**, **FX STATE**, **PROGRAM NOW**, **NOTCHES** and **TIME**
+(the delay time actually in force).
 
 Those last two exist for the same reason Fade's STATE does: TOGGLE and
 TRIGGER drive one internal state, and TAP overrides a knob, but an LV2
@@ -163,7 +172,7 @@ Three rules get them there, and they apply while you turn knobs too:
 
 ## Presets, and your own sounds
 
-Sixty-six, on both variants, and they exist twice over: as entries in the
+Seventy-two, on both variants, and they exist twice over: as entries in the
 PROGRAM list, and as LV2 presets in the plugin's own preset menu. Both come
 from one table in `make_ttl.py`, and the bench runs a phrase through both
 routes and subtracts — picking Ballad from the menu and selecting the
@@ -177,9 +186,10 @@ The list is in this order, which is also the order of the families:
 | **Singing in front of a band** | Ballad · Power Ballad · Warm Crooner · Modern Pop · Pop Lead · Rock · Rock Lead · Hard Rock Shout · Country · Cut Through · Whisper |
 | **Doubling yourself, and the choir** | Tight Double · Stage Double · Wide · Backing Vocals · Stacked Backing · Choir · Wide Choir · Gospel Choir · Gospel Stack · Angel Choir · Seraphim |
 | **Somebody else's voice** | Baritone · Tenor · Helium · Octave · Octave Below · Fifth Below · Monster · Robot · Alien |
+| **Somebody else singing with you** | **Third Up** · **Trio** · **Power Fifths** · **Octaves** |
 | **Out of a grille** | **Hygiaphone** · Telephone · Megaphone · Walkie Talkie · Radio |
 | **Echoes and rooms** | Slapback · Tape Slap · Eighth Notes · Dub · Dub Echo · Ambient · Ambient Wash · Arena · Stadium · Cathedral · Church · Basilica · Shimmer |
-| **An instrument instead of the microphone** | **Guitar Solo** · Lead Solo · Guitar Crunch · Guitar Clean · Clean Chime · Acoustic Piezo · Bass DI · Harmonica · Saxophone · Rotary Keys |
+| **An instrument instead of the microphone** | **Guitar Solo** · Lead Solo · **Fuzz Lead** · **High Gain** · Guitar Crunch · Guitar Clean · Clean Chime · Acoustic Piezo · Bass DI · Harmonica · Saxophone · Rotary Keys |
 
 Two of them answer questions that were asked out loud. **Hygiaphone** is
 the speaking grille at a bank counter: nothing below 320 Hz or above
@@ -189,7 +199,7 @@ the noise gate tight at −38 dB for the space between phrases, and the
 anti-Larsen hunter at 70 for the part a gate can do nothing about, which
 is the howl that happens *while* you are playing.
 
-All sixty-six are measured. The bench sings a phrase through a transparent
+All seventy-two are measured. The bench sings a phrase through a transparent
 plugin, then through each preset, and any that lands more than 2 dB above
 or 2.5 dB below the plain voice fails the build — which is how *Monster*
 and *Dub*, both nearly 3 dB hot, were caught and trimmed before they ever
@@ -368,9 +378,9 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-338 checks: the approximations against libm, every block of the chain
+384 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
-click it must not make, all sixty-six presets for the level they land on,
+click it must not make, all seventy-two presets for the level they land on,
 the delay against a clock at three sample rates, and a simulated HMI
 screen. Without a simulated screen none of the
 display code ever runs, and that is where the bugs live.
@@ -438,6 +448,16 @@ ringing into the gap that follows it.
   drift, its own small vibrato, its own entry time, its own window length
   and its own filtering, top and bottom — identical spectra fuse back into
   one object however far apart they are tuned.
+- **Harmony is the same shifter, twice more, in parallel.** Two grain
+  pairs reading the line the pitch shifter already writes, at fixed
+  intervals, mixed beside the voice rather than into it — and both
+  counted from what you *sing*, not from where PITCH has put you, so
+  PITCH −12 with a third above gives an octave below *and* a third above
+  rather than a surprise. They cost two grain reads each and nothing at
+  all at 0 semitones, where a grain that does not move is a comb filter
+  and the block steps aside. Formants move with the note, as they do for
+  PITCH: a third up is a smaller singer than you, a fourth down a bigger
+  one, which is most of what makes three voices sound like three people.
 - **And the vibrato itself breathes.** A vibrato of fixed depth is the one
   thing no singer does, and it is what made four copies read as four
   oscillators rather than as four people. Each voice's depth now rides a
@@ -449,6 +469,10 @@ ringing into the gap that follows it.
   sorts them into the ones near a peak and the ones near a trough. The peak
   group comes out 1.9 times louder. If it ever comes out flat, the depth
   has stopped moving.
+- **Nobody holds a level either.** Each doubled voice leans in and backs
+  off by about a decibel over ten to thirty seconds, on a cycle of its
+  own. Four copies at a fixed level are four faders; the movement is what
+  makes them people.
 - **The old doubler ran two, three or four taps**, at 21, 29, 38 and 46 ms,
   drifting a few cents each on LFOs at 0.13, 0.19, 0.27 and 0.09 Hz — rates that share no
   common period, so they never line up into one wobble. Decorrelated copies

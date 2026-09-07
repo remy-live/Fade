@@ -14,7 +14,7 @@
 .mod-pedal-voice{{{cns}}} {
     position: relative;
     width: 720px;
-    height: 648px;
+    height: 738px;
     box-sizing: border-box;
     border-radius: 14px;
     padding: 0 14px;
@@ -137,6 +137,33 @@
     background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
 }
 .voice-save{{{cns}}}.off { opacity: .35; cursor: default; }
+
+/* A/B is the same button in the greys of the panel: it compares two
+   sounds, it does not change anything. */
+.voice-ab{{{cns}}} {
+    padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #d7e2ee;
+    background: linear-gradient(180deg, #5a6779 0%, #39424f 100%);
+    border: 1px solid #171c23;
+    user-select: none;
+}
+.voice-ab{{{cns}}}:hover { filter: brightness(1.15); }
+.voice-ab{{{cns}}}.flash {
+    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
+    color: #10251c;
+}
+
+/* MUTE stops the sound, so it is the one control on the panel allowed to
+   be red - and it is a switch, not a button, because it stays down. */
+.voice-mute{{{cns}}} { text-align: center; }
+.voice-mute-cap{{{cns}}} {
+    margin-top: 3px; font-size: 8px; letter-spacing: 1.5px; color: #93a2b4;
+}
+.voice-mute{{{cns}}} .voice-sw{{{cns}}}.on {
+    background: linear-gradient(180deg, #ff7d7d 0%, #c62f2f 100%);
+    border-color: #5e1414;
+    box-shadow: 0 0 8px rgba(255, 90, 90, .55);
+}
 
 .voice-prog-dial{{{cns}}} {
     width: 34px; height: 34px; border-radius: 50%; cursor: ns-resize;

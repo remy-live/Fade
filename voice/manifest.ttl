@@ -204,6 +204,26 @@
     lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
     rdfs:seeAlso <presets.ttl> .
 
+<http://remy-live.github.io/lv2/voice#preset_third>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_trio>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_fifths>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_octaves>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
+    rdfs:seeAlso <presets.ttl> .
+
 <http://remy-live.github.io/lv2/voice#preset_hygiaphone>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice> ;
@@ -540,6 +560,26 @@
     rdfs:seeAlso <presets.ttl> .
 
 <http://remy-live.github.io/lv2/voice#preset_alien_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_third_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_trio_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_fifths_stereo>
+    a pset:Preset ;
+    lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
+    rdfs:seeAlso <presets.ttl> .
+
+<http://remy-live.github.io/lv2/voice#preset_octaves_stereo>
     a pset:Preset ;
     lv2:appliesTo <http://remy-live.github.io/lv2/voice#stereo> ;
     rdfs:seeAlso <presets.ttl> .

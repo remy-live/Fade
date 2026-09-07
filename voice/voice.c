@@ -86,7 +86,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD8_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD9_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -320,43 +320,51 @@ typedef enum {
     CTL_COMP          = 8,   /* order, so the order IS the layout            */
     CTL_DE_ESS_ON     = 9,
     CTL_DE_ESS        = 10,
-    CTL_EQ_ON         = 11,
-    CTL_BODY          = 12,
-    CTL_MID_FREQ      = 13,
-    CTL_PRESENCE      = 14,
-    CTL_AIR           = 15,
-    CTL_DRIVE_ON      = 16,
-    CTL_DRIVE         = 17,
-    CTL_PITCH_ON      = 18,
-    CTL_PITCH         = 19,  /* semitones, no pitch detection anywhere */
-    CTL_PITCH_MIX     = 20,
-    CTL_DOUBLER_ON    = 21,
-    CTL_DOUBLER       = 22,
-    CTL_SPREAD        = 23,  /* how far apart the doubled voices stand */
-    CTL_VOICES        = 24,  /* 2, 3 or 4 of them */
-    CTL_MOD_ON        = 25,
-    CTL_MOD           = 26,
-    CTL_MOD_SPEED     = 27,
-    CTL_FEEDBACK_ON   = 28,
-    CTL_FEEDBACK      = 29,  /* the anti-Larsen hunter */
-    CTL_DELAY_ON      = 30,
-    CTL_DELAY_TIME    = 31,
-    CTL_DELAY_REPEATS = 32,
-    CTL_DELAY_MIX     = 33,
-    CTL_REVERB_ON     = 34,
-    CTL_REVERB        = 35,
-    CTL_REVERB_MIX    = 36,
-    CTL_FX            = 37,  /* the master: it feeds all four at once */
-    CTL_FX_2          = 38,  /* a second switch on the same state */
-    CTL_TAP           = 39,  /* trigger: two taps set the delay time */
-    CTL_OUTPUT        = 40,
-    CTL_GR            = 41,  /* output: compressor gain reduction, dB */
-    CTL_LEVEL         = 42,  /* output: peak out level, 0..1 */
-    CTL_GATE_OPEN     = 43,  /* output: 1 while the gate is open */
-    CTL_FX_STATE      = 44,  /* output: the FX state actually in force */
-    CTL_NOTCHES       = 45,  /* output: anti-Larsen notches in place */
-    CTL_TIME_OUT      = 46,  /* output: delay time in force, tap included */
-    CTL_COUNT         = 47
+    CTL_DE_ESS_FREQ   = 11,  /* where the sibilance is, per voice and mic */
+    CTL_EQ_ON         = 12,
+    CTL_BODY          = 13,
+    CTL_MID_FREQ      = 14,
+    CTL_PRESENCE      = 15,
+    CTL_AIR           = 16,
+    CTL_DRIVE_ON      = 17,
+    CTL_DRIVE         = 18,
+    CTL_PITCH_ON      = 19,
+    CTL_PITCH         = 20,  /* semitones, no pitch detection anywhere */
+    CTL_PITCH_MIX     = 21,
+    CTL_HARM_ON       = 22,
+    CTL_HARM_1        = 23,  /* two more of the same shifter, in parallel */
+    CTL_HARM_2        = 24,
+    CTL_HARM_MIX      = 25,
+    CTL_DOUBLER_ON    = 26,
+    CTL_DOUBLER       = 27,
+    CTL_SPREAD        = 28,  /* how far apart the doubled voices stand */
+    CTL_VOICES        = 29,  /* 2, 3 or 4 of them */
+    CTL_MOD_ON        = 30,
+    CTL_MOD           = 31,
+    CTL_MOD_SPEED     = 32,
+    CTL_FEEDBACK_ON   = 33,
+    CTL_FEEDBACK      = 34,  /* the anti-Larsen hunter */
+    CTL_DELAY_ON      = 35,
+    CTL_DELAY_TIME    = 36,
+    CTL_DELAY_REPEATS = 37,
+    CTL_DELAY_MIX     = 38,
+    CTL_REVERB_ON     = 39,
+    CTL_REVERB        = 40,
+    CTL_REVERB_MIX    = 41,
+    CTL_FX            = 42,  /* the master: it feeds all four at once */
+    CTL_FX_2          = 43,  /* a second switch on the same state */
+    CTL_MUTE          = 44,  /* not the gate and not FX: it stops the sound */
+    CTL_AB            = 45,  /* trigger: back to the program before this one */
+    CTL_TAP           = 46,  /* trigger: two taps set the delay time */
+    CTL_OUTPUT        = 47,
+    CTL_GR            = 48,  /* output: compressor gain reduction, dB */
+    CTL_LEVEL         = 49,  /* output: peak out level, 0..1 */
+    CTL_GATE_OPEN     = 50,  /* output: 1 while the gate is open */
+    CTL_FX_STATE      = 51,  /* output: the FX state actually in force */
+    CTL_PROGRAM_NOW   = 52,  /* output: the program A/B has left in force */
+    CTL_NOTCHES       = 53,  /* output: anti-Larsen notches in place */
+    CTL_TIME_OUT      = 54,  /* output: delay time in force, tap included */
+    CTL_COUNT         = 55
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -381,7 +389,7 @@ typedef struct {
 
 static const CtlSpec ctl_spec[CTL_COUNT] = {
     /* symbol           min      max      default */
-    { "program",        0.0f,   74.0f,     0.0f },
+    { "program",        0.0f,   78.0f,     0.0f },
     { "user_slot",      1.0f,    6.0f,     1.0f },
     { "save",           0.0f,    1.0f,     0.0f },
     { "in_gain",      -20.0f,   40.0f,     0.0f },
@@ -392,6 +400,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "comp",           0.0f,  100.0f,    30.0f },
     { "de_ess_on",      0.0f,    1.0f,     1.0f },
     { "de_ess",         0.0f,  100.0f,     0.0f },
+    { "de_ess_freq", 2000.0f,12000.0f,  5500.0f },
     { "eq_on",          0.0f,    1.0f,     1.0f },
     { "body",         -12.0f,   12.0f,     0.0f },
     { "mid_freq",     300.0f, 5000.0f,  2200.0f },
@@ -402,6 +411,10 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "pitch_on",       0.0f,    1.0f,     1.0f },
     { "pitch",        -12.0f,   12.0f,     0.0f },
     { "pitch_mix",      0.0f,  100.0f,   100.0f },
+    { "harm_on",        0.0f,    1.0f,     1.0f },
+    { "harm_1",       -12.0f,   12.0f,     4.0f },
+    { "harm_2",       -12.0f,   12.0f,    -5.0f },
+    { "harm_mix",       0.0f,  100.0f,     0.0f },
     { "doubler_on",     0.0f,    1.0f,     1.0f },
     { "doubler",        0.0f,  100.0f,     0.0f },
     { "spread",         0.0f,  100.0f,    50.0f },
@@ -420,12 +433,15 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "reverb_mix",     0.0f,  100.0f,     0.0f },
     { "fx",             0.0f,    1.0f,     1.0f },
     { "fx_2",           0.0f,    1.0f,     1.0f },
+    { "mute",           0.0f,    1.0f,     0.0f },
+    { "ab",             0.0f,    1.0f,     0.0f },
     { "tap",            0.0f,    1.0f,     0.0f },
     { "output",       -60.0f,   12.0f,     0.0f },
     { "gr",           -24.0f,    0.0f,     0.0f },
     { "level",          0.0f,    1.0f,     0.0f },
     { "gate_open",      0.0f,    1.0f,     0.0f },
     { "fx_state",       0.0f,    1.0f,     1.0f },
+    { "program_now",    0.0f,   78.0f,     0.0f },
     { "notches",        0.0f,    4.0f,     0.0f },
     { "time_out",      20.0f, 2000.0f,   400.0f },
 };
@@ -441,19 +457,19 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
    is the "all of it, off" stomp, each switch is "this one, off". */
 typedef enum {
     SW_GATE = 0, SW_COMP, SW_DE_ESS, SW_EQ, SW_DRIVE, SW_PITCH,
-    SW_DOUBLER, SW_MOD, SW_FEEDBACK, SW_DELAY, SW_REVERB, SW_COUNT
+    SW_HARM, SW_DOUBLER, SW_MOD, SW_FEEDBACK, SW_DELAY, SW_REVERB, SW_COUNT
 } SwitchIndex;
 
 static const uint8_t switch_ctl[SW_COUNT] = {
     CTL_GATE_ON, CTL_COMP_ON, CTL_DE_ESS_ON, CTL_EQ_ON, CTL_DRIVE_ON,
-    CTL_PITCH_ON, CTL_DOUBLER_ON, CTL_MOD_ON, CTL_FEEDBACK_ON,
+    CTL_PITCH_ON, CTL_HARM_ON, CTL_DOUBLER_ON, CTL_MOD_ON, CTL_FEEDBACK_ON,
     CTL_DELAY_ON, CTL_REVERB_ON
 };
 
 /* Eight characters at most: the device truncates silently. */
 static const char* const switch_label[SW_COUNT] = {
     "GATE", "COMP", "DE-ESS", "EQ", "DRIVE", "PITCH",
-    "DOUBLE", "MOD", "NO HOWL", "DELAY", "REVERB"
+    "HARMONY", "DOUBLE", "MOD", "NO HOWL", "DELAY", "REVERB"
 };
 
 /* ------------------------------------------------------------------ */
@@ -586,6 +602,11 @@ static const float choir_vib_hz[MAX_VOICES]   = { 4.7f, 5.3f, 6.1f, 5.7f };
    thing in the stack that no singer does: it is what makes four copies
    read as four oscillators rather than as four people. */
 static const float choir_swell_hz[MAX_VOICES] = { 0.041f, 0.067f, 0.031f, 0.089f };
+/* And nobody holds a level either. A singer leans in and backs off over
+   ten or twenty seconds without meaning to, and four copies that do not
+   are four faders rather than four people. A decibel each way is enough
+   to hear as movement and too little to hear as tremolo. */
+static const float choir_amp_hz[MAX_VOICES]   = { 0.053f, 0.081f, 0.037f, 0.107f };
 /* Each voice through its own throat, top and bottom: identical spectra
    fuse back into one object however far apart they are tuned. */
 static const float choir_tone[MAX_VOICES]     = { 8500.0f, 5200.0f, 6800.0f, 4200.0f };
@@ -713,7 +734,7 @@ typedef enum {
        when COMP turns, the detune and the entries when SPREAD does - and
        a program change turns all of them at once, which is a bang. */
     SM_MAKEUP, SM_COMP_THR, SM_COMP_SLOPE, SM_SPREAD, SM_MOD_DEPTH,
-    SM_VOICE_GAIN,
+    SM_VOICE_GAIN, SM_HARM,
     SM_COUNT
 } SmoothIndex;
 
@@ -728,6 +749,8 @@ typedef enum {
     SLOT_FX = 0, SLOT_FX_2, SLOT_TAP, SLOT_DELAY,
     SLOT_COMP, SLOT_GATE, SLOT_OUT, SLOT_PROGRAM, SLOT_VOICES,
     SLOT_PITCH, SLOT_SAVE, SLOT_SPREAD, SLOT_HOWL, SLOT_USER,
+    SLOT_MUTE, SLOT_AB, SLOT_HARM_1, SLOT_HARM_2, SLOT_HARM_MIX,
+    SLOT_DE_ESS_FREQ,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -737,7 +760,9 @@ static uint8_t slot_ctl_of(int slot)
     static const uint8_t fixed[SLOT_SWITCH] = {
         CTL_FX, CTL_FX_2, CTL_TAP, CTL_DELAY_TIME,
         CTL_COMP, CTL_GATE, CTL_OUTPUT, CTL_PROGRAM, CTL_VOICES,
-        CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT
+        CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT,
+        CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
+        CTL_DE_ESS_FREQ
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
@@ -827,6 +852,7 @@ typedef struct {
     float    drive_in;        /* what goes into the saturator, slowly */
     float    drive_out;       /* and what comes out, so the two can match */
     float    drive_fix;       /* the ratio, held across the block */
+    float    mute_gain;       /* 1 open, 0 muted, twenty milliseconds apart */
 
     /* --- the anti-Larsen hunter. It listens to the mono sum, once, and
            the notches it places are applied to every channel: a howl is a
@@ -861,6 +887,8 @@ typedef struct {
            image would drift apart --- */
     float pitch_phase;
     int   pitch_was_moving;   /* so crossing zero can restart the grain */
+    float harm_phase[2];      /* the two harmony voices, same shifter */
+    int   harm_was[2];
 
     /* --- the four slots the player fills in. Saved with the pedalboard
            through the State extension, which is the only reason this
@@ -871,6 +899,9 @@ typedef struct {
         uint8_t filled;
     } user[N_USER];
     int save_prev;
+    int program_port;         /* the last value SEEN on the PROGRAM port */
+    int program_ab;           /* the other one, for A/B */
+    int ab_prev;
     uint32_t save_flash;      /* samples left to say SAVED on the screen */
     int fx2_prev;
 
@@ -883,6 +914,7 @@ typedef struct {
     float ph_choir_drift[MAX_VOICES];  /* the slow wander */
     float ph_choir_vib[MAX_VOICES];    /* and the vibrato on top of it */
     float ph_choir_swell[MAX_VOICES];  /* and how deep that vibrato is now */
+    float ph_choir_amp[MAX_VOICES];    /* and how hard the singer is leaning in */
     float ph_mod;
 
     /* --- screen --- */
@@ -1356,6 +1388,34 @@ static float param_read(const Voice* self, int i)
     return ctl_read(self, i);
 }
 
+/* Everything that happens when a program comes into force, whether the
+   knob was turned, the pedalboard was loaded, or A/B went back to it.
+   The program in force is NOT the port: A/B moves one and not the other. */
+static void program_enter(Voice* self, int prog)
+{
+    if (prog != self->program) { self->program_ab = self->program; }
+    self->program = prog;
+    /* A new program starts clean: nothing is the player's yet, and the
+       values it is about to install must not read as changes. */
+    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+        self->ctl_seen[i] = ctl_read(self, i);
+        self->ctl_mine[i] = 0u;
+    }
+    const int u = prog - N_PROGRAM;
+    const uint8_t* adopt = NULL;
+    if (prog > 0 && prog < N_PROGRAM) {
+        adopt = program_switch[prog];
+    } else if (u >= 0 && u < N_USER && self->user[u].filled) {
+        adopt = self->user[u].sw;
+    }
+    if (adopt) {
+        for (int k = 0; k < (int)SW_COUNT; ++k) {
+            self->sw_state[k] = adopt[k] ? 1 : 0;
+            self->sw_prev[k]  = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
+        }
+    }
+}
+
 /* The three values below are needed in two places - activate(), which
    must land on them with no ramp at all, and run(), which walks to them
    across the block. Written once so the two cannot drift apart. */
@@ -1409,6 +1469,9 @@ activate(LV2_Handle instance)
     if (self->program >= N_PROGRAM + N_USER) {
         self->program = N_PROGRAM + N_USER - 1;
     }
+    self->program_port = self->program;
+    self->program_ab   = self->program;   /* A/B has nowhere else to go yet */
+    self->ab_prev      = (ctl_read(self, CTL_AB) > 0.5f) ? 1 : 0;
     for (int k = 0; k < (int)SW_COUNT; ++k) {
         const int on = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
         self->sw_state[k] = on;
@@ -1463,6 +1526,7 @@ activate(LV2_Handle instance)
     self->drive_in          = 0.0f;
     self->drive_out         = 0.0f;
     self->drive_fix         = 1.0f;
+    self->mute_gain         = (ctl_read(self, CTL_MUTE) > 0.5f) ? 0.0f : 1.0f;
     self->sm[SM_DRIVE_MIX]  = param_read(self, CTL_DRIVE) * 0.01f;
     self->sm[SM_PITCH]      = param_read(self, CTL_PITCH_MIX)  * 0.01f;
     self->sm[SM_DOUBLER]    = param_read(self, CTL_DOUBLER)    * 0.01f;
@@ -1476,6 +1540,7 @@ activate(LV2_Handle instance)
     self->spread_entry      = self->sm[SM_SPREAD];
     self->sm[SM_MOD_DEPTH]  = 0.5f + 3.5f * param_read(self, CTL_MOD) * 0.01f;
     self->sm[SM_VOICE_GAIN] = voice_gain_of(self, self->n_ch);
+    self->sm[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
     {
         const int n = voices_of(self);
         for (int k = 0; k < MAX_VOICES; ++k) {
@@ -1536,15 +1601,21 @@ activate(LV2_Handle instance)
     static const float depart_lent[MAX_VOICES] = { 0.11f, 0.63f, 0.29f, 0.83f };
     static const float depart_vib[MAX_VOICES]  = { 0.47f, 0.05f, 0.79f, 0.23f };
     static const float depart_swell[MAX_VOICES]= { 0.00f, 0.53f, 0.17f, 0.87f };
+    static const float depart_amp[MAX_VOICES]  = { 0.31f, 0.07f, 0.61f, 0.89f };
     for (int k = 0; k < MAX_VOICES; ++k) {
         self->ph_choir[k]       = depart[k];
         self->ph_choir_drift[k] = depart_lent[k];
         self->ph_choir_vib[k]   = depart_vib[k];
         self->ph_choir_swell[k] = depart_swell[k];
+        self->ph_choir_amp[k]   = depart_amp[k];
     }
     self->ph_mod       = 0.0f;
     self->pitch_phase  = 0.0f;
     self->pitch_was_moving = 0;
+    for (int h = 0; h < 2; ++h) {
+        self->harm_phase[h] = (h == 0) ? 0.0f : 0.5f;
+        self->harm_was[h]   = 0;
+    }
 
     self->screen_left = 1u;
     self->forget_left = self->forget_period;
@@ -1712,6 +1783,66 @@ paint(Voice* self, int force)
             value = vbuf;
             unit  = "%";
             bar   = (float)pc * 0.01f;
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+        }
+
+        case SLOT_MUTE: {
+            const int coupe = ctl_read(self, CTL_MUTE) > 0.5f;
+            label = "MUTE";
+            value = coupe ? "MUTED" : "OPEN";
+            led   = coupe ? LV2_HMI_LED_Colour_Red : LV2_HMI_LED_Colour_Green;
+            break;
+        }
+
+        case SLOT_AB:
+            /* On a footswitch this is the compare button, and what it
+               needs to say is where you are, not that you pressed it. */
+            label = "A/B";
+            if (self->program >= N_PROGRAM) {
+                copy_bounded(vbuf, sizeof(vbuf), "USER ");
+                write_int(vbuf + 5, sizeof(vbuf) - 5,
+                          self->program - N_PROGRAM + 1);
+                value = vbuf;
+            } else {
+                value = program_name[(self->program > 0) ? self->program : 0];
+            }
+            break;
+
+        case SLOT_HARM_1:
+        case SLOT_HARM_2: {
+            const int which = (s == (int)SLOT_HARM_1) ? CTL_HARM_1 : CTL_HARM_2;
+            const float v_h = param_read(self, which);
+            const int st = (int)(v_h + (v_h < 0.0f ? -0.5f : 0.5f));
+            label = (s == (int)SLOT_HARM_1) ? "HARM 1" : "HARM 2";
+            write_int(vbuf, sizeof(vbuf), st);
+            value = vbuf;
+            unit  = "SEMI";
+            bar   = ((float)st + 12.0f) * (1.0f / 24.0f);
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            led   = (st != 0 && self->sw_state[SW_HARM])
+                  ? LV2_HMI_LED_Colour_Green : LV2_HMI_LED_Colour_Off;
+            break;
+        }
+
+        case SLOT_HARM_MIX: {
+            const int pc = (int)(param_read(self, CTL_HARM_MIX) + 0.5f);
+            label = "HARMONY";
+            write_int(vbuf, sizeof(vbuf), pc);
+            value = vbuf;
+            unit  = "%";
+            bar   = (float)pc * 0.01f;
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+        }
+
+        case SLOT_DE_ESS_FREQ: {
+            const int hz = (int)(param_read(self, CTL_DE_ESS_FREQ) + 0.5f);
+            label = "SS FREQ";
+            write_int(vbuf, sizeof(vbuf), hz);
+            value = vbuf;
+            unit  = "HZ";
+            bar   = ((float)hz - 2000.0f) * (1.0f / 10000.0f);
             bar_h = (int)(bar * 100.0f + 0.5f);
             break;
         }
@@ -1922,28 +2053,23 @@ run(LV2_Handle instance, uint32_t n_samples)
     int prog = (int)(ctl_read(self, CTL_PROGRAM) + 0.5f);
     if (prog < 0)          { prog = 0; }
     if (prog >= N_PROGRAM + N_USER) { prog = N_PROGRAM + N_USER - 1; }
-    if (prog != self->program) {
-        self->program = prog;
-        /* A new program starts clean: nothing is the player's yet, and
-           the values it is about to install must not read as changes. */
-        for (int i = 0; i < (int)CTL_COUNT; ++i) {
-            self->ctl_seen[i] = ctl_read(self, i);
-            self->ctl_mine[i] = 0u;
-        }
-        const int u = prog - N_PROGRAM;
-        const uint8_t* adopt = NULL;
-        if (prog > 0 && prog < N_PROGRAM) {
-            adopt = program_switch[prog];
-        } else if (u >= 0 && u < N_USER && self->user[u].filled) {
-            adopt = self->user[u].sw;
-        }
-        if (adopt) {
-            for (int k = 0; k < (int)SW_COUNT; ++k) {
-                self->sw_state[k] = adopt[k] ? 1 : 0;
-                self->sw_prev[k]  = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
-            }
-        }
+    /* The PORT is followed by its CHANGES, exactly like the delay knob
+       against the tapped tempo: A/B moves the program in force without
+       the port knowing, and turning the knob afterwards must still win
+       rather than being read as "back where you already are". */
+    if (prog != self->program_port) {
+        self->program_port = prog;
+        program_enter(self, prog);
     }
+
+    /* A/B: back to the one before, and again to come back. */
+    const int ab_now = (ctl_read(self, CTL_AB) > 0.5f) ? 1 : 0;
+    if (ab_now && !self->ab_prev && self->program_ab != self->program) {
+        const int autre = self->program_ab;
+        self->program_ab = self->program;
+        program_enter(self, autre);
+    }
+    self->ab_prev = ab_now;
     /* Any control a program owns goes back to the knob the moment the knob
        moves. Compared against what was last SEEN, not against the
        program's value: those two differ from the instant a program is
@@ -1989,6 +2115,27 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float pitch_ratio = exp2_approx(semitones * (1.0f / 12.0f));
     const float pitch_win   = PITCH_WIN_MS * ms2n;
     const float pitch_step  = (1.0f - pitch_ratio) / pitch_win;
+
+    /* Harmony: the same grain pair as PITCH, twice more, in parallel
+       rather than in the chain - a harmony is somebody else singing, not
+       your voice moved. Both intervals are counted from what you SING,
+       not from where PITCH has put you, so PITCH at -12 with a third
+       above gives an octave below AND a third above, which is a spread
+       rather than a surprise. */
+    const int   harm_ctl[2]  = { CTL_HARM_1, CTL_HARM_2 };
+    float       harm_step[2];
+    int         harm_moves[2];
+    for (int h = 0; h < 2; ++h) {
+        const float demi = param_read(self, harm_ctl[h]);
+        harm_moves[h] = (demi > 0.01f || demi < -0.01f);
+        harm_step[h]  = (1.0f - exp2_approx(demi * (1.0f / 12.0f))) / pitch_win;
+        /* starting one has to start on the newest sample, or its first
+           sample is spliced to one half a window old */
+        if (harm_moves[h] && !self->harm_was[h]) { self->harm_phase[h] = 0.0f; }
+        self->harm_was[h] = harm_moves[h];
+    }
+    const int harm_on = (self->sw_state[SW_HARM] || self->sw[SW_HARM] > 0.0f)
+                        && (harm_moves[0] || harm_moves[1]);
 
     const int n_voices = voices_of(self);
     const float out_db    = ctl_read(self, CTL_OUTPUT);
@@ -2100,7 +2247,8 @@ run(LV2_Handle instance, uint32_t n_samples)
        back to nothing. */
     const float lc_c     = onepole_coef(lowcut_hz > 1.0f ? lowcut_hz : 1.0f,
                                         rate);
-    const float de_c     = onepole_coef(5500.0f, rate);
+    const float de_c     = onepole_coef(param_read(self, CTL_DE_ESS_FREQ),
+                                        rate);
     /* The middle band is the difference of two low passes an octave and a
        half apart, centred wherever MID FREQ says. That difference peaks at
        about 0.44, so it is scaled by 1.8 to make +12 dB on the control
@@ -2222,12 +2370,16 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_SPREAD]     = spread_amt;
     target[SM_MOD_DEPTH]  = 0.5f + 3.5f * mod_amt;
     target[SM_VOICE_GAIN] = voice_gain_of(self, n_ch);
+    target[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
 
     float sm[SM_COUNT], sm_step[SM_COUNT];
     for (int k = 0; k < (int)SM_COUNT; ++k) {
         sm[k]      = self->sm[k];
         sm_step[k] = (n_samples > 0u) ? (target[k] - sm[k]) / (float)n_samples : 0.0f;
     }
+
+    const float mute_target = (ctl_read(self, CTL_MUTE) > 0.5f) ? 0.0f : 1.0f;
+    const float mute_step   = 1.0f / (0.020f * rate);
 
     const float fx_target = self->fx_state ? 1.0f : 0.0f;
     const float fx_step   = 1.0f / (FX_RAMP_MS * 0.001f * rate);
@@ -2280,6 +2432,18 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
         for (int k = 0; k < n_run; ++k) {
             self->vg[k] += vg_step[k];
+        }
+
+        /* MUTE. Not the gate, which listens, and not FX, which shapes:
+           this one stops the sound, over twenty milliseconds so it does
+           not thump. The tails go on decaying behind it, so letting go
+           does not release a frozen reverb. */
+        if (self->mute_gain > mute_target) {
+            self->mute_gain -= mute_step;
+            if (self->mute_gain < mute_target) { self->mute_gain = mute_target; }
+        } else if (self->mute_gain < mute_target) {
+            self->mute_gain += mute_step;
+            if (self->mute_gain > mute_target) { self->mute_gain = mute_target; }
         }
 
         if (self->fx_gain < fx_target) {
@@ -2567,6 +2731,34 @@ run(LV2_Handle instance, uint32_t n_samples)
                 x[c] += sm[SM_PITCH] * self->sw[SW_PITCH] * (shifted - x[c]);
             }
         }
+        /* --- the harmony voices, beside the voice rather than in it.
+               One grain pair each, read from the same line the pitch
+               shifter uses - so what they harmonise is what you sang,
+               before PITCH moved it. Two of them at seven tenths, which
+               is where two decorrelated copies add up to about one. --- */
+        if (harm_on) {
+            const float g = sm[SM_HARM] * self->sw[SW_HARM] * 0.70f;
+            for (int h = 0; h < 2; ++h) {
+                if (!harm_moves[h]) { continue; }
+                const float pa = self->harm_phase[h];
+                float pb = pa + 0.5f;
+                if (pb >= 1.0f) { pb -= 1.0f; }
+                const float wa = 0.5f - 0.5f * lfo_sin(pa + 0.25f);
+                for (uint32_t c = 0; c < n_ch; ++c) {
+                    Chan* ch = &self->ch[c];
+                    const float a = ring_read(&ch->pitchline, 2.0f + pa * pitch_win);
+                    const float b = ring_read(&ch->pitchline, 2.0f + pb * pitch_win);
+                    x[c] += g * (a * wa + b * (1.0f - wa));
+                }
+            }
+        }
+        for (int h = 0; h < 2; ++h) {
+            if (!harm_moves[h]) { continue; }
+            self->harm_phase[h] += harm_step[h];
+            if (self->harm_phase[h] >= 1.0f) { self->harm_phase[h] -= 1.0f; }
+            if (self->harm_phase[h] <  0.0f) { self->harm_phase[h] += 1.0f; }
+        }
+
         if (pitch_moves) {
             self->pitch_phase += pitch_step;
             /* wrapped by adding or subtracting one, never by a modulo:
@@ -2643,7 +2835,10 @@ run(LV2_Handle instance, uint32_t n_samples)
                                                        - ch->choir_hp[k]));
                 v = ch->choir_lp[k] - ch->choir_hp[k];
 
-                v *= self->vg[k];       /* 0 while this voice fades in or out */
+                /* 0 while this voice fades in or out, and a decibel
+                   either side of that as it leans in and backs off */
+                v *= self->vg[k]
+                   * (1.0f + 0.12f * lfo_sin(self->ph_choir_amp[k]));
                 if (n_ch == 1u) {
                     w += v;
                 } else if ((n_voices & 1) && k == n_voices - 1) {
@@ -2694,7 +2889,8 @@ run(LV2_Handle instance, uint32_t n_samples)
             wet[c] += r * sm[SM_REVERB] * 3.0f;
 
             /* --- out --- */
-            const float y = ceiling((x[c] + wet[c]) * sm[SM_OUT]);
+            const float y = ceiling((x[c] + wet[c]) * sm[SM_OUT]
+                                    * self->mute_gain);
             self->out[c][i] = y;
             const float a = absf(y);
             if (a > peak) { peak = a; }
@@ -2707,6 +2903,8 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (self->ph_choir_vib[k] >= 1.0f) { self->ph_choir_vib[k] -= 1.0f; }
             self->ph_choir_swell[k] += choir_swell_hz[k] / rate;
             if (self->ph_choir_swell[k] >= 1.0f) { self->ph_choir_swell[k] -= 1.0f; }
+            self->ph_choir_amp[k] += choir_amp_hz[k] / rate;
+            if (self->ph_choir_amp[k] >= 1.0f) { self->ph_choir_amp[k] -= 1.0f; }
         }
         self->ph_mod += inc_m;
         if (self->ph_mod >= 1.0f) { self->ph_mod -= 1.0f; }
@@ -2745,6 +2943,9 @@ run(LV2_Handle instance, uint32_t n_samples)
     }
     if (self->ctl_out[CTL_FX_STATE]) {
         *self->ctl_out[CTL_FX_STATE] = self->fx_state ? 1.0f : 0.0f;
+    }
+    if (self->ctl_out[CTL_PROGRAM_NOW]) {
+        *self->ctl_out[CTL_PROGRAM_NOW] = (float)self->program;
     }
     if (self->ctl_out[CTL_NOTCHES]) {
         *self->ctl_out[CTL_NOTCHES] = (float)self->n_notch;

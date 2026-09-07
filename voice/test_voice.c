@@ -2492,6 +2492,155 @@ static void essai_non_fini(void)
     }
 }
 
+/* Harmony: two more of the same grain shifter, in parallel. Sung at
+   220 Hz, a third above lands on 277 and a fourth below on 165 - and
+   nothing of either is there when the mix is down or the switch is off,
+   because a harmony you cannot turn off is not a harmony, it is a fault. */
+static void essai_harmonie(void)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const size_t total = (size_t)(sr * 4.0);
+    float* out = (float*)malloc(total * sizeof(float));
+    double tierce[3] = { 0.0, 0.0, 0.0 };
+    double quarte[3] = { 0.0, 0.0, 0.0 };
+    double fond[3]   = { 0.0, 0.0, 0.0 };
+
+    for (int cas = 0; cas < 3; ++cas) {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_HARM_1]   = 4.0f;      /* a major third above */
+        b.ctl[CTL_HARM_2]   = -5.0f;     /* a fourth below */
+        b.ctl[CTL_HARM_MIX] = (cas == 1) ? 0.0f : 100.0f;
+        b.ctl[CTL_HARM_ON]  = (cas == 2) ? 0.0f : 1.0f;
+
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        size_t done = 0;
+        while (done + N <= total) {
+            for (uint32_t i = 0; i < N; ++i) {
+                b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+            }
+            ph += w * (double)N;
+            tourner(&b);
+            memcpy(out + done, b.out[0], N * sizeof(float));
+            done += N;
+        }
+        fermer(&b);
+
+        const size_t saute = (size_t)(sr * 1.0);
+        const size_t n = total - saute;
+        fond[cas]   = energie_a(out + saute, n, 220.00, sr);
+        tierce[cas] = energie_a(out + saute, n, 277.18, sr);
+        quarte[cas] = energie_a(out + saute, n, 164.81, sr);
+    }
+    free(out);
+
+    verifie_vrai("a third above is really there",
+                 tierce[0] > tierce[1] * 100.0);
+    verifie_vrai("and a fourth below with it",
+                 quarte[0] > quarte[1] * 100.0);
+    verifie_vrai("neither is louder than the voice",
+                 fond[0] > tierce[0] && fond[0] > quarte[0]);
+    verifie_vrai("the switch takes both away",
+                 tierce[2] < tierce[0] * 0.02 && quarte[2] < quarte[0] * 0.02);
+    verifie_vrai("and at mix zero nothing is added at all",
+                 tierce[1] < fond[1] * 1.0e-4);
+}
+
+/* MUTE is not the gate and not FX: it stops the sound. Over twenty
+   milliseconds, so it does not thump, and it lets go the same way. */
+static void essai_mute(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 64, 0);
+    neutre(&b);
+    b.ctl[CTL_REVERB_MIX] = 40.0f;
+    chauffer(&b, 500.0);
+    for (int k = 0; k < 200; ++k) { sinus(&b, 500.0, 0.3); tourner(&b); }
+    const double avant = crete(b.out[0], b.bloc);
+    verifie_vrai("the voice is there to start with", avant > 0.1);
+
+    b.ctl[CTL_MUTE] = 1.0f;
+    double saut = 0.0, precedent = (double)b.out[0][b.bloc - 1];
+    for (int k = 0; k < 40; ++k) {          /* 53 ms */
+        sinus(&b, 500.0, 0.3);
+        tourner(&b);
+        for (uint32_t i = 0; i < b.bloc; ++i) {
+            const double d = fabs((double)b.out[0][i] - precedent);
+            if (d > saut) { saut = d; }
+            precedent = b.out[0][i];
+        }
+    }
+    verifie("MUTE stops the sound", crete(b.out[0], b.bloc), 0.0, 1.0e-9);
+    verifie_vrai("without a step in it", saut < 0.05);
+
+    b.ctl[CTL_MUTE] = 0.0f;
+    for (int k = 0; k < 40; ++k) { sinus(&b, 500.0, 0.3); tourner(&b); }
+    verifie_vrai("and lets go again", crete(b.out[0], b.bloc) > avant * 0.9);
+    fermer(&b);
+}
+
+/* A/B goes back to the program before this one - which the PROGRAM port
+   knows nothing about, because a plugin may not write it. PROGRAM NOW is
+   how anything else finds out. */
+static void essai_ab(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    const int p_ballad = programme_nomme("BALLAD");
+    const int p_choir  = programme_nomme("CHOIR");
+    const double t_ballad =
+        (double)program_value[p_ballad][program_col[CTL_DELAY_TIME]];
+    const double t_choir =
+        (double)program_value[p_choir][program_col[CTL_DELAY_TIME]];
+
+    b.ctl[CTL_PROGRAM] = (float)p_ballad;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)p_choir;
+    silence(&b); tourner(&b);
+    verifie("two programs picked, the second one in force",
+            (double)b.ctl[CTL_PROGRAM_NOW], (double)p_choir, 0.01);
+
+    b.ctl[CTL_AB] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_AB] = 0.0f; silence(&b); tourner(&b);
+    verifie("A/B goes back to the one before",
+            (double)b.ctl[CTL_PROGRAM_NOW], (double)p_ballad, 0.01);
+    verifie("and the sound goes with it",
+            (double)b.ctl[CTL_TIME_OUT], t_ballad, 0.01);
+
+    b.ctl[CTL_AB] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_AB] = 0.0f; silence(&b); tourner(&b);
+    verifie("and again comes back", (double)b.ctl[CTL_TIME_OUT], t_choir, 0.01);
+
+    /* the knob still wins: it is followed by its CHANGES, so turning it
+       to where the port already was is still a change to the plugin */
+    b.ctl[CTL_PROGRAM] = (float)p_ballad;
+    silence(&b); tourner(&b);
+    verifie("turning PROGRAM still beats A/B",
+            (double)b.ctl[CTL_PROGRAM_NOW], (double)p_ballad, 0.01);
+    fermer(&b);
+}
+
+/* The de-esser used to listen at 5.5 kHz whatever the voice was. */
+static void essai_deess_freq(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 256, 0);
+    neutre(&b);
+    b.ctl[CTL_DE_ESS] = 100.0f;
+
+    b.ctl[CTL_DE_ESS_FREQ] = 3000.0f;
+    const double bas = gain_db(&b, 4000.0, 0.3, 120, 60);
+    b.ctl[CTL_DE_ESS_FREQ] = 10000.0f;
+    const double haut = gain_db(&b, 4000.0, 0.3, 120, 60);
+    verifie_vrai("at 3 kHz the de-esser reaches a 4 kHz tone", bas < -6.0);
+    verifie_vrai("at 10 kHz it leaves the same tone alone", haut > bas + 5.0);
+    fermer(&b);
+}
+
 /* ================================================================== */
 /* The choir                                                           */
 /* ================================================================== */
@@ -2805,6 +2954,10 @@ int main(int argc, char** argv)
                                            essai_larsen_oubli();
     printf("Rubbish on the input:\n");      essai_non_fini();
     printf("Pitch:\n");                     essai_pitch();
+    printf("Harmony:\n");                   essai_harmonie();
+    printf("Mute:\n");                      essai_mute();
+    printf("A/B:\n");                       essai_ab();
+    printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("USER slots:\n");                essai_slots();
                                            essai_retouche();

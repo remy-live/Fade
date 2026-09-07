@@ -25,9 +25,13 @@ for (const b of ttl.split('] , [')) {
     const s = /lv2:symbol\s+"([^"]+)"/.exec(b);
     if (!s) continue;
     const n = /lv2:name\s+"([^"]+)"/.exec(b);
+    const d = /lv2:default\s+(-?[\d.]+)/.exec(b);
+    const u = /units:unit\s+units:(\w+)/.exec(b);
     ports.push({ symbol: s[1], name: n ? n[1] : s[1],
         audio: b.includes('lv2:AudioPort'), input: b.includes('lv2:InputPort'),
-        control: b.includes('lv2:ControlPort') });
+        control: b.includes('lv2:ControlPort'),
+        def: d ? parseFloat(d[1]) : null, unit: u ? u[1] : null,
+        toggled: b.includes('lv2:toggled') });
 }
 const data = {
     cns: '_http___remy_live_github_io_lv2_voice',
@@ -57,19 +61,27 @@ ${css}
 </style>${html}
 <script>
 /* what mod-ui's switchWidget does: .on / .off on toggled ports */
-const on = ${JSON.stringify(['gate_on','comp_on','de_ess_on','eq_on','drive_on',
-     'doubler_on','delay_on','reverb_on','fx','fx_2'])};
+const on = ${JSON.stringify(ports
+    .filter(p => p.control && p.input && p.toggled && p.def >= 0.5)
+    .map(p => p.symbol))};
 for (const s of on) {
   const el = document.querySelector('[mod-port-symbol="'+s+'"]');
   if (el) { el.classList.add('on'); el.closest('.voice-section${'_http___remy_live_github_io_lv2_voice'}')?.classList.add('actif'); }
 }
+/* Every readout, from the descriptor's own defaults rather than a list
+   kept by hand - a photograph with three empty boxes in it says the
+   plugin has three empty boxes. */
+const defauts = ${JSON.stringify(Object.fromEntries(ports
+    .filter(p => p.control && p.input && p.def !== null)
+    .map(p => {
+        const u = { db: ' dB', hz: ' Hz', pc: ' %', ms: ' ms', s: ' s' }[p.unit] || '';
+        const dec = (p.def !== Math.round(p.def)) ? 2 : 0;
+        return [p.symbol, p.def.toFixed(dec) + u];
+    })))};
 document.querySelectorAll('[mod-role="input-control-value"]').forEach(function (el) {
-  const v = { program:'MANUAL', gate:'-80 dB', comp:'30 %', de_ess:'0 %', body:'0 dB',
-    mid_freq:'2200 Hz', presence:'0 dB', air:'0 dB', drive:'0 %', pitch:'0', pitch_mix:'100 %',
-    doubler:'0 %', voices:'3', modulation:'0 %', mod_speed:'0.60 Hz', delay_time:'400 ms',
-    delay_repeats:'30 %', delay_mix:'0 %', reverb:'40 %', reverb_mix:'0 %',
-    in_gain:'0 dB', low_cut:'90 Hz', output:'0 dB' }[el.getAttribute('mod-port-symbol')];
-  if (v) el.textContent = v;
+  const s = el.getAttribute('mod-port-symbol');
+  const v = (s === 'program') ? 'MANUAL' : defauts[s];
+  if (v !== undefined) el.textContent = v;
 });
 document.querySelector('.voice-gr-fill').style.width = '38%';
 document.querySelector('.voice-level-fill').style.width = '62%';

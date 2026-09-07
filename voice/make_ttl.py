@@ -100,8 +100,14 @@ CONTROLS = [
  ("de_ess_on", "DE-ESS ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the de-esser in and out. Made for a footswitch."),
  ("de_ess", "DE-ESS", 0.0, 100.0, 0.0, "pc", [],
-  "Tames sibilance by compressing the band above 5.5 kHz alone, so an S loses "
-  "its edge without the whole word going dull."),
+  "Tames sibilance by compressing the band above DE-ESS FREQ alone, so an S "
+  "loses its edge without the whole word going dull."),
+ ("de_ess_freq", "DE-ESS FREQ", 2000.0, 12000.0, 5500.0, "hz",
+  ["pprops:logarithmic"],
+  "Where the sibilance lives, which is not the same for every voice or every "
+  "microphone: low for a dark voice or a dull capsule, high for a bright one. "
+  "Around 5 to 7 kHz for most singers; take it up if the de-esser starts "
+  "eating the word rather than the S."),
  ("eq_on", "EQ ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the three tone bands in and out together. Made for a footswitch."),
  ("body", "BODY", -12.0, 12.0, 0.0, "db", [],
@@ -135,6 +141,24 @@ CONTROLS = [
   "How much of the shifted voice replaces the original. At 100 you hear only "
   "the new voice; lower down the two sing together, which at an octave is an "
   "octaver and at three or four semitones is a fixed harmony."),
+ ("harm_on", "HARMONY ON", 0.0, 1.0, 1.0, None, SWITCH,
+  "Switches the two harmony voices in and out. Made for a footswitch."),
+ ("harm_1", "HARM 1", -12.0, 12.0, 4.0, None,
+  ["lv2:integer", "pprops:hasStrictBounds"],
+  "The first harmony voice, in semitones from what you sing. +4 is a major "
+  "third above, +3 a minor third, +7 a fifth, -12 an octave below. It is a "
+  "FIXED interval and nothing detects your note, so it follows the song only "
+  "where the song stays in one key - which is what a chorus usually does."),
+ ("harm_2", "HARM 2", -12.0, 12.0, -5.0, None,
+  ["lv2:integer", "pprops:hasStrictBounds"],
+  "The second harmony voice. -5 is a fourth below, which with +4 above puts "
+  "one singer either side of you. At 0 a voice costs nothing and is silent."),
+ ("harm_mix", "HARMONY", 0.0, 100.0, 0.0, "pc", [],
+  "How loud the two harmony voices are against yours. They are shifted the "
+  "same way as PITCH and their formants move with them, so a third up is a "
+  "smaller singer than you and a fourth down a bigger one - which is what "
+  "makes a stack of three sound like three people rather than one person "
+  "three times."),
  ("doubler_on", "DOUBLE ON", 0.0, 1.0, 1.0, None, SWITCH,
   "Switches the doubler in and out. Made for a footswitch."),
  ("doubler", "DOUBLE", 0.0, 100.0, 0.0, "pc", [],
@@ -195,6 +219,15 @@ CONTROLS = [
   "controller: a port can only take one addressing, so this doubles FX "
   "rather than replacing it. Either one flips the state; FX STATE publishes "
   "which way it actually is."),
+ ("mute", "MUTE", 0.0, 1.0, 0.0, None, ["lv2:toggled"],
+  "Cuts the output over 20 ms and lets it back the same way. Not the gate "
+  "and not FX: those shape the sound, this one stops it, which is what you "
+  "want between two songs. The tails go on decaying behind it, so unmuting "
+  "does not release a frozen reverb."),
+ ("ab", "A/B", 0.0, 1.0, 0.0, None, ["lv2:toggled", "pprops:trigger"],
+  "Goes back to the program you were on before this one, and pressing it "
+  "again returns. For comparing two sounds at a soundcheck without hunting "
+  "through the list. PROGRAM NOW says which one is actually in force."),
  ("tap", "TAP", 0.0, 1.0, 0.0, None, ["lv2:toggled", "pprops:trigger"],
   "Tap tempo for the delay. Two presses set the time, from 20 to 2000 ms. "
   "Longer than that is treated as a fresh start, not a tempo."),
@@ -205,9 +238,11 @@ CONTROLS = [
 
 # What a program overrides, and what stays the player's whatever is
 # selected. IN GAIN and OUTPUT are rig levels, the switches are feet.
-LIVE = ("program", "user_slot", "save", "in_gain", "output", "fx", "fx_2", "tap")
+LIVE = ("program", "user_slot", "save", "in_gain", "output", "fx", "fx_2",
+        "tap", "mute", "ab")
 SWITCHES = ("gate_on", "comp_on", "de_ess_on", "eq_on", "drive_on", "pitch_on",
-            "doubler_on", "mod_on", "feedback_on", "delay_on", "reverb_on")
+            "harm_on", "doubler_on", "mod_on", "feedback_on", "delay_on",
+            "reverb_on")
 N_USER = 6
 
 OUTPUTS = [
@@ -222,6 +257,11 @@ OUTPUTS = [
  ("fx_state", "FX STATE", 0.0, 1.0, 1.0, None, ["lv2:toggled"],
   "Output. The FX state actually in force. It exists because the trigger and "
   "the toggle drive one state, and a plugin must not write back into either."),
+ ("program_now", "PROGRAM NOW", 0.0, 0.0, 0.0, None, [],   # max set below
+  "Output. Which program is actually in force. It exists because A/B moves "
+  "between two of them and a plugin must not write into its own PROGRAM "
+  "port, so that port can be one behind - exactly like the tapped tempo and "
+  "the FX state."),
  ("notches", "NOTCHES", 0.0, 4.0, 0.0, None, [],
   "Output. How many anti-Larsen notches are in place right now. If this sits "
   "at its maximum the stage is fighting you, not the plugin."),
@@ -538,6 +578,40 @@ PRESETS = [
         "delay_repeats": 40.0, "delay_mix": 15.0, "reverb": 70.0,
         "reverb_mix": 22.0}),
 
+    # Somebody else singing with you: two fixed intervals, no detection.
+    ("third", "Third Up", "THIRD", {
+        "low_cut": 100.0, "gate": -44.0, "comp": 34.0, "de_ess": 40.0,
+        "body": 1.0, "mid_freq": 2400.0, "presence": 3.0, "air": 2.0,
+        "harm_1": 4.0, "harm_2": 0.0, "harm_mix": 45.0, "harm_on": 1.0,
+        "drive": 12.0, "drive_on": 0.0, "doubler": 20.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0, "delay_time": 350.0,
+        "delay_repeats": 20.0, "delay_mix": 9.0, "reverb": 35.0,
+        "reverb_mix": 12.0}),
+    ("trio", "Trio", "TRIO", {
+        "low_cut": 100.0, "gate": -44.0, "comp": 36.0, "de_ess": 40.0,
+        "body": 0.0, "mid_freq": 2300.0, "presence": 2.0, "air": 2.0,
+        "harm_1": 4.0, "harm_2": -5.0, "harm_mix": 55.0, "harm_on": 1.0,
+        "drive": 12.0, "drive_on": 0.0, "doubler": 22.0, "voices": 2.0,
+        "spread": 40.0, "doubler_on": 0.0, "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 380.0, "delay_repeats": 22.0, "delay_mix": 10.0,
+        "reverb": 40.0, "reverb_mix": 14.0}),
+    ("fifths", "Power Fifths", "FIFTHS", {
+        "low_cut": 110.0, "gate": -40.0, "comp": 30.0, "de_ess": 30.0,
+        "body": -1.0, "mid_freq": 2600.0, "presence": 4.0, "air": 0.0,
+        "harm_1": 7.0, "harm_2": -5.0, "harm_mix": 60.0, "harm_on": 1.0,
+        "drive": 30.0, "drive_on": 1.0, "feedback": 60.0, "doubler": 20.0,
+        "doubler_on": 0.0, "modulation": 20.0, "mod_on": 0.0,
+        "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 8.0,
+        "reverb": 30.0, "reverb_mix": 10.0}),
+    ("octaves", "Octaves", "OCTAVES", {
+        "low_cut": 90.0, "gate": -44.0, "comp": 32.0, "de_ess": 35.0,
+        "body": 2.0, "mid_freq": 2000.0, "presence": 2.0, "air": 1.0,
+        "harm_1": 12.0, "harm_2": -12.0, "harm_mix": 40.0, "harm_on": 1.0,
+        "drive": 12.0, "drive_on": 0.0, "doubler": 20.0, "doubler_on": 0.0,
+        "modulation": 20.0, "mod_on": 0.0, "delay_time": 400.0,
+        "delay_repeats": 20.0, "delay_mix": 9.0, "reverb": 40.0,
+        "reverb_mix": 12.0}),
+
     # Coming out of a grille or a loudspeaker.
     ("hygiaphone", "Hygiaphone", "HYGIAPH", {
         "low_cut": 320.0, "gate": -42.0, "comp": 45.0, "de_ess": 20.0,
@@ -791,6 +865,12 @@ for _i, _c in enumerate(CONTROLS):
         break
 else:
     raise SystemExit("no PROGRAM control to bound")
+for _i, _c in enumerate(OUTPUTS):
+    if _c[0] == "program_now":
+        OUTPUTS[_i] = _c[:3] + (float(len(PRESETS) + N_USER),) + _c[4:]
+        break
+else:
+    raise SystemExit("no PROGRAM NOW output to bound")
 
 
 # What a preset must NOT write. The two triggers, because a preset that
@@ -996,6 +1076,10 @@ def write_bounds(c_path, js_path):
                       r'\g<1>%d.0f' % haut, src, count=1)
     if n != 1:
         raise SystemExit("voice.c: no PROGRAM row in ctl_spec to bound")
+    neuf, n = re.subn(r'(\{ "program_now",\s+0\.0f,\s+)[\d.]+f',
+                      r'\g<1>%d.0f' % haut, neuf, count=1)
+    if n != 1:
+        raise SystemExit("voice.c: no PROGRAM NOW row in ctl_spec to bound")
     open(c_path, "w").write(neuf)
 
     src = open(js_path).read()
