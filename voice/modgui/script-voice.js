@@ -142,6 +142,24 @@ function (event, funcs) {
         }
     }
 
+    function cleMot(slot) {
+        return 'voice.userWord.' + slot;
+    }
+
+    function lireMot(slot) {
+        try {
+            var t = window.localStorage.getItem(cleMot(slot));
+            return t === null ? -1 : Number(t);
+        } catch (e) {
+            return -1;
+        }
+    }
+
+    function ecrireMot(slot, mot) {
+        try { window.localStorage.setItem(cleMot(slot), String(mot)); }
+        catch (e) { /* the plugin has the word anyway, in the slot */ }
+    }
+
     function ecrireValeurs(slot, valeurs) {
         try {
             window.localStorage.setItem(cleValeurs(slot),
@@ -176,6 +194,10 @@ function (event, funcs) {
 
         champ.prop('disabled', false);
         champ.val(lireNom(slot));
+        /* say WHICH slot the box is naming: with a factory sound
+           selected it names the one SAVE would write to, which is not
+           obvious from a box that just says "name this slot" */
+        champ.attr('placeholder', 'name for USER ' + slot);
         if (estUser) {
             icon.find('.voice-prog-value').text(lireNom(slot) || ('USER ' + slot));
         }
@@ -200,6 +222,16 @@ function (event, funcs) {
             valeurs = lireValeurs(p - PREMIER_USER + 1);
         } else if (p > 0 && p < PROGRAMMES.length) {
             valeurs = PROGRAMMES[p];
+        }
+        if (p >= PREMIER_USER) {
+            /* NAME says what the next SAVE will write. Landing on a slot
+               without moving it there would rename the slot the next time
+               SAVE is pressed, which is not what pressing SAVE means. */
+            var mot = lireMot(p - PREMIER_USER + 1);
+            if (mot >= 0) {
+                funcs.set_port_value('slot_name', mot);
+                etat(icon).ports['slot_name'] = mot;
+            }
         }
         if (!valeurs) { return; }
         var d = etat(icon);
@@ -251,12 +283,13 @@ function (event, funcs) {
         }
     }
 
-    function pulse(icon, symbol, classe, cible) {
+    function pulse(icon, symbol, classe, cible, apres) {
         funcs.set_port_value(symbol, 1);
         cible.toggleClass('flash', true);
         window.setTimeout(function () {
             funcs.set_port_value(symbol, 0);
             cible.toggleClass('flash', false);
+            if (apres) { apres(); }
         }, 120);
     }
 
@@ -287,15 +320,25 @@ function (event, funcs) {
             /* SAVE always has a destination: USER SLOT says which. */
             var d = etat(icon);
             var slot = Math.round(borner(d.ports['user_slot'] || 1, 1, N_SLOT));
-            pulse(icon, 'save', 'flash', icon.find('.voice-save'));
-            /* The plugin has just stored the sound. Keep the same values
-               here for the knobs, then GO to the slot: a save you cannot
-               see is a save you do not believe in. */
+            /* Keep the same values here for the knobs, then GO to the
+               slot - a save you cannot see is a save you do not believe
+               in. The jump waits for the pulse to finish: the plugin
+               takes SAVE before the program list on purpose, but two
+               port writes in one audio block are still two things
+               happening at once, and this one costs nothing to order. */
             ecrireValeurs(slot, lireCourant(icon));
-            var p = PREMIER_USER + slot - 1;
-            d.program = p;
-            funcs.set_port_value('program', p);
-            majProgramme(icon, p);
+            ecrireMot(slot, Math.round(nombre(d.ports['slot_name'])));
+            pulse(icon, 'save', 'flash', icon.find('.voice-save'), function () {
+                var p = PREMIER_USER + slot - 1;
+                d.program = p;
+                funcs.set_port_value('program', p);
+                majProgramme(icon, p);
+            });
+        });
+
+        icon.find('.voice-cycle').on('click', function (e) {
+            if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
+            pulse(icon, 'next_user', 'flash', icon.find('.voice-cycle'));
         });
 
         icon.find('.voice-ab').on('click', function (e) {

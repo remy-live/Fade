@@ -93,6 +93,45 @@ static const char* const program_name[N_PROGRAM] = {
     "ROTARY",
 };
 
+/* What a USER slot can be called. A control port carries a number, so a
+   name typed in a browser cannot reach the plugin: a word PICKED from
+   this list can, and is stored in the slot and saved with the board. */
+#define N_SLOT_WORD 32
+static const char* const slot_word[N_SLOT_WORD] = {
+    "USER",
+    "INTRO",
+    "VERSE",
+    "CHORUS",
+    "BRIDGE",
+    "SOLO",
+    "BREAK",
+    "ENDING",
+    "SONG 1",
+    "SONG 2",
+    "SONG 3",
+    "SONG 4",
+    "BALLAD",
+    "ROCK",
+    "POP",
+    "FUNK",
+    "JAZZ",
+    "BLUES",
+    "GOSPEL",
+    "COUNTRY",
+    "METAL",
+    "REGGAE",
+    "SPEECH",
+    "CHOIR",
+    "DOUBLE",
+    "HARMONY",
+    "EFFECT",
+    "SOFT",
+    "LOUD",
+    "DRY",
+    "WET",
+    "SPARE",
+};
+
 /* Which column of program_value holds a control, -1 for the ones a
    program never touches: the rig levels and the switches. */
 static const int8_t program_col[CTL_COUNT] = {
@@ -140,6 +179,8 @@ static const int8_t program_col[CTL_COUNT] = {
     25,   /* reverb_mix */
     -1,   /* fx */
     -1,   /* fx_2 */
+    -1,   /* slot_name */
+    -1,   /* next_user */
     -1,   /* mute */
     -1,   /* ab */
     -1,   /* tap */

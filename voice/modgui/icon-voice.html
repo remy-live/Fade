@@ -19,11 +19,19 @@
                  mod-port-symbol="program"></div>
             <input class="voice-prog-rename{{{cns}}} voice-prog-rename" type="text"
                    maxlength="16" placeholder="name this slot"
-                   title="Your name for this USER slot. Kept in this browser.">
+                   title="A long name for this USER slot. Kept in THIS browser only - the word on the right is the one that reaches the pedal.">
         </div>
 
         <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
 
+        <div class="voice-prog-dial{{{cns}}}"
+             mod-role="input-control-port"
+             mod-port-symbol="program"
+             mod-widget-rotation="270"></div>
+    </div>
+
+    <!-- ---------------- storing, comparing, cutting ---------------- -->
+    <div class="voice-bar{{{cns}}}">
         <div class="voice-slot{{{cns}}}">
             <div class="voice-slot-dial{{{cns}}}"
                  mod-role="input-control-port"
@@ -35,22 +43,33 @@
             <div class="voice-slot-cap{{{cns}}}">SAVE TO</div>
         </div>
 
+        <div class="voice-slot{{{cns}}}">
+            <div class="voice-slot-dial{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="slot_name"
+                 mod-widget-rotation="270"></div>
+            <div class="voice-slot-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="slot_name"></div>
+            <div class="voice-slot-cap{{{cns}}}">ON PEDAL</div>
+        </div>
+
         <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"
              title="Store what you are hearing into the USER slot on the left">SAVE</div>
 
         <div class="voice-ab{{{cns}}} voice-ab" mod-port-symbol="ab"
              title="Back to the program you were on before this one">A/B</div>
 
+        <div class="voice-ab{{{cns}}} voice-cycle" mod-port-symbol="next_user"
+             title="Step to the next USER slot that has something in it">USER &#9654;</div>
+
+        <div class="voice-bar-space{{{cns}}}"></div>
+
         <div class="voice-mute{{{cns}}}">
             <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                  mod-port-symbol="mute" mod-widget="switch"></div>
             <div class="voice-mute-cap{{{cns}}}">MUTE</div>
         </div>
-
-        <div class="voice-prog-dial{{{cns}}}"
-             mod-role="input-control-port"
-             mod-port-symbol="program"
-             mod-widget-rotation="270"></div>
     </div>
 
     <!-- ---------------- the channel strip ---------------- -->

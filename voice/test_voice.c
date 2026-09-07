@@ -2153,6 +2153,37 @@ static void essai_retouche(void)
     verifie("SAVE keeps the edit, not the knob it came from",
             (double)b.ctl[CTL_TIME_OUT], 180.0, 0.01);
 
+    /* The case the web UI creates every time: SAVE and the jump to the
+       slot land in the same block. Applied in the wrong order, entering
+       the slot first makes SAVE read THE SLOT instead of the knobs and
+       store its old contents back into itself - the sound stays right
+       until you come back to it, which is the worst way for a save to
+       fail. */
+    b.ctl[CTL_USER_SLOT]  = 4.0f;
+    b.ctl[CTL_PROGRAM]    = 0.0f;              /* MANUAL */
+    b.ctl[CTL_DELAY_TIME] = 240.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);       /* fill it once */
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    b.ctl[CTL_DELAY_TIME] = 960.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE]    = 1.0f;                 /* both in ONE block */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 3);
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    b.ctl[CTL_PROGRAM]    = 0.0f;
+    b.ctl[CTL_DELAY_TIME] = 130.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 3);
+    silence(&b); tourner(&b);
+    verifie("saving and jumping to the slot in one block keeps the sound",
+            (double)b.ctl[CTL_TIME_OUT], 960.0, 0.01);
+
+    b.ctl[CTL_PROGRAM] = 0.0f;
+    silence(&b); tourner(&b);
+
     /* choosing another program hands everything back to it */
     b.ctl[CTL_PROGRAM] = (float)p_rock;
     silence(&b); tourner(&b);
@@ -2206,6 +2237,7 @@ static void essai_etat(void)
     a.ctl[CTL_USER_SLOT]  = 3.0f;                      /* store into USER 3 */
     a.ctl[CTL_DELAY_TIME] = 333.0f;
     a.ctl[CTL_REVERB_MIX] = 44.0f;
+    a.ctl[CTL_SLOT_NAME]  = 3.0f;                      /* called CHORUS */
     silence(&a); tourner(&a);
     a.ctl[CTL_SAVE] = 1.0f; silence(&a); tourner(&a);
     a.ctl[CTL_SAVE] = 0.0f; silence(&a); tourner(&a);
@@ -2224,6 +2256,8 @@ static void essai_etat(void)
     b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 2.0f;      /* USER 3 */
     b.ctl[CTL_DELAY_TIME] = 800.0f;         /* the knobs are elsewhere */
     silence(&b); tourner(&b);
+    verifie_vrai("and the name came back with the sound",
+                 ((Voice*)b.h)->user[2].name == 3u);
     verifie("a restored slot plays what was saved in it",
             (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
 
@@ -2641,6 +2675,74 @@ static void essai_deess_freq(void)
     fermer(&b);
 }
 
+/* A name that reaches the pedal. It cannot be typed - a control port
+   carries a number - so it is PICKED from a list, stored in the slot with
+   the sound, saved with the pedalboard, and read out on the screen. And
+   NEXT USER walks the slots that have something in them, which is the one
+   footswitch a singer actually wants. */
+static void essai_noms(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+
+    /* slot 2 gets a sound and the word CHORUS */
+    b.ctl[CTL_USER_SLOT]  = 2.0f;
+    b.ctl[CTL_DELAY_TIME] = 210.0f;
+    b.ctl[CTL_SLOT_NAME]  = 3.0f;             /* CHORUS */
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    /* slot 5 gets another, with no name at all */
+    b.ctl[CTL_USER_SLOT]  = 5.0f;
+    b.ctl[CTL_DELAY_TIME] = 640.0f;
+    b.ctl[CTL_SLOT_NAME]  = 0.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    adresser(&b, CTL_PROGRAM, TOUTES_CAPS, (void*)0xF1);
+    /* past the SAVED flash, which owns the readout for a second */
+    for (int k = 0; k < 500; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);          /* USER 2 */
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("a named slot says its name on the screen",
+                 !strcmp(ecran.dernier_value, "CHORUS"));
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 4);          /* USER 5 */
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and an unnamed one still says USER 5",
+                 !strcmp(ecran.dernier_value, "USER 5"));
+
+    /* the cycle switch: 5 -> 2 -> 5, skipping the four empty slots */
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("NEXT USER skips the empty slots",
+            (double)b.ctl[CTL_PROGRAM_NOW], (double)(N_PROGRAM + 1), 0.01);
+    verifie("and brings its sound with it",
+            (double)b.ctl[CTL_TIME_OUT], 210.0, 0.01);
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("under the name it was given",
+                 !strcmp(ecran.dernier_value, "CHORUS"));
+
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("and round again", (double)b.ctl[CTL_PROGRAM_NOW],
+            (double)(N_PROGRAM + 4), 0.01);
+    fermer(&b);
+
+    /* nothing filled: the switch does nothing rather than landing on an
+       empty slot, which on stage would be a silent press */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("with no slot filled it stays where it is",
+            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
+    fermer(&b);
+}
+
 /* ================================================================== */
 /* The choir                                                           */
 /* ================================================================== */
@@ -2958,6 +3060,7 @@ int main(int argc, char** argv)
     printf("Harmony:\n");                   essai_harmonie();
     printf("Mute:\n");                      essai_mute();
     printf("A/B:\n");                       essai_ab();
+    printf("Names, and the cycle switch:\n"); essai_noms();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("USER slots:\n");                essai_slots();

@@ -588,6 +588,59 @@
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
         lv2:index 48 ;
+        lv2:symbol "slot_name" ;
+        lv2:name "NAME" ;
+        lv2:portProperty lv2:integer , lv2:enumeration , pprops:hasStrictBounds ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 31.0 ;
+        lv2:scalePoint
+            [ rdfs:label "No name" ; rdf:value 0.0 ] ,
+            [ rdfs:label "Intro" ; rdf:value 1.0 ] ,
+            [ rdfs:label "Verse" ; rdf:value 2.0 ] ,
+            [ rdfs:label "Chorus" ; rdf:value 3.0 ] ,
+            [ rdfs:label "Bridge" ; rdf:value 4.0 ] ,
+            [ rdfs:label "Solo" ; rdf:value 5.0 ] ,
+            [ rdfs:label "Break" ; rdf:value 6.0 ] ,
+            [ rdfs:label "Ending" ; rdf:value 7.0 ] ,
+            [ rdfs:label "Song 1" ; rdf:value 8.0 ] ,
+            [ rdfs:label "Song 2" ; rdf:value 9.0 ] ,
+            [ rdfs:label "Song 3" ; rdf:value 10.0 ] ,
+            [ rdfs:label "Song 4" ; rdf:value 11.0 ] ,
+            [ rdfs:label "Ballad" ; rdf:value 12.0 ] ,
+            [ rdfs:label "Rock" ; rdf:value 13.0 ] ,
+            [ rdfs:label "Pop" ; rdf:value 14.0 ] ,
+            [ rdfs:label "Funk" ; rdf:value 15.0 ] ,
+            [ rdfs:label "Jazz" ; rdf:value 16.0 ] ,
+            [ rdfs:label "Blues" ; rdf:value 17.0 ] ,
+            [ rdfs:label "Gospel" ; rdf:value 18.0 ] ,
+            [ rdfs:label "Country" ; rdf:value 19.0 ] ,
+            [ rdfs:label "Metal" ; rdf:value 20.0 ] ,
+            [ rdfs:label "Reggae" ; rdf:value 21.0 ] ,
+            [ rdfs:label "Speech" ; rdf:value 22.0 ] ,
+            [ rdfs:label "Choir" ; rdf:value 23.0 ] ,
+            [ rdfs:label "Double" ; rdf:value 24.0 ] ,
+            [ rdfs:label "Harmony" ; rdf:value 25.0 ] ,
+            [ rdfs:label "Effect" ; rdf:value 26.0 ] ,
+            [ rdfs:label "Soft" ; rdf:value 27.0 ] ,
+            [ rdfs:label "Loud" ; rdf:value 28.0 ] ,
+            [ rdfs:label "Dry" ; rdf:value 29.0 ] ,
+            [ rdfs:label "Wet" ; rdf:value 30.0 ] ,
+            [ rdfs:label "Spare" ; rdf:value 31.0 ] ;
+        rdfs:comment "The word the next SAVE writes on the slot, which is how a name reaches the pedal at all: a control port carries a number, so a name typed in a browser stays in that browser. Picked from a list, it is stored in the slot, saved with the pedalboard, and shown on the device screen wherever the slot is. USER means no name - the screen says USER 1 to USER 6."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 49 ;
+        lv2:symbol "next_user" ;
+        lv2:name "NEXT USER" ;
+        lv2:portProperty lv2:toggled , pprops:trigger ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Steps to the next USER slot that has something in it, and round again. One footswitch to cycle your own sounds, with the name of each on the screen. Empty slots are skipped; if none is filled it does nothing."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 50 ;
         lv2:symbol "mute" ;
         lv2:name "MUTE" ;
         lv2:portProperty lv2:toggled ;
@@ -597,7 +650,7 @@
         rdfs:comment "Cuts the output over 20 ms and lets it back the same way. Not the gate and not FX: those shape the sound, this one stops it, which is what you want between two songs. The tails go on decaying behind it, so unmuting does not release a frozen reverb."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 49 ;
+        lv2:index 51 ;
         lv2:symbol "ab" ;
         lv2:name "A/B" ;
         lv2:portProperty lv2:toggled , pprops:trigger ;
@@ -607,7 +660,7 @@
         rdfs:comment "Goes back to the program you were on before this one, and pressing it again returns. For comparing two sounds at a soundcheck without hunting through the list. PROGRAM NOW says which one is actually in force."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 50 ;
+        lv2:index 52 ;
         lv2:symbol "tap" ;
         lv2:name "TAP" ;
         lv2:portProperty lv2:toggled , pprops:trigger ;
@@ -617,7 +670,7 @@
         rdfs:comment "Tap tempo for the delay. Two presses set the time, from 20 to 2000 ms. Longer than that is treated as a fresh start, not a tempo."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
-        lv2:index 51 ;
+        lv2:index 53 ;
         lv2:symbol "output" ;
         lv2:name "OUTPUT" ;
         lv2:default 0.0 ;
@@ -627,7 +680,7 @@
         rdfs:comment "Output level, after everything. Yours, always: no program moves it. At -60 dB the plugin is silent."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 52 ;
+        lv2:index 54 ;
         lv2:symbol "gr" ;
         lv2:name "GR" ;
         lv2:default 0.0 ;
@@ -637,7 +690,7 @@
         rdfs:comment "Output. Compressor gain reduction in dB, at its worst over the last block. 0 means the compressor is doing nothing."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 53 ;
+        lv2:index 55 ;
         lv2:symbol "level" ;
         lv2:name "LEVEL" ;
         lv2:default 0.0 ;
@@ -646,7 +699,7 @@
         rdfs:comment "Output. Peak level leaving the plugin, 0 to 1, with a 300 ms fall so a peak stays visible."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 54 ;
+        lv2:index 56 ;
         lv2:symbol "gate_open" ;
         lv2:name "GATE OPEN" ;
         lv2:portProperty lv2:toggled ;
@@ -656,7 +709,7 @@
         rdfs:comment "Output. 1 while the gate is open."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 55 ;
+        lv2:index 57 ;
         lv2:symbol "fx_state" ;
         lv2:name "FX STATE" ;
         lv2:portProperty lv2:toggled ;
@@ -666,7 +719,7 @@
         rdfs:comment "Output. The FX state actually in force. It exists because the trigger and the toggle drive one state, and a plugin must not write back into either."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 56 ;
+        lv2:index 58 ;
         lv2:symbol "program_now" ;
         lv2:name "PROGRAM NOW" ;
         lv2:default 0.0 ;
@@ -675,7 +728,7 @@
         rdfs:comment "Output. Which program is actually in force. It exists because A/B moves between two of them and a plugin must not write into its own PROGRAM port, so that port can be one behind - exactly like the tapped tempo and the FX state."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 57 ;
+        lv2:index 59 ;
         lv2:symbol "notches" ;
         lv2:name "NOTCHES" ;
         lv2:default 0.0 ;
@@ -684,7 +737,7 @@
         rdfs:comment "Output. How many anti-Larsen notches are in place right now. If this sits at its maximum the stage is fighting you, not the plugin."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
-        lv2:index 58 ;
+        lv2:index 60 ;
         lv2:symbol "time_out" ;
         lv2:name "TIME" ;
         lv2:default 400.0 ;

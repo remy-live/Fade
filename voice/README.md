@@ -121,6 +121,8 @@ not from the program, so a board comes back exactly as you left it.
 | **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
+| **NAME** | The word the next SAVE writes on the slot, from a list of thirty-two. The only kind of name that can reach the pedal: a control port carries a number, so a name typed in a browser stays in that browser. |
+| **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -237,6 +239,17 @@ answer to "did it save?" used to be "yes, but nothing on the screen said
 so". Walk away to another sound and come back to the slot: the knobs move
 to what you stored.
 
+**One bug worth knowing about, now fixed.** Pressing SAVE in the web UI
+also selects the slot it wrote to — and both port writes could land
+between the same two `run()` calls. Applied in that order, entering the
+slot made SAVE read *the slot* rather than the knobs, and store the
+slot's old contents back into itself. The sound stayed right until you
+came back to it, which is the worst way for a save to fail. SAVE is now
+handled before the program list, whatever order the writes arrive in, and
+the web UI waits for the pulse to finish before jumping. Slots saved with
+an earlier build kept the sound they had *before* the edit; save them
+again.
+
 The slots travel with the pedalboard: the plugin implements the LV2 State
 extension and writes them out with it. That is *when the pedalboard is
 saved*, so a slot stored and never followed by a board save is gone at the
@@ -261,12 +274,23 @@ selecting it writes the knobs. Save it again from the browser and the two
 agree. The device screen never
 had this problem: it always showed what was in force.
 
-**Naming** is the one part that is split. A control port carries a number,
-not text, so the plugin has no way to receive a name: the name you type in
-the web UI is kept **in that browser**, while the sound itself lives in the
-plugin. On the device screen a slot reads `USER 1` to `USER 6`. If you want
-a sound named everywhere, add it to `PRESETS` in `make_ttl.py` and rebuild
-— it becomes a program *and* an LV2 preset, with its name on the screen.
+**Naming** works in two halves, for a reason worth stating plainly. A
+control port carries a *number*, not text, so a name typed into a browser
+cannot reach the plugin at all — which is exactly as useful as having no
+name. So there are two:
+
+| | |
+|---|---|
+| **NAME** (`ON PEDAL`) | A word picked from a list of thirty-two — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD, ROCK… A word is a number, so this one *does* travel: SAVE stores it in the slot, it is saved with the pedalboard, and it is what the device screen shows wherever that slot appears. `USER` means no name, and the screen falls back to `USER 1` … `USER 6`. |
+| The text box | A long name, up to sixteen characters, kept **in that browser** and shown in the web UI only. It says which slot it is naming, because with a factory sound selected it names the slot SAVE would write to. |
+
+**USER ▶** — the cycle switch — steps to the next USER slot that has
+something in it, skipping the empty ones, and the screen says where you
+landed *by your name for it*. One footswitch, your own sounds, in order.
+
+If you want a sound named everywhere and in your own words, add it to
+`PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2
+preset, with its name on the screen and in the list.
 
 mod-ui's own **Save** on the plugin block is the other route: it writes a
 plugin preset — your settings, under your name, in the same menu as the
@@ -378,7 +402,7 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-384 checks: the approximations against libm, every block of the chain
+393 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
 click it must not make, all seventy-two presets for the level they land on,
 the delay against a clock at three sample rates, and a simulated HMI

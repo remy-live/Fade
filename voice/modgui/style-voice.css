@@ -14,7 +14,7 @@
 .mod-pedal-voice{{{cns}}} {
     position: relative;
     width: 720px;
-    height: 738px;
+    height: 792px;
     box-sizing: border-box;
     border-radius: 14px;
     padding: 0 14px;
@@ -68,13 +68,25 @@
 /* ---------- the program list ---------- */
 
 .voice-prog{{{cns}}} {
-    display: flex; align-items: center; gap: 9px;
+    display: flex; align-items: center; gap: 7px;
     height: 52px; margin-bottom: 8px;
     padding: 0 10px;
     border-radius: 9px;
     background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
     border: 1px solid rgba(255,255,255,.14);
 }
+/* The second bar: where a sound is stored, compared and cut. It used to
+   share the program bar, and with a name box in there too everything was
+   squeezed until the box disappeared. */
+.voice-bar{{{cns}}} {
+    display: flex; align-items: center; gap: 10px;
+    height: 46px; margin-bottom: 8px; padding: 0 12px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.11);
+}
+.voice-bar-space{{{cns}}} { flex: 1; }
+
 .voice-prog-nav{{{cns}}} {
     width: 26px; height: 26px; line-height: 26px; text-align: center;
     border-radius: 6px; cursor: pointer; font-size: 11px; color: #dbe6f0;
@@ -85,7 +97,11 @@
 .voice-prog-nav{{{cns}}}:hover { background: linear-gradient(180deg, #7c8ca3 0%, #4d596b 100%); }
 
 .voice-prog-box{{{cns}}} {
-    flex: 1; display: flex; align-items: center; gap: 10px;
+    /* Wide enough that the name box is still a box once SAVE, A/B, the
+       cycle switch and MUTE have taken their share of the bar: with the
+       row simply flexing, the input was squeezed to nothing. */
+    flex: 1; min-width: 300px;
+    display: flex; align-items: center; gap: 10px;
     padding: 4px 10px; border-radius: 6px;
     background: #1d232c;
     box-shadow: inset 0 1px 3px rgba(0,0,0,.7);
@@ -98,7 +114,7 @@
     min-width: 92px;
 }
 .voice-prog-rename{{{cns}}} {
-    flex: 1; min-width: 0;
+    flex: 1; min-width: 120px;
     background: #2a333e; color: #e9f0f7;
     border: 1px solid rgba(255,255,255,.16); border-radius: 5px;
     padding: 3px 7px; font-size: 12px;

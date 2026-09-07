@@ -124,6 +124,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -252,6 +258,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -382,6 +394,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 7.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -510,6 +528,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -640,6 +664,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -768,6 +798,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -898,6 +934,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -1026,6 +1068,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -1156,6 +1204,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -1284,6 +1338,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -1414,6 +1474,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -1542,6 +1608,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -1672,6 +1744,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -1800,6 +1878,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 9.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -1930,6 +2014,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -2058,6 +2148,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -2188,6 +2284,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -2316,6 +2418,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -2446,6 +2554,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -2574,6 +2688,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -2704,6 +2824,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -2832,6 +2958,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -2962,6 +3094,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -3090,6 +3228,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -3220,6 +3364,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -3348,6 +3498,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -3478,6 +3634,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -3606,6 +3768,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -3736,6 +3904,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 28.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -3864,6 +4038,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -3994,6 +4174,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -4122,6 +4308,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -4252,6 +4444,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -4380,6 +4578,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -4510,6 +4714,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -4638,6 +4848,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -4768,6 +4984,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -4896,6 +5118,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -5026,6 +5254,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -5154,6 +5388,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -5284,6 +5524,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -5412,6 +5658,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -5542,6 +5794,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -5670,6 +5928,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -5800,6 +6064,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -5928,6 +6198,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -6058,6 +6334,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -6186,6 +6468,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -6316,6 +6604,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -6444,6 +6738,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -6574,6 +6874,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 13.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -6702,6 +7008,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -6832,6 +7144,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -6960,6 +7278,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 32.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -7090,6 +7414,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -7218,6 +7548,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -7348,6 +7684,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -7476,6 +7818,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -7606,6 +7954,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -7734,6 +8088,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 30.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -7864,6 +8224,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -7992,6 +8358,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -8122,6 +8494,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -8250,6 +8628,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -8380,6 +8764,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -8508,6 +8898,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -8638,6 +9034,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -8766,6 +9168,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -8896,6 +9304,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -9024,6 +9438,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -9154,6 +9574,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -9282,6 +9708,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -9412,6 +9844,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -9540,6 +9978,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -9670,6 +10114,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 7.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -9798,6 +10248,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -9928,6 +10384,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -10056,6 +10518,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -10186,6 +10654,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -10314,6 +10788,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -10444,6 +10924,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -10572,6 +11058,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -10702,6 +11194,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -10830,6 +11328,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -10960,6 +11464,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -11088,6 +11598,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 9.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -11218,6 +11734,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -11346,6 +11868,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -11476,6 +12004,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -11604,6 +12138,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -11734,6 +12274,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -11862,6 +12408,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -11992,6 +12544,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -12120,6 +12678,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -12250,6 +12814,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -12378,6 +12948,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -12508,6 +13084,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -12636,6 +13218,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -12766,6 +13354,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -12894,6 +13488,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -13024,6 +13624,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 28.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -13152,6 +13758,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -13282,6 +13894,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -13410,6 +14028,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -13540,6 +14164,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -13668,6 +14298,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -13798,6 +14434,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -13926,6 +14568,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -14056,6 +14704,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -14184,6 +14838,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -14314,6 +14974,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -14442,6 +15108,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -14572,6 +15244,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -14700,6 +15378,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -14830,6 +15514,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -14958,6 +15648,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -15088,6 +15784,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -15216,6 +15918,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 6.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -15346,6 +16054,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -15474,6 +16188,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -15604,6 +16324,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -15732,6 +16458,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -15862,6 +16594,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 13.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -15990,6 +16728,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -16120,6 +16864,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 24.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -16248,6 +16998,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 32.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -16378,6 +17134,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -16506,6 +17268,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -16636,6 +17404,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 22.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -16764,6 +17538,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -16894,6 +17674,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 26.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -17022,6 +17808,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 30.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -17152,6 +17944,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -17280,6 +18078,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -17410,6 +18214,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -17538,6 +18348,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 12.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -17668,6 +18484,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -17796,6 +18618,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -17926,6 +18754,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 18.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -18054,6 +18888,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 16.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -18184,6 +19024,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 8.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -18312,6 +19158,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 10.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
@@ -18442,6 +19294,12 @@
         lv2:symbol "reverb_mix" ;
         pset:value 20.0
     ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "mute" ;
         pset:value 0.0
     ] , [
@@ -18570,6 +19428,12 @@
     ] , [
         lv2:symbol "reverb_mix" ;
         pset:value 14.0
+    ] , [
+        lv2:symbol "slot_name" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "next_user" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "mute" ;
         pset:value 0.0

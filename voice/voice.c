@@ -86,7 +86,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD9_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD10_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -353,18 +353,20 @@ typedef enum {
     CTL_REVERB_MIX    = 41,
     CTL_FX            = 42,  /* the master: it feeds all four at once */
     CTL_FX_2          = 43,  /* a second switch on the same state */
-    CTL_MUTE          = 44,  /* not the gate and not FX: it stops the sound */
-    CTL_AB            = 45,  /* trigger: back to the program before this one */
-    CTL_TAP           = 46,  /* trigger: two taps set the delay time */
-    CTL_OUTPUT        = 47,
-    CTL_GR            = 48,  /* output: compressor gain reduction, dB */
-    CTL_LEVEL         = 49,  /* output: peak out level, 0..1 */
-    CTL_GATE_OPEN     = 50,  /* output: 1 while the gate is open */
-    CTL_FX_STATE      = 51,  /* output: the FX state actually in force */
-    CTL_PROGRAM_NOW   = 52,  /* output: the program A/B has left in force */
-    CTL_NOTCHES       = 53,  /* output: anti-Larsen notches in place */
-    CTL_TIME_OUT      = 54,  /* output: delay time in force, tap included */
-    CTL_COUNT         = 55
+    CTL_SLOT_NAME     = 44,  /* the word the next SAVE writes on the slot */
+    CTL_NEXT_USER     = 45,  /* trigger: cycle the slots that have something */
+    CTL_MUTE          = 46,  /* not the gate and not FX: it stops the sound */
+    CTL_AB            = 47,  /* trigger: back to the program before this one */
+    CTL_TAP           = 48,  /* trigger: two taps set the delay time */
+    CTL_OUTPUT        = 49,
+    CTL_GR            = 50,  /* output: compressor gain reduction, dB */
+    CTL_LEVEL         = 51,  /* output: peak out level, 0..1 */
+    CTL_GATE_OPEN     = 52,  /* output: 1 while the gate is open */
+    CTL_FX_STATE      = 53,  /* output: the FX state actually in force */
+    CTL_PROGRAM_NOW   = 54,  /* output: the program A/B has left in force */
+    CTL_NOTCHES       = 55,  /* output: anti-Larsen notches in place */
+    CTL_TIME_OUT      = 56,  /* output: delay time in force, tap included */
+    CTL_COUNT         = 57
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -433,6 +435,8 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "reverb_mix",     0.0f,  100.0f,     0.0f },
     { "fx",             0.0f,    1.0f,     1.0f },
     { "fx_2",           0.0f,    1.0f,     1.0f },
+    { "slot_name",      0.0f,   31.0f,     0.0f },
+    { "next_user",      0.0f,    1.0f,     0.0f },
     { "mute",           0.0f,    1.0f,     0.0f },
     { "ab",             0.0f,    1.0f,     0.0f },
     { "tap",            0.0f,    1.0f,     0.0f },
@@ -750,7 +754,7 @@ typedef enum {
     SLOT_COMP, SLOT_GATE, SLOT_OUT, SLOT_PROGRAM, SLOT_VOICES,
     SLOT_PITCH, SLOT_SAVE, SLOT_SPREAD, SLOT_HOWL, SLOT_USER,
     SLOT_MUTE, SLOT_AB, SLOT_HARM_1, SLOT_HARM_2, SLOT_HARM_MIX,
-    SLOT_DE_ESS_FREQ,
+    SLOT_DE_ESS_FREQ, SLOT_NEXT_USER, SLOT_SLOT_NAME,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -762,7 +766,7 @@ static uint8_t slot_ctl_of(int slot)
         CTL_COMP, CTL_GATE, CTL_OUTPUT, CTL_PROGRAM, CTL_VOICES,
         CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT,
         CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
-        CTL_DE_ESS_FREQ
+        CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
@@ -897,11 +901,13 @@ typedef struct {
         float   value[N_PROGRAM_COL];
         uint8_t sw[SW_COUNT];
         uint8_t filled;
+        uint8_t name;         /* an index into slot_word, 0 for none */
     } user[N_USER];
     int save_prev;
     int program_port;         /* the last value SEEN on the PROGRAM port */
     int program_ab;           /* the other one, for A/B */
     int ab_prev;
+    int next_prev;
     uint32_t save_flash;      /* samples left to say SAVED on the screen */
     int fx2_prev;
 
@@ -1388,6 +1394,27 @@ static float param_read(const Voice* self, int i)
     return ctl_read(self, i);
 }
 
+/* What to write on the screen for a program. A USER slot says the word
+   the player stored with it - the whole point of that word being a number
+   from a list rather than text typed into a browser, which the plugin
+   could never have received. An unnamed or empty slot says USER n. */
+static const char* program_label(const Voice* self, int prog, char* buf,
+                                 size_t n)
+{
+    if (prog >= N_PROGRAM) {
+        const int u = prog - N_PROGRAM;
+        if (u >= 0 && u < N_USER && self->user[u].filled
+            && self->user[u].name > 0u
+            && self->user[u].name < (uint8_t)N_SLOT_WORD) {
+            return slot_word[self->user[u].name];
+        }
+        copy_bounded(buf, n, "USER ");
+        write_int(buf + 5, n - 5, u + 1);
+        return buf;
+    }
+    return program_name[(prog > 0) ? prog : 0];
+}
+
 /* Everything that happens when a program comes into force, whether the
    knob was turned, the pedalboard was loaded, or A/B went back to it.
    The program in force is NOT the port: A/B moves one and not the other. */
@@ -1472,6 +1499,7 @@ activate(LV2_Handle instance)
     self->program_port = self->program;
     self->program_ab   = self->program;   /* A/B has nowhere else to go yet */
     self->ab_prev      = (ctl_read(self, CTL_AB) > 0.5f) ? 1 : 0;
+    self->next_prev    = (ctl_read(self, CTL_NEXT_USER) > 0.5f) ? 1 : 0;
     for (int k = 0; k < (int)SW_COUNT; ++k) {
         const int on = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
         self->sw_state[k] = on;
@@ -1799,15 +1827,28 @@ paint(Voice* self, int force)
             /* On a footswitch this is the compare button, and what it
                needs to say is where you are, not that you pressed it. */
             label = "A/B";
-            if (self->program >= N_PROGRAM) {
-                copy_bounded(vbuf, sizeof(vbuf), "USER ");
-                write_int(vbuf + 5, sizeof(vbuf) - 5,
-                          self->program - N_PROGRAM + 1);
-                value = vbuf;
-            } else {
-                value = program_name[(self->program > 0) ? self->program : 0];
-            }
+            value = program_label(self, self->program, vbuf, sizeof(vbuf));
             break;
+
+        case SLOT_NEXT_USER:
+            /* The cycle switch. Same thing: it says where you have
+               landed, by the name you gave it. */
+            label = "NEXT";
+            value = program_label(self, self->program, vbuf, sizeof(vbuf));
+            led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
+                                                 : LV2_HMI_LED_Colour_Off;
+            break;
+
+        case SLOT_SLOT_NAME: {
+            int w = (int)(ctl_read(self, CTL_SLOT_NAME) + 0.5f);
+            if (w < 0)            { w = 0; }
+            if (w >= N_SLOT_WORD) { w = N_SLOT_WORD - 1; }
+            label = "NAME";
+            value = (w > 0) ? slot_word[w] : "NONE";
+            bar   = (float)w * (1.0f / (float)(N_SLOT_WORD - 1));
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+        }
 
         case SLOT_HARM_1:
         case SLOT_HARM_2: {
@@ -1880,13 +1921,8 @@ paint(Voice* self, int force)
                 copy_bounded(vbuf, sizeof(vbuf), "SAVED ");
                 write_int(vbuf + 6, sizeof(vbuf) - 6, u);
                 value = vbuf;
-            } else if (self->program >= N_PROGRAM) {
-                copy_bounded(vbuf, sizeof(vbuf), "USER ");
-                write_int(vbuf + 5, sizeof(vbuf) - 5,
-                          self->program - N_PROGRAM + 1);
-                value = vbuf;
             } else {
-                value = program_name[(self->program > 0) ? self->program : 0];
+                value = program_label(self, self->program, vbuf, sizeof(vbuf));
             }
             bar   = (float)self->program
                   * (1.0f / (float)(N_PROGRAM - 1 + N_USER));
@@ -2045,6 +2081,56 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float    rate = self->rate;
     const float    ms2n = rate * 0.001f;     /* milliseconds to samples */
 
+    /* SAVE comes FIRST, before the program list below, and that order
+       is the whole of it: pressing SAVE in the web UI also selects the
+       slot it wrote to, and both port writes can land between the same
+       two run() calls. Applied in the other order, entering the slot
+       makes param_read() read THE SLOT rather than the knobs, and SAVE
+       stores the slot's old contents back into itself - the sound is
+       right until you come back to it, and then it is the sound from
+       before. */
+    /* ---------------- SAVE ----------------
+       It stores what the KNOBS say, not what is being heard: the web UI
+       shows you the knobs, so what you see is what gets written. Selecting
+       an empty slot leaves the knobs in charge, which makes dialling a
+       sound and storing it one continuous action. */
+    const int save_now = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
+    if (save_now && !self->save_prev) {
+        int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f) - 1;
+        if (u < 0)       { u = 0; }
+        if (u >= N_USER) { u = N_USER - 1; }
+        /* What is HEARD, not what the knobs say: with a program selected
+           and three of its controls taken back by hand, those two are
+           different things, and the one worth keeping is the sound. The
+           slot comes from USER SLOT, a list of its own, so a built-in
+           sound can be changed and stored somewhere else without the
+           original being touched. */
+        for (int i = 0; i < (int)CTL_COUNT; ++i) {
+            if (program_col[i] >= 0) {
+                self->user[u].value[program_col[i]] = param_read(self, i);
+            }
+        }
+        for (int k = 0; k < (int)SW_COUNT; ++k) {
+            self->user[u].sw[k] = (uint8_t)self->sw_state[k];
+        }
+        {
+            int w = (int)(ctl_read(self, CTL_SLOT_NAME) + 0.5f);
+            if (w < 0)             { w = 0; }
+            if (w >= N_SLOT_WORD)  { w = N_SLOT_WORD - 1; }
+            self->user[u].name = (uint8_t)w;
+        }
+        self->user[u].filled = 1u;
+        /* Say so. A save with no sign that it happened is a save nobody
+           believes in, and there is nothing else on the pedal to tell. */
+        self->save_flash = (uint32_t)(self->rate * 1.2f);
+    }
+    self->save_prev = save_now;
+    if (self->save_flash) {
+        self->save_flash = (self->save_flash > n_samples)
+                         ? self->save_flash - n_samples : 0u;
+    }
+
+
     /* ---------------- the program list ----------------
        Changing programs is the only moment the switch positions are taken
        from the table. After that the ports own them again, so a foot on a
@@ -2061,6 +2147,23 @@ run(LV2_Handle instance, uint32_t n_samples)
         self->program_port = prog;
         program_enter(self, prog);
     }
+
+    /* NEXT USER: one footswitch to walk your own sounds, and only the
+       ones that exist - stepping into an empty slot would be a silent
+       press, which on stage reads as a broken pedal. */
+    const int nu_now = (ctl_read(self, CTL_NEXT_USER) > 0.5f) ? 1 : 0;
+    if (nu_now && !self->next_prev) {
+        const int depuis = (self->program >= N_PROGRAM)
+                         ? self->program - N_PROGRAM : -1;
+        for (int k = 1; k <= N_USER; ++k) {
+            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+            if (self->user[u].filled) {
+                program_enter(self, N_PROGRAM + u);
+                break;
+            }
+        }
+    }
+    self->next_prev = nu_now;
 
     /* A/B: back to the one before, and again to come back. */
     const int ab_now = (ctl_read(self, CTL_AB) > 0.5f) ? 1 : 0;
@@ -2147,41 +2250,6 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->sw_state[k] = now;
         }
         self->sw_prev[k] = now;
-    }
-
-    /* ---------------- SAVE ----------------
-       It stores what the KNOBS say, not what is being heard: the web UI
-       shows you the knobs, so what you see is what gets written. Selecting
-       an empty slot leaves the knobs in charge, which makes dialling a
-       sound and storing it one continuous action. */
-    const int save_now = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
-    if (save_now && !self->save_prev) {
-        int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f) - 1;
-        if (u < 0)       { u = 0; }
-        if (u >= N_USER) { u = N_USER - 1; }
-        /* What is HEARD, not what the knobs say: with a program selected
-           and three of its controls taken back by hand, those two are
-           different things, and the one worth keeping is the sound. The
-           slot comes from USER SLOT, a list of its own, so a built-in
-           sound can be changed and stored somewhere else without the
-           original being touched. */
-        for (int i = 0; i < (int)CTL_COUNT; ++i) {
-            if (program_col[i] >= 0) {
-                self->user[u].value[program_col[i]] = param_read(self, i);
-            }
-        }
-        for (int k = 0; k < (int)SW_COUNT; ++k) {
-            self->user[u].sw[k] = (uint8_t)self->sw_state[k];
-        }
-        self->user[u].filled = 1u;
-        /* Say so. A save with no sign that it happened is a save nobody
-           believes in, and there is nothing else on the pedal to tell. */
-        self->save_flash = (uint32_t)(self->rate * 1.2f);
-    }
-    self->save_prev = save_now;
-    if (self->save_flash) {
-        self->save_flash = (self->save_flash > n_samples)
-                         ? self->save_flash - n_samples : 0u;
     }
 
     /* ---------------- the FX switch: one state, two ways in ----------
@@ -2988,7 +3056,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 /* and restore() checks the size before believing any of it.           */
 /* ------------------------------------------------------------------ */
 
-#define SLOT_FLOATS  (1 + N_PROGRAM_COL + SW_COUNT)
+#define SLOT_FLOATS  (2 + N_PROGRAM_COL + SW_COUNT)   /* filled, name, ... */
 #define STATE_FLOATS (N_USER * SLOT_FLOATS)
 
 static LV2_State_Status
@@ -3007,6 +3075,7 @@ state_save(LV2_Handle instance, LV2_State_Store_Function store,
     int n = 0;
     for (int u = 0; u < N_USER; ++u) {
         buf[n++] = self->user[u].filled ? 1.0f : 0.0f;
+        buf[n++] = (float)self->user[u].name;
         for (int i = 0; i < N_PROGRAM_COL; ++i) {
             buf[n++] = self->user[u].value[i];
         }
@@ -3043,6 +3112,11 @@ state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve,
     int n = 0;
     for (int u = 0; u < N_USER; ++u) {
         self->user[u].filled = (buf[n++] > 0.5f) ? 1u : 0u;
+        {
+            const float w = buf[n++];
+            self->user[u].name = (w >= 0.0f && w < (float)N_SLOT_WORD)
+                               ? (uint8_t)(w + 0.5f) : 0u;
+        }
         for (int i = 0; i < N_PROGRAM_COL; ++i) {
             const float v = buf[n++];
             self->user[u].value[i] = (v == v) ? v : 0.0f;   /* never a NaN */

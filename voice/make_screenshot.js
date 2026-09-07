@@ -26,11 +26,15 @@ for (const b of ttl.split('] , [')) {
     if (!s) continue;
     const n = /lv2:name\s+"([^"]+)"/.exec(b);
     const d = /lv2:default\s+(-?[\d.]+)/.exec(b);
+    /* an enumeration shows its word, not its number */
+    const pts = [...b.matchAll(/rdfs:label\s+"([^"]+)"\s*;\s*rdf:value\s+(-?[\d.]+)/g)]
+                .map(m => [parseFloat(m[2]), m[1]]);
     const u = /units:unit\s+units:(\w+)/.exec(b);
     ports.push({ symbol: s[1], name: n ? n[1] : s[1],
         audio: b.includes('lv2:AudioPort'), input: b.includes('lv2:InputPort'),
         control: b.includes('lv2:ControlPort'),
         def: d ? parseFloat(d[1]) : null, unit: u ? u[1] : null,
+        points: pts,
         toggled: b.includes('lv2:toggled') });
 }
 const data = {
@@ -74,6 +78,8 @@ for (const s of on) {
 const defauts = ${JSON.stringify(Object.fromEntries(ports
     .filter(p => p.control && p.input && p.def !== null)
     .map(p => {
+        const mot = p.points.find(q => q[0] === p.def);
+        if (mot) { return [p.symbol, mot[1]]; }
         const u = { db: ' dB', hz: ' Hz', pc: ' %', ms: ' ms', s: ' s' }[p.unit] || '';
         const dec = (p.def !== Math.round(p.def)) ? 2 : 0;
         return [p.symbol, p.def.toFixed(dec) + u];

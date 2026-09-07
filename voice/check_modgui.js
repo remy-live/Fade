@@ -133,7 +133,11 @@ function jq(sel) {
         text: (t) => { if (t !== undefined) els.forEach(e => { e.textContent = t; }); return api; },
         val: (v) => { if (v !== undefined) els.forEach(e => { e.value = v; }); return api; },
         prop: (k, v) => { els.forEach(e => { e[k] = v; }); return api; },
-        attr: (k) => (els[0] ? els[0].getAttribute(k) : null),
+        attr: (k, v) => {
+            if (v === undefined) { return els[0] ? els[0].getAttribute(k) : null; }
+            els.forEach(e => e.setAttribute(k, v));
+            return api;
+        },
         toggleClass: (c, on) => { els.forEach(e => e.classList.toggle(c, !!on)); return api; },
         data: (k, v) => (v === undefined ? store[k] : (store[k] = v, api)),
         on: (ev, f) => { els.forEach(e => e.addEventListener(ev, f)); return api; },
@@ -153,10 +157,13 @@ function jqOf(el) {
     return api;
 }
 
+const differe = [];
 if (typeof fn === 'function') {
     const icon = { find: jq, data: (k, v) => (v === undefined ? store['icon' + k]
                                                               : (store['icon' + k] = v, icon)) };
     let ecrits = [];
+    /* what has to be looked at once the button pulses have finished */
+    const apres = differe;
     const funcs = { set_port_value: (s, v) => ecrits.push([s, v]) };
     try {
         fn({ type: 'start', icon: icon, ports: [
@@ -213,33 +220,44 @@ if (typeof fn === 'function') {
         say('SAVE pulses its port whatever program is selected',
             ecrits.length >= 1 && ecrits[0][0] === 'save' && ecrits[0][1] === 1,
             JSON.stringify(ecrits));
+
         /* and then goes to the slot it just wrote, so the save is
-           something you can see rather than something you hope for */
+           something you can see rather than something you hope for -
+           AFTER the pulse, so the plugin never sees the save and the
+           program change in one audio block */
         const premierUser = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10);
-        const versSlot = ecrits.filter(e => e[0] === 'program');
-        say('and then selects the slot it wrote to',
-            versSlot.length === 1 && versSlot[0][1] === premierUser,
-            JSON.stringify(versSlot));
+        say('and does not select it in the same breath',
+            ecrits.filter(e => e[0] === 'program').length === 0,
+            JSON.stringify(ecrits));
+        apres.push(() => {
+            /* the first of them: there is a second SAVE further down,
+               into the next slot, and it lands in the same list */
+            const versSlot = ecrits.filter(e => e[0] === 'program');
+            say('and then selects the slot it wrote to',
+                versSlot.length >= 1 && versSlot[0][1] === premierUser,
+                JSON.stringify(versSlot));
+        });
         /* The round trip the whole thing exists for: dial a sound, SAVE
            it, go somewhere else, come back - and find the knobs where
            you left them. The plugin keeps its own copy for the pedal;
            this copy is what moves the screen. */
-        ecrits = [];
         fn({ type: 'change', icon: icon, symbol: 'user_slot', value: 2 }, funcs);
         fn({ type: 'change', icon: icon, symbol: 'low_cut', value: 133 }, funcs);
         fn({ type: 'change', icon: icon, symbol: 'reverb_mix', value: 44 }, funcs);
         ecrits = [];
         doc.querySelector('.voice-save').dispatchEvent(new dom.window.Event('click'));
         const slotDeux = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10) + 1;
-        ecrits = [];
-        fn({ type: 'change', icon: icon, symbol: 'program', value: 3 }, funcs);
-        ecrits = [];
-        fn({ type: 'change', icon: icon, symbol: 'program', value: slotDeux }, funcs);
-        const rendu = {};
-        ecrits.forEach(e => { rendu[e[0]] = e[1]; });
-        say('a saved USER slot puts the knobs back where they were',
-            rendu['low_cut'] === 133 && rendu['reverb_mix'] === 44,
-            JSON.stringify([rendu['low_cut'], rendu['reverb_mix']]));
+        apres.push(() => {
+            ecrits = [];
+            fn({ type: 'change', icon: icon, symbol: 'program', value: 3 }, funcs);
+            ecrits = [];
+            fn({ type: 'change', icon: icon, symbol: 'program', value: slotDeux }, funcs);
+            const rendu = {};
+            ecrits.forEach(e => { rendu[e[0]] = e[1]; });
+            say('a saved USER slot puts the knobs back where they were',
+                rendu['low_cut'] === 133 && rendu['reverb_mix'] === 44,
+                JSON.stringify([rendu['low_cut'], rendu['reverb_mix']]));
+        });
     } catch (e) {
         say('the buttons that write ports work', false, e.message);
     }
@@ -299,6 +317,12 @@ const png = fs.readFileSync('modgui/thumbnail-voice.png');
 const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
 say('thumbnail is wide, not a sliver', w >= 2 * h, w + 'x' + h);
 
-console.log('  (the LOOK is checked by make_screenshot.js, which photographs it)');
-console.log(failed ? '\n*** THE WEB UI HAS PROBLEMS ***' : '\nWeb UI: all checks pass.');
-process.exit(failed);
+/* The buttons pulse for 120 ms and only then move the program, so the
+   last few checks cannot be made before that has happened. */
+setTimeout(() => {
+    for (const f of differe) { f(); }
+    console.log('  (the LOOK is checked by make_screenshot.js, which photographs it)');
+    console.log(failed ? '\n*** THE WEB UI HAS PROBLEMS ***'
+                       : '\nWeb UI: all checks pass.');
+    process.exit(failed);
+}, 300);
