@@ -2868,7 +2868,8 @@ static void ecrire_wav(const char* nom, const float* x, size_t n, double sr)
 static void demo(void)
 {
     static const char* const suite[] = { "MANUAL", "TIGHT", "CHOIR",
-                                         "WIDECHOR", "ANGEL", "GOSPEL" };
+                                         "WIDECHOR", "THIRD", "TRIO",
+                                         "OCTAVES" };
     const int nb = (int)(sizeof(suite) / sizeof(suite[0]));
     const double sr = 48000.0;
     const uint32_t N = 128;
