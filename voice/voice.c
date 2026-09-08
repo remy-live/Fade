@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD11_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD12_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -376,7 +376,15 @@ typedef enum {
     CTL_PROGRAM_NOW   = 54,  /* output: the program A/B has left in force */
     CTL_NOTCHES       = 55,  /* output: anti-Larsen notches in place */
     CTL_TIME_OUT      = 56,  /* output: delay time in force, tap included */
-    CTL_COUNT         = 57
+    /* --- the pedal page. Added AFTER the outputs on purpose: a port
+           index is how a pedalboard remembers which control is which, so
+           a new one in the middle hands every later value to its
+           neighbour. Everything from build 12 on is appended here. --- */
+    CTL_ENC_SLOT      = 57,  /* encoder 1: the favourite, then the cursor */
+    CTL_ENC_PARAM     = 58,  /* encoder 2: the parameter, then the letter */
+    CTL_ENC_VALUE     = 59,  /* encoder 3: the value, then yes or no */
+    CTL_PARAM_NOW     = 60,  /* output: which parameter the page points at */
+    CTL_COUNT         = 61
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -458,6 +466,10 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "program_now",    0.0f,   78.0f,     0.0f },
     { "notches",        0.0f,    4.0f,     0.0f },
     { "time_out",      20.0f, 2000.0f,   400.0f },
+    { "enc_slot",       0.0f,    1.0f,     0.5f },
+    { "enc_param",      0.0f,    1.0f,     0.5f },
+    { "enc_value",      0.0f,    1.0f,     0.5f },
+    { "param_now",      0.0f,   64.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -765,6 +777,7 @@ typedef enum {
     SLOT_PITCH, SLOT_SAVE, SLOT_SPREAD, SLOT_HOWL, SLOT_USER,
     SLOT_MUTE, SLOT_AB, SLOT_HARM_1, SLOT_HARM_2, SLOT_HARM_MIX,
     SLOT_DE_ESS_FREQ, SLOT_NEXT_USER, SLOT_SLOT_NAME,
+    SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -776,17 +789,29 @@ static uint8_t slot_ctl_of(int slot)
         CTL_COMP, CTL_GATE, CTL_OUTPUT, CTL_PROGRAM, CTL_VOICES,
         CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT,
         CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
-        CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME
+        CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME,
+        CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
 
 /* Everything from CTL_GR on is an output port. */
-#define CTL_FIRST_OUTPUT CTL_GR
-#define is_output_ctl(i) ((i) >= (int)CTL_FIRST_OUTPUT)
+/* Which controls are OUTPUTS: a table in programs.h, written from the
+   descriptor, because they are no longer one contiguous block. See the
+   comment on ctl_is_out there. */
+#define is_output_ctl(i) (ctl_is_out[(i)] != 0u)
 
 /* Screen rate: 25 passes per second for the WHOLE screen. One send per
    audio block would be closer to 400. */
+/* Seven characters: the exact width of a footswitch label on this
+   machine, measured. The name of a USER slot is therefore seven, and the
+   name editor has seven positions. */
+#define NAME_LEN 7
+/* What the letter knob walks: space, the alphabet, the digits, and the
+   two marks a set list needs. It wraps. */
+static const char alpha[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.";
+#define N_ALPHA ((int)(sizeof(alpha) - 1))
+
 #define SCREEN_HZ 25
 /* The firmware repaints the screen when the page changes, so a plugin
    that only sends what changed leaves stale text behind. Once a second,
@@ -857,6 +882,11 @@ typedef struct {
 
     /* --- tap tempo --- */
     int      tap_prev;
+    /* Loading a pedalboard reinstalls the saved value of every port, and
+       a restored 1 on a trigger reads as a press: a save fired at every
+       opening, over whatever slot happened to be selected. Nothing is
+       taken as a press until the plugin has been alive for two seconds. */
+    uint32_t settle_left;
     uint32_t tap_count;       /* samples since the last tap */
     int      tap_active;      /* the tap owns the time until the knob moves */
     float    tap_ms;
@@ -911,7 +941,7 @@ typedef struct {
         float   value[N_PROGRAM_COL];
         uint8_t sw[SW_COUNT];
         uint8_t filled;
-        uint8_t name;         /* an index into slot_word, 0 for none */
+        char    name[NAME_LEN + 1];   /* seven characters, and a terminator */
     } user[N_USER];
     int save_prev;
     int program_port;         /* the last value SEEN on the PROGRAM port */
@@ -924,6 +954,22 @@ typedef struct {
     /* --- the two host services that make a save visible and durable --- */
     const LV2_ControlInputPort_Change_Request* portreq;
     LV2_Worker_Schedule* sched;
+    /* --- the pedal page: three encoders, read in detents --- */
+    float    enc_last[3];      /* where each knob was last block */
+    float    enc_notch[3];     /* the size of one detent, learned downwards */
+    uint32_t enc_when[3];      /* when the last detent arrived, in blocks */
+    uint8_t  enc_have[3];      /* the first read is a position, not a move */
+    int      page_param;       /* 0 = NAME, then the parameters in order */
+    int      page_mode;        /* 0 browsing, 1 typing a name */
+    int      page_pos;         /* which letter is being typed */
+    int      page_letter;      /* which letter it is, an index into alpha */
+    char     page_buf[NAME_LEN + 1];   /* the name being typed */
+    char     page_was[NAME_LEN + 1];   /* ...and the one to put back on NO */
+    uint32_t page_idle;        /* blocks since the last detent, for the exit */
+    uint32_t page_blink;       /* the cursor, on and off */
+    uint32_t blocks;           /* blocks since instantiate, for the page */
+    float    slot_name_prev;   /* the NAME list, followed by its changes */
+
     float    ctl_ask[CTL_COUNT];    /* the value a request asked the host for */
     uint8_t  ctl_asked[CTL_COUNT];  /* ...and whether one is still in flight */
     char     slots_path[512];       /* where the USER slots live between boots */
@@ -1444,6 +1490,55 @@ static float param_read(const Voice* self, int i)
     return ctl_read(self, i);
 }
 
+/* A number for the screen, with as many decimals as the parameter asks
+   for. There is no printf in this binary and there is not going to be. */
+static void write_value(char* buf, size_t size, float v, int dec)
+{
+    if (dec <= 0) {
+        write_int(buf, size, (int)(v < 0.0f ? v - 0.5f : v + 0.5f));
+        return;
+    }
+    {
+        const int   mult = (dec == 1) ? 10 : 100;
+        const int   neg  = (v < 0.0f);
+        const float a    = neg ? -v : v;
+        const int   whole = (int)a;
+        int         frac  = (int)((a - (float)whole) * (float)mult + 0.5f);
+        int         w     = whole;
+        size_t      n;
+        if (frac >= mult) { frac -= mult; ++w; }
+        n = 0;
+        if (neg && size > 1) { buf[n++] = '-'; }
+        write_int(buf + n, size - n, w);
+        while (buf[n] != '\0' && n < size - 1) { ++n; }
+        if (n < size - 1) { buf[n++] = '.'; }
+        if (dec == 2 && frac < 10 && n < size - 1) { buf[n++] = '0'; }
+        write_int(buf + n, size - n, frac);
+    }
+}
+
+/* A name of nothing but spaces is no name at all. */
+static int name_blank(const char* n)
+{
+    for (int i = 0; i < NAME_LEN; ++i) {
+        if (n[i] != ' ' && n[i] != '\0') { return 0; }
+    }
+    return 1;
+}
+
+/* Seven characters, padded with spaces, never longer, always terminated.
+   The screen truncates silently, so the length is settled here instead. */
+static void name_set(char* dst, const char* src)
+{
+    int i = 0;
+    while (i < NAME_LEN && src[i] != '\0') { dst[i] = src[i]; ++i; }
+    while (i < NAME_LEN) { dst[i] = ' '; ++i; }
+    dst[NAME_LEN] = '\0';
+    /* trailing spaces are not sent to the screen: they read as a name
+       that has lost its end */
+    for (i = NAME_LEN - 1; i >= 0 && dst[i] == ' '; --i) { dst[i] = '\0'; }
+}
+
 /* What to write on the screen for a program. A USER slot says the word
    the player stored with it - the whole point of that word being a number
    from a list rather than text typed into a browser, which the plugin
@@ -1453,16 +1548,27 @@ static const char* program_label(const Voice* self, int prog, char* buf,
 {
     if (prog >= N_PROGRAM) {
         const int u = prog - N_PROGRAM;
-        if (u >= 0 && u < N_USER && self->user[u].filled
-            && self->user[u].name > 0u
-            && self->user[u].name < (uint8_t)N_SLOT_WORD) {
-            return slot_word[self->user[u].name];
+        if (u >= 0 && u < N_USER && self->user[u].name[0] != '\0'
+            && !name_blank(self->user[u].name)) {
+            return self->user[u].name;
         }
         copy_bounded(buf, n, "USER ");
         write_int(buf + 5, n - 5, u + 1);
         return buf;
     }
     return program_name[(prog > 0) ? prog : 0];
+}
+
+/* A trigger port, followed by its RISING edges - and not at all for the
+   first two seconds of a plugin's life, because that is when the host
+   reinstalls the values a pedalboard saved, and a restored 1 would fire
+   a save nobody asked for over whatever slot was selected. */
+static int trigger_edge(Voice* self, int ctl, int* prev)
+{
+    const int now = (ctl_read(self, ctl) > 0.5f) ? 1 : 0;
+    const int edge = (now && !*prev && self->settle_left == 0u);
+    *prev = now;
+    return edge;
 }
 
 /* Ask the host to move a knob. A plugin may not write its own control
@@ -1492,6 +1598,56 @@ static void push_port(Voice* self, int i, float value)
         self->ctl_ask[i]   = value;
         self->ctl_asked[i] = 1u;
     }
+}
+
+/* ------------------------------------------------------------------ */
+/* The pedal page: three encoders, one page, the whole loop             */
+/*                                                                     */
+/* An encoder is read in DETENTS and never as a position - the plugin   */
+/* counts the clicks of the knob. That is the whole trick: a control    */
+/* that changes meaning can never make a value jump, because there is   */
+/* no position to inherit. The size of a detent is LEARNED, because it  */
+/* is set per addressing by the player: the smallest move ever seen is  */
+/* the current guess. Anything bigger than a hand is a snapshot recall  */
+/* and moves nothing.                                                   */
+/* ------------------------------------------------------------------ */
+
+#define NOTCH_GUESS  0.05f    /* first guess, learned downwards */
+#define NOTCH_FLOOR  0.0015f
+#define NOTCH_JUMP   0.30f    /* bigger than a hand: not a turn */
+#define NOTCH_MAX    4        /* detents counted in one block */
+#define FLICK_BLOCKS 30u      /* two detents closer than this: five steps */
+#define FLICK_MULT   5
+#define PAGE_GIVE_UP 700u     /* blocks of nothing before the editor lets go */
+
+/* How many detents this knob has just been turned, and which way. Zero
+   when it has not moved, or when it moved further than a hand can. */
+static int detents(Voice* self, int e, int ctl)
+{
+    const float v = ctl_read(self, ctl);
+    if (!self->enc_have[e]) {
+        self->enc_have[e] = 1u;
+        self->enc_last[e] = v;
+        return 0;
+    }
+    const float d = v - self->enc_last[e];
+    const float mag = (d < 0.0f) ? -d : d;
+    self->enc_last[e] = v;
+    if (mag <= 0.0f || mag >= NOTCH_JUMP) { return 0; }
+    if (mag < self->enc_notch[e] && mag >= NOTCH_FLOOR) {
+        self->enc_notch[e] = mag;              /* learn the detent */
+    }
+    int n = (int)(mag / self->enc_notch[e] + 0.5f);
+    if (n < 1)         { n = 1; }
+    if (n > NOTCH_MAX) { n = NOTCH_MAX; }
+    return (d < 0.0f) ? -n : n;
+}
+
+static int flicked(Voice* self, int e, int n)
+{
+    const uint32_t since = self->blocks - self->enc_when[e];
+    self->enc_when[e] = self->blocks;
+    return (since < FLICK_BLOCKS) ? n * FLICK_MULT : n;
 }
 
 /* Everything that happens when a program comes into force, whether the
@@ -1648,6 +1804,25 @@ activate(LV2_Handle instance)
     self->drive_in          = 0.0f;
     self->drive_out         = 0.0f;
     self->drive_fix         = 1.0f;
+    self->slot_name_prev    = ctl_read(self, CTL_SLOT_NAME);
+    /* never zero: a window of the kind "blocks since the last detent" is
+       wide open for the first moments of a plugin's life, and the first
+       turn of a knob would be read as a flick */
+    if (self->blocks == 0u) { self->blocks = 100000u; }
+    {
+        /* The baseline is taken HERE, with the ports already connected,
+           and not on the first turn of the knob: a reader that swallows
+           its first detent is a pedal that ignores the first thing you
+           do to it. */
+        static const int enc_ctl[3] =
+            { CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE };
+        for (int e = 0; e < 3; ++e) {
+            self->enc_notch[e] = NOTCH_GUESS;
+            self->enc_when[e]  = self->blocks;
+            self->enc_last[e]  = ctl_read(self, enc_ctl[e]);
+            self->enc_have[e]  = 1u;
+        }
+    }
     self->mute_gain         = (ctl_read(self, CTL_MUTE) > 0.5f) ? 0.0f : 1.0f;
     self->sm[SM_DRIVE_MIX]  = param_read(self, CTL_DRIVE) * 0.01f;
     self->sm[SM_PITCH]      = param_read(self, CTL_PITCH_MIX)  * 0.01f;
@@ -1710,6 +1885,7 @@ activate(LV2_Handle instance)
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
+    self->settle_left  = (uint32_t)(self->rate * 2.0f);
     self->tap_count    = 0u;
     self->tap_active   = 0;
     self->tap_ms       = param_read(self, CTL_DELAY_TIME);
@@ -1982,6 +2158,76 @@ paint(Voice* self, int force)
             break;
         }
 
+        case SLOT_ENC_SLOT:
+            if (self->page_mode) {
+                /* typing: this knob walks the letters of the word, and
+                   the one being typed blinks - a caret cannot be relied
+                   on to line up under anything, a blink needs nothing */
+                label = "LETTRE";
+                copy_bounded(vbuf, sizeof(vbuf), self->page_buf);
+                {
+                    size_t n = 0;
+                    while (n < sizeof(vbuf) - 1 && vbuf[n] != '\0') { ++n; }
+                    while (n < (size_t)NAME_LEN && n < sizeof(vbuf) - 1) {
+                        vbuf[n++] = ' ';
+                    }
+                    vbuf[n] = '\0';
+                    if (self->page_blink < (uint32_t)(SCREEN_HZ / 2)
+                        && (size_t)self->page_pos < n) {
+                        vbuf[self->page_pos] = '_';
+                    }
+                }
+                value = vbuf;
+                bar   = (float)self->page_pos / (float)(NAME_LEN - 1);
+                bar_h = (int)(bar * 100.0f + 0.5f);
+            } else {
+                label = "FAVORI";
+                value = program_label(self, self->program, vbuf, sizeof(vbuf));
+                if (self->program >= N_PROGRAM) {
+                    bar = (float)(self->program - N_PROGRAM)
+                        / (float)(N_USER - 1);
+                    bar_h = (int)(bar * 100.0f + 0.5f);
+                }
+            }
+            break;
+
+        case SLOT_ENC_PARAM:
+        case SLOT_ENC_VALUE: {
+            const int est_valeur = (s == (int)SLOT_ENC_VALUE);
+            if (self->page_mode) {
+                if (est_valeur) {
+                    label = "GARDER ?";
+                    value = "NON OUI";
+                    unit  = "< >";
+                } else {
+                    label = "LETTRE";
+                    vbuf[0] = alpha[self->page_letter];
+                    vbuf[1] = '\0';
+                    value = (vbuf[0] == ' ') ? "ESPACE" : vbuf;
+                    bar   = (float)self->page_letter / (float)(N_ALPHA - 1);
+                    bar_h = (int)(bar * 100.0f + 0.5f);
+                }
+            } else if (self->page_param == 0) {
+                label = "NOM";
+                value = program_label(self, self->program, vbuf, sizeof(vbuf));
+                unit  = est_valeur ? "TOURNER" : "";
+            } else {
+                const ParamSpec* ps = &param_spec[self->page_param - 1];
+                const int i = (int)ps->ctl;
+                const float v = param_read(self, i);
+                label = ps->name;
+                write_value(vbuf, sizeof(vbuf), v, ps->dec);
+                value = vbuf;
+                unit  = ps->unit;
+                if (ctl_spec[i].max > ctl_spec[i].min) {
+                    bar = (v - ctl_spec[i].min)
+                        / (ctl_spec[i].max - ctl_spec[i].min);
+                    bar_h = (int)(bar * 100.0f + 0.5f);
+                }
+            }
+            break;
+        }
+
         case SLOT_HOWL:
             /* The useful readout is not the setting, it is how many
                notches the room has cost you. Four means the stage is
@@ -2188,8 +2434,7 @@ run(LV2_Handle instance, uint32_t n_samples)
        shows you the knobs, so what you see is what gets written. Selecting
        an empty slot leaves the knobs in charge, which makes dialling a
        sound and storing it one continuous action. */
-    const int save_now = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
-    if (save_now && !self->save_prev) {
+    if (trigger_edge(self, CTL_SAVE, &self->save_prev)) {
         int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f) - 1;
         if (u < 0)       { u = 0; }
         if (u >= N_USER) { u = N_USER - 1; }
@@ -2207,11 +2452,12 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (int k = 0; k < (int)SW_COUNT; ++k) {
             self->user[u].sw[k] = (uint8_t)self->sw_state[k];
         }
-        {
-            int w = (int)(ctl_read(self, CTL_SLOT_NAME) + 0.5f);
-            if (w < 0)             { w = 0; }
-            if (w >= N_SLOT_WORD)  { w = N_SLOT_WORD - 1; }
-            self->user[u].name = (uint8_t)w;
+        /* The name comes from the buffer, which the pedal fills letter by
+           letter and the web NAME list fills in one go. One name, two
+           ways in. A blank buffer leaves the slot's name alone rather
+           than wiping it: saving a sound is not renaming it. */
+        if (!name_blank(self->page_buf)) {
+            name_set(self->user[u].name, self->page_buf);
         }
         self->user[u].filled = 1u;
         /* Say so. A save with no sign that it happened is a save nobody
@@ -2225,7 +2471,11 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->sched->schedule_work(self->sched->handle, sizeof(tag), &tag);
         }
     }
-    self->save_prev = save_now;
+    ++self->blocks;
+    if (self->settle_left) {
+        self->settle_left = (self->settle_left > n_samples)
+                          ? self->settle_left - n_samples : 0u;
+    }
     if (self->save_flash) {
         self->save_flash = (self->save_flash > n_samples)
                          ? self->save_flash - n_samples : 0u;
@@ -2249,11 +2499,178 @@ run(LV2_Handle instance, uint32_t n_samples)
         program_enter(self, prog);
     }
 
+    /* The NAME list in the web page is a shortcut into the same buffer
+       the pedal types into: moving it puts that word in, and SAVE - or
+       the editor's yes - is what writes it onto the slot. One name, two
+       ways to fill it. */
+    {
+        const float w = ctl_read(self, CTL_SLOT_NAME);
+        if (w != self->slot_name_prev) {
+            self->slot_name_prev = w;
+            int k = (int)(w + 0.5f);
+            if (k < 0)            { k = 0; }
+            if (k >= N_SLOT_WORD) { k = N_SLOT_WORD - 1; }
+            if (k > 0) { name_set(self->page_buf, slot_word[k]); }
+        }
+    }
+
+    /* ---------------- the pedal page ----------------
+       Three encoders on one page, and the whole loop a singer needs
+       between two songs: pick a favourite, change what is wrong with it,
+       name it, keep it. Browsing and typing are two modes, and the mode
+       is written on all three knobs at once - a modal interface nobody
+       can read is where a stage interface dies. */
+    {
+        const int d1 = detents(self, 0, CTL_ENC_SLOT);
+        const int d2 = detents(self, 1, CTL_ENC_PARAM);
+        const int d3 = detents(self, 2, CTL_ENC_VALUE);
+
+        /* An encoder walks to its stop and then answers nothing more:
+           two hundred clicks of a 0..1 port at the Dwarf's default step,
+           which a name typed letter by letter reaches easily. A knob with
+           no room left is a knob that looks broken, so each one is asked
+           back to the middle as soon as it strays - our own write is
+           known by the value asked for, and the reader re-baselines. */
+        {
+            static const int enc_ctl[3] =
+                { CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE };
+            for (int e = 0; e < 3; ++e) {
+                const float x = ctl_read(self, enc_ctl[e]);
+                if (x < 0.15f || x > 0.85f) {
+                    push_port(self, enc_ctl[e], 0.5f);
+                    self->enc_have[e] = 0u;
+                }
+            }
+        }
+
+        if (d1 || d2 || d3) { self->page_idle = 0u; }
+        else if (self->page_idle < 0xFFFFFFFFu) { ++self->page_idle; }
+
+        if (self->page_mode == 0) {
+            /* --- browsing --- */
+            if (d1) {                       /* encoder 1: the favourites */
+                /* no flick here: six slots, and a wrist that counted
+                   five would cross the whole list */
+                self->enc_when[0] = self->blocks;
+                /* coming from a factory sound, the first click lands on
+                   the first slot rather than the second */
+                int u = (self->program >= N_PROGRAM)
+                      ? self->program - N_PROGRAM + d1
+                      : (d1 > 0 ? 0 : N_USER - 1);
+                u %= N_USER;
+                while (u < 0) { u += N_USER; }
+                program_enter(self, N_PROGRAM + u);
+                name_set(self->page_buf, self->user[u].name);
+            }
+            if (d2) {                       /* encoder 2: the parameters */
+                int p = self->page_param + flicked(self, 1, d2);
+                const int n = N_PROGRAM_COL + 1;   /* NAME, then the rest */
+                p %= n;
+                while (p < 0) { p += n; }
+                self->page_param = p;
+            }
+            if (d3) {
+                if (self->page_param == 0) {
+                    /* NAME: encoder 3 opens the editor rather than
+                       changing anything. Whichever way it is turned - a
+                       knob you have to turn the right way to be let in is
+                       a knob that looks broken. */
+                    const int u = (self->program >= N_PROGRAM)
+                                ? self->program - N_PROGRAM : -1;
+                    name_set(self->page_buf,
+                             (u >= 0) ? self->user[u].name : "");
+                    name_set(self->page_was, self->page_buf);
+                    self->page_mode   = 1;
+                    self->page_pos    = 0;
+                    self->page_letter = 0;
+                    for (int k = 0; k < N_ALPHA; ++k) {
+                        if (alpha[k] == self->page_buf[0]) {
+                            self->page_letter = k;
+                            break;
+                        }
+                    }
+                } else {
+                    /* a parameter: one detent is one step of it, and the
+                       new value is written back into its own port so the
+                       web page and the pedalboard follow */
+                    const ParamSpec* ps = &param_spec[self->page_param - 1];
+                    const int i = (int)ps->ctl;
+                    float v = param_read(self, i)
+                            + (float)flicked(self, 2, d3) * ps->step;
+                    if (v < ctl_spec[i].min) { v = ctl_spec[i].min; }
+                    if (v > ctl_spec[i].max) { v = ctl_spec[i].max; }
+                    self->ctl_seen[i] = v;
+                    self->ctl_mine[i] = 1u;   /* the hand owns it now */
+                    push_port(self, i, v);
+                }
+            }
+        } else {
+            /* --- typing a name --- */
+            if (d1) {                       /* encoder 1: which letter */
+                self->enc_when[0] = self->blocks;   /* seven letters: no flick */
+                int p = self->page_pos + (d1 > 0 ? 1 : -1);
+                if (p < 0)         { p = NAME_LEN - 1; }
+                if (p >= NAME_LEN) { p = 0; }
+                self->page_pos = p;
+                self->page_letter = 0;
+                for (int k = 0; k < N_ALPHA; ++k) {
+                    if (alpha[k] == self->page_buf[p]) {
+                        self->page_letter = k;
+                        break;
+                    }
+                }
+            }
+            if (d2) {                       /* encoder 2: what letter */
+                int l = (self->page_letter + flicked(self, 1, d2)) % N_ALPHA;
+                while (l < 0) { l += N_ALPHA; }
+                self->page_letter = l;
+                {
+                    char tmp[NAME_LEN + 1];
+                    for (int k = 0; k < NAME_LEN; ++k) {
+                        tmp[k] = self->page_buf[k] ? self->page_buf[k] : ' ';
+                    }
+                    tmp[NAME_LEN] = '\0';
+                    tmp[self->page_pos] = alpha[l];
+                    name_set(self->page_buf, tmp);
+                }
+            }
+            if (d3) {                       /* encoder 3: no, or yes */
+                const int u = (self->program >= N_PROGRAM)
+                            ? self->program - N_PROGRAM : -1;
+                if (d3 < 0) {               /* left: put it back */
+                    name_set(self->page_buf, self->page_was);
+                } else if (u >= 0) {        /* right: keep it */
+                    name_set(self->user[u].name, self->page_buf);
+                    if (self->sched && self->sched->schedule_work) {
+                        const uint32_t tag = 1u;
+                        self->sched->schedule_work(self->sched->handle,
+                                                   sizeof(tag), &tag);
+                    }
+                }
+                self->page_mode = 0;
+                /* and put the decision knob back in the middle: with no
+                   recentring it walks to its stop, and a knob at the top
+                   of its course can no longer be turned to the right -
+                   which would make "yes" impossible to say */
+                push_port(self, CTL_ENC_VALUE, 0.5f);
+                self->enc_have[2] = 0u;
+            }
+        }
+
+        /* A mode nobody is touching gives up on its own: a pedal that
+           stopped answering because a cursor was left on the third
+           letter of a word is a song lost. Giving up puts the name back -
+           a silence is not a decision - and the buffer keeps what was
+           typed, so coming back resumes it. */
+        if (self->page_mode == 1 && self->page_idle > PAGE_GIVE_UP) {
+            self->page_mode = 0;
+        }
+    }
+
     /* NEXT USER: one footswitch to walk your own sounds, and only the
        ones that exist - stepping into an empty slot would be a silent
        press, which on stage reads as a broken pedal. */
-    const int nu_now = (ctl_read(self, CTL_NEXT_USER) > 0.5f) ? 1 : 0;
-    if (nu_now && !self->next_prev) {
+    if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
         const int depuis = (self->program >= N_PROGRAM)
                          ? self->program - N_PROGRAM : -1;
         for (int k = 1; k <= N_USER; ++k) {
@@ -2264,16 +2681,15 @@ run(LV2_Handle instance, uint32_t n_samples)
             }
         }
     }
-    self->next_prev = nu_now;
 
     /* A/B: back to the one before, and again to come back. */
-    const int ab_now = (ctl_read(self, CTL_AB) > 0.5f) ? 1 : 0;
-    if (ab_now && !self->ab_prev && self->program_ab != self->program) {
+    if (trigger_edge(self, CTL_AB, &self->ab_prev)
+        && self->program_ab != self->program) {
         const int autre = self->program_ab;
         self->program_ab = self->program;
         program_enter(self, autre);
     }
-    self->ab_prev = ab_now;
+
     /* Any control a program owns goes back to the knob the moment the knob
        moves. Compared against what was last SEEN, not against the
        program's value: those two differ from the instant a program is
@@ -2392,8 +2808,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                                            out makes every tapped tempo one
                                            buffer fast */
     }
-    const int tap_now = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
-    if (tap_now && !self->tap_prev) {
+    if (trigger_edge(self, CTL_TAP, &self->tap_prev)) {
         const float gap_ms = (float)self->tap_count / ms2n;
         if (gap_ms >= ctl_spec[CTL_DELAY_TIME].min && gap_ms <= DELAY_MAX_MS) {
             self->tap_ms     = gap_ms;
@@ -2401,7 +2816,6 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
         self->tap_count = 0u;
     }
-    self->tap_prev = tap_now;
 
     /* Moving the knob takes the time back from the tap. The knob is
        followed by its CHANGES for the same reason the toggle is: the
@@ -3120,6 +3534,9 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self->ctl_out[CTL_FX_STATE]) {
         *self->ctl_out[CTL_FX_STATE] = self->fx_state ? 1.0f : 0.0f;
     }
+    if (self->ctl_out[CTL_PARAM_NOW]) {
+        *self->ctl_out[CTL_PARAM_NOW] = (float)self->page_param;
+    }
     if (self->ctl_out[CTL_PROGRAM_NOW]) {
         *self->ctl_out[CTL_PROGRAM_NOW] = (float)self->program;
     }
@@ -3145,6 +3562,11 @@ run(LV2_Handle instance, uint32_t n_samples)
 
         if (self->screen_left <= n_samples || force) {
             self->screen_left = self->screen_period;
+            /* the cursor of the name editor: half a second lit, half
+               dark, counted in screen passes */
+            if (++self->page_blink >= (uint32_t)SCREEN_HZ) {
+                self->page_blink = 0u;
+            }
             paint(self, force);
         } else {
             self->screen_left -= n_samples;
@@ -3164,7 +3586,8 @@ run(LV2_Handle instance, uint32_t n_samples)
 /* and restore() checks the size before believing any of it.           */
 /* ------------------------------------------------------------------ */
 
-#define SLOT_FLOATS  (2 + N_PROGRAM_COL + SW_COUNT)   /* filled, name, ... */
+/* filled, seven characters of name, the values, the switches */
+#define SLOT_FLOATS  (1 + NAME_LEN + N_PROGRAM_COL + SW_COUNT)
 #define STATE_FLOATS (N_USER * SLOT_FLOATS)
 
 /* ------------------------------------------------------------------ */
@@ -3181,7 +3604,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 /* ------------------------------------------------------------------ */
 
 #define SLOTS_MAGIC   0x56534C31u        /* "VSL1" */
-#define SLOTS_VERSION 1u
+#define SLOTS_VERSION 2u      /* 2: the name is text, not a word from a list */
 
 typedef struct {
     uint32_t magic;
@@ -3193,8 +3616,8 @@ typedef struct {
         float   value[N_PROGRAM_COL];
         uint8_t sw[SW_COUNT];
         uint8_t filled;
-        uint8_t name;
-        uint8_t pad[2];
+        char    name[NAME_LEN + 1];
+        uint8_t pad[3];
     } slot[N_USER];
 } SlotsFile;
 
@@ -3216,7 +3639,7 @@ static void slots_to_disk(const Voice* self)
             f.slot[u].sw[k] = self->user[u].sw[k];
         }
         f.slot[u].filled = self->user[u].filled;
-        f.slot[u].name   = self->user[u].name;
+        memcpy(f.slot[u].name, self->user[u].name, NAME_LEN + 1);
     }
 
     char tmp[sizeof(self->slots_path) + 8];
@@ -3253,8 +3676,8 @@ static void slots_from_disk(Voice* self)
             self->user[u].sw[k] = f.slot[u].sw[k] ? 1u : 0u;
         }
         self->user[u].filled = f.slot[u].filled ? 1u : 0u;
-        self->user[u].name   = (f.slot[u].name < (uint8_t)N_SLOT_WORD)
-                             ? f.slot[u].name : 0u;
+        f.slot[u].name[NAME_LEN] = '\0';
+        name_set(self->user[u].name, f.slot[u].name);
     }
 }
 
@@ -3294,7 +3717,11 @@ state_save(LV2_Handle instance, LV2_State_Store_Function store,
     int n = 0;
     for (int u = 0; u < N_USER; ++u) {
         buf[n++] = self->user[u].filled ? 1.0f : 0.0f;
-        buf[n++] = (float)self->user[u].name;
+        /* the name goes out as seven floats, one per character: the
+           blob is floats and a string in it would need its own format */
+        for (int k = 0; k < NAME_LEN; ++k) {
+            buf[n++] = (float)(unsigned char)self->user[u].name[k];
+        }
         for (int i = 0; i < N_PROGRAM_COL; ++i) {
             buf[n++] = self->user[u].value[i];
         }
@@ -3332,9 +3759,13 @@ state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve,
     for (int u = 0; u < N_USER; ++u) {
         self->user[u].filled = (buf[n++] > 0.5f) ? 1u : 0u;
         {
-            const float w = buf[n++];
-            self->user[u].name = (w >= 0.0f && w < (float)N_SLOT_WORD)
-                               ? (uint8_t)(w + 0.5f) : 0u;
+            char nom[NAME_LEN + 1];
+            for (int k = 0; k < NAME_LEN; ++k) {
+                const float c = buf[n++];
+                nom[k] = (c >= 32.0f && c < 127.0f) ? (char)(c + 0.5f) : ' ';
+            }
+            nom[NAME_LEN] = '\0';
+            name_set(self->user[u].name, nom);
         }
         for (int i = 0; i < N_PROGRAM_COL; ++i) {
             const float v = buf[n++];

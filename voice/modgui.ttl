@@ -21,6 +21,7 @@
                                 [ lv2:symbol "gate_open" ] ,
                                 [ lv2:symbol "fx_state" ] ,
                                 [ lv2:symbol "program_now" ] ,
+                                [ lv2:symbol "param_now" ] ,
                                 [ lv2:symbol "notches" ] ,
                                 [ lv2:symbol "time_out" ] ;
     ] .
@@ -42,6 +43,7 @@
                                 [ lv2:symbol "gate_open" ] ,
                                 [ lv2:symbol "fx_state" ] ,
                                 [ lv2:symbol "program_now" ] ,
+                                [ lv2:symbol "param_now" ] ,
                                 [ lv2:symbol "notches" ] ,
                                 [ lv2:symbol "time_out" ] ;
     ] .

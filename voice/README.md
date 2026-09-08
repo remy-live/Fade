@@ -91,6 +91,48 @@ shows what is really in force — the same honest problem as the tapped tempo.
 And reloading a pedalboard takes the switch positions from the saved ports,
 not from the program, so a board comes back exactly as you left it.
 
+## One page of the pedal, and the whole loop
+
+Three encoders and two footswitches is what a Dwarf page holds, and that is
+exactly what this needs:
+
+| | |
+|---|---|
+| **ENC 1 · FAVOURITE** | Walks the six USER slots, by name. The sound follows as you turn. |
+| **ENC 2 · PARAMETER** | Walks the sound's parameters — **NAME** first, then everything a program owns — showing the one it points at with its value. |
+| **ENC 3 · VALUE** | Changes it. On NAME it opens the name editor. |
+| **USER ▶** (footswitch) | The next slot with something in it. |
+| **SAVE** (footswitch) | Store what you are hearing into the slot. |
+
+In a hall that turns out deader than the soundcheck: turn ENC 2 to
+PRESENCE, ENC 3 up two clicks, ENC 2 back to NAME, ENC 3 to open the
+editor, type `SALLE B`, turn ENC 3 right to keep it, press SAVE. Three
+songs later, come back with the footswitch and change the reverb. No
+computer, no browser, one page.
+
+**Typing a name.** ENC 3 on NAME opens the editor, whichever way you turn
+it — a knob you have to turn the *right* way to be let in is a knob that
+looks broken. Then all three change together, and say so: **ENC 1** moves
+the cursor along the word, with the letter being typed **blinking**;
+**ENC 2** is the letter (space, A–Z, 0–9, dash, dot, and it wraps); **ENC
+3** is the answer — *left is no, right is yes*. Yes writes the name onto
+the slot and onto the disc there and then. No puts back the name that was
+there. A mode nobody touches for fifteen seconds lets go on its own and
+puts the name back too: a silence is not a decision. What you had typed
+stays in the buffer, so opening the editor again resumes it.
+
+**Why an encoder can change meaning at all.** Because it is read in
+**detents** and never as a position: the plugin counts the clicks of the
+knob. There is no position to inherit, so pointing ENC 3 at another
+parameter cannot make anything jump — which is the whole reason forty
+parameters can live under one knob instead of on six pages. The size of a
+detent is *learned* (the player sets it per addressing; the Dwarf's
+default is 201 steps over the course), two clicks inside 80 ms count five
+steps where a list is long, and a move bigger than a hand — a snapshot
+recall — moves nothing at all. Each knob is asked back to the middle when
+it strays: with no room left, a knob stops answering, and on a decision
+that means "yes" becomes impossible to say.
+
 ## Controls
 
 | Control | What it does |
@@ -121,7 +163,8 @@ not from the program, so a board comes back exactly as you left it.
 | **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
-| **NAME** | The word the next SAVE writes on the slot, from a list of thirty-two. The only kind of name that can reach the pedal: a control port carries a number, so a name typed in a browser stays in that browser. |
+| **NAME** | A word from a list of thirty-two, as a shortcut: moving it fills the same name buffer the pedal types into, and SAVE writes it onto the slot. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. |
+| **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
@@ -250,6 +293,13 @@ the web UI waits for the pulse to finish before jumping. Slots saved with
 an earlier build kept the sound they had *before* the edit; save them
 again.
 
+**One trigger is ignored for two seconds after loading.** A pedalboard
+restores the saved value of *every* port, and a trigger restored to 1
+reads as a press — a save fired at every opening, over whatever slot
+happened to be selected. SAVE, A/B, USER ▶ and TAP therefore count
+nothing for the first two seconds of the plugin's life. Measured, from
+the sources of a plugin of Rémy's that had already been bitten by it.
+
 **The slots reach the disc when you press SAVE, not when the board is
 saved.** They travel with the pedalboard too — the plugin implements the
 LV2 State extension — but state only reaches the disc when the *board* is
@@ -283,15 +333,17 @@ copy of every slot in the browser to move the knobs with; it does not, and
 cannot disagree with the plugin any more. The device screen never
 had this problem: it always showed what was in force.
 
-**Naming** works in two halves, for a reason worth stating plainly. A
-control port carries a *number*, not text, so a name typed into a browser
-cannot reach the plugin at all — which is exactly as useful as having no
-name. So there are two:
+**Naming.** A slot's name is seven characters of free text — the exact
+width of a footswitch label on this machine, measured — stored in the slot,
+saved with the pedalboard and written to the disc, and shown wherever that
+slot appears on the screen. There are three ways to fill it, and they all
+write the same one:
 
 | | |
 |---|---|
-| **NAME** (`ON PEDAL`) | A word picked from a list of thirty-two — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD, ROCK… A word is a number, so this one *does* travel: SAVE stores it in the slot, it is saved with the pedalboard, and it is what the device screen shows wherever that slot appears. `USER` means no name, and the screen falls back to `USER 1` … `USER 6`. |
-| The text box | A long name, up to sixteen characters, kept **in that browser** and shown in the web UI only. It says which slot it is naming, because with a factory sound selected it names the slot SAVE would write to. |
+| **The pedal** | ENC 3 on NAME opens the editor and you type it, letter by letter. Nothing else needed: no browser, no computer. |
+| **NAME**, the list | Thirty-two ready-made words — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD… Moving it fills the buffer in one go; SAVE writes it. |
+| The text box | A long name for the web UI, kept **in that browser**, which the pedal cannot show. It says which slot it is naming, because with a factory sound selected it names the slot SAVE would write to. |
 
 **USER ▶** — the cycle switch — steps to the next USER slot that has
 something in it, skipping the empty ones, and the screen says where you
@@ -376,6 +428,22 @@ adds are mistaken by lilv for bundle directories, and the plugin fails to
 load. Remove the block from your pedalboard before installing and add it
 back afterwards — mod-ui caches a failed load.
 
+## Adding a port
+
+Never in the middle. A port **index** is what a pedalboard remembers, so a
+new port inserted where it looks tidy hands every later value to its
+neighbour — a knob you never touched moves, and the sound that comes back
+is not the one you saved. Everything added since build 12 goes at the END
+of the list, whatever its direction, which is why the descriptor has a
+`TAIL` and the inputs and outputs are no longer two clean blocks. The
+plugin knows which is which from `ctl_is_out`, a table written from the
+same descriptor.
+
+After installing a build that adds ports: **remove the VOICE block from
+the pedalboard and add it again**, or the new ports are not connected at
+all — and a control the host never connected reads its own default for
+ever, which is exactly what a save that stores nothing looks like.
+
 ## Build
 
 Needs an aarch64 cross-compiler, `rapper`, `python3`, and a native `gcc`
@@ -411,7 +479,7 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-401 checks: the approximations against libm, every block of the chain
+426 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
 click it must not make, all seventy-two presets for the level they land on,
 the delay against a clock at three sample rates, and a simulated HMI

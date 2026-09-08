@@ -93,6 +93,46 @@ static const char* const program_name[N_PROGRAM] = {
     "ROTARY",
 };
 
+/* What the three encoders of a pedal page walk, in the order of the
+   list: the same controls a program owns, with a name short enough for
+   the screen, the unit, and how much one detent of the knob moves it. */
+typedef struct {
+    uint8_t     ctl;      /* which control it is */
+    const char* name;     /* eight upper-case characters at most */
+    const char* unit;
+    float       step;     /* one detent */
+    uint8_t     dec;      /* decimals to show */
+} ParamSpec;
+
+static const ParamSpec param_spec[N_PROGRAM_COL] = {
+    { CTL_LOW_CUT, "LOW CUT", "HZ", 5.0f, 0 },
+    { CTL_GATE, "GATE", "DB", 1.0f, 0 },
+    { CTL_COMP, "COMP", "%", 1.0f, 0 },
+    { CTL_DE_ESS, "DE-ESS", "%", 1.0f, 0 },
+    { CTL_DE_ESS_FREQ, "SS FREQ", "HZ", 100.0f, 0 },
+    { CTL_BODY, "BODY", "DB", 0.5f, 1 },
+    { CTL_MID_FREQ, "MID HZ", "HZ", 50.0f, 0 },
+    { CTL_PRESENCE, "PRESENCE", "DB", 0.5f, 1 },
+    { CTL_AIR, "AIR", "DB", 0.5f, 1 },
+    { CTL_DRIVE, "DRIVE", "%", 1.0f, 0 },
+    { CTL_PITCH, "PITCH", "", 1.0f, 0 },
+    { CTL_PITCH_MIX, "PIT MIX", "%", 1.0f, 0 },
+    { CTL_HARM_1, "HARM 1", "", 1.0f, 0 },
+    { CTL_HARM_2, "HARM 2", "", 1.0f, 0 },
+    { CTL_HARM_MIX, "HARMONY", "%", 1.0f, 0 },
+    { CTL_DOUBLER, "DOUBLE", "%", 1.0f, 0 },
+    { CTL_SPREAD, "SPREAD", "%", 1.0f, 0 },
+    { CTL_VOICES, "VOICES", "", 1.0f, 0 },
+    { CTL_MOD, "MOD", "%", 1.0f, 0 },
+    { CTL_MOD_SPEED, "SPEED", "HZ", 0.1f, 1 },
+    { CTL_FEEDBACK, "NO HOWL", "%", 1.0f, 0 },
+    { CTL_DELAY_TIME, "TIME", "MS", 10.0f, 0 },
+    { CTL_DELAY_REPEATS, "REPEATS", "%", 0.95f, 1 },
+    { CTL_DELAY_MIX, "DLY MIX", "%", 1.0f, 0 },
+    { CTL_REVERB, "REVERB", "%", 1.0f, 0 },
+    { CTL_REVERB_MIX, "REV MIX", "%", 1.0f, 0 },
+};
+
 /* What a USER slot can be called. A control port carries a number, so a
    name typed in a browser cannot reach the plugin: a word PICKED from
    this list can, and is stored in the slot and saved with the board. */
@@ -130,6 +170,76 @@ static const char* const slot_word[N_SLOT_WORD] = {
     "DRY",
     "WET",
     "SPARE",
+};
+
+/* Which controls the plugin WRITES. This was once "everything from CTL_GR
+   on", because the inputs were one block and the outputs another. Ports
+   added since build 12 sit at the END of the list whatever their
+   direction - a port index is what a pedalboard remembers, and one
+   inserted in the middle hands every later value to its neighbour - so
+   the split is a table now, written from the same descriptor. */
+static const uint8_t ctl_is_out[CTL_COUNT] = {
+    0,   /* program */
+    0,   /* user_slot */
+    0,   /* save */
+    0,   /* in_gain */
+    0,   /* low_cut */
+    0,   /* gate_on */
+    0,   /* gate */
+    0,   /* comp_on */
+    0,   /* comp */
+    0,   /* de_ess_on */
+    0,   /* de_ess */
+    0,   /* de_ess_freq */
+    0,   /* eq_on */
+    0,   /* body */
+    0,   /* mid_freq */
+    0,   /* presence */
+    0,   /* air */
+    0,   /* drive_on */
+    0,   /* drive */
+    0,   /* pitch_on */
+    0,   /* pitch */
+    0,   /* pitch_mix */
+    0,   /* harm_on */
+    0,   /* harm_1 */
+    0,   /* harm_2 */
+    0,   /* harm_mix */
+    0,   /* doubler_on */
+    0,   /* doubler */
+    0,   /* spread */
+    0,   /* voices */
+    0,   /* mod_on */
+    0,   /* modulation */
+    0,   /* mod_speed */
+    0,   /* feedback_on */
+    0,   /* feedback */
+    0,   /* delay_on */
+    0,   /* delay_time */
+    0,   /* delay_repeats */
+    0,   /* delay_mix */
+    0,   /* reverb_on */
+    0,   /* reverb */
+    0,   /* reverb_mix */
+    0,   /* fx */
+    0,   /* fx_2 */
+    0,   /* slot_name */
+    0,   /* next_user */
+    0,   /* mute */
+    0,   /* ab */
+    0,   /* tap */
+    0,   /* output */
+    1,   /* gr */
+    1,   /* level */
+    1,   /* gate_open */
+    1,   /* fx_state */
+    1,   /* program_now */
+    1,   /* notches */
+    1,   /* time_out */
+    0,   /* enc_slot */
+    0,   /* enc_param */
+    0,   /* enc_value */
+    1,   /* param_now */
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
@@ -192,6 +302,10 @@ static const int8_t program_col[CTL_COUNT] = {
     -1,  /* program_now */
     -1,  /* notches */
     -1,  /* time_out */
+    -1,  /* enc_slot */
+    -1,  /* enc_param */
+    -1,  /* enc_value */
+    -1,  /* param_now */
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {

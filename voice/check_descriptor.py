@@ -102,11 +102,8 @@ n_enum = len(re.findall(r'CTL_\w+\s*=\s*\d+', src)) - 1     # CTL_COUNT excluded
 dire("the C enum and the C table have the same length",
      len(c_table) == n_enum, "%d table / %d enum" % (len(c_table), n_enum))
 
-first_out = re.search(r'#define CTL_FIRST_OUTPUT (CTL_\w+)', src)
-dire("CTL_FIRST_OUTPUT defined", first_out is not None)
 enum_index = dict((m.group(1), int(m.group(2)))
                   for m in re.finditer(r'(CTL_\w+)\s*=\s*(\d+)', src))
-n_in_ctl = enum_index.get(first_out.group(1), -1) if first_out else -1
 
 for name, blocks, n_audio_expected, in_out in (("mono", mono, 2, (1, 1)),
                                                ("stereo", stereo, 4, (2, 2))):
@@ -140,8 +137,13 @@ for name, blocks, n_audio_expected, in_out in (("mono", mono, 2, (1, 1)),
     dire("%s: every control matches voice.c, entry by entry" % name,
          not bad, " ".join(bad))
 
-    dire("%s: inputs and outputs split where the C enum splits" % name,
-         all(p['input'] == (i < n_in_ctl) for i, p in enumerate(ctl)))
+    # The controls used to be one block of inputs then one of outputs.
+    # They are not any more: a port index is what a pedalboard remembers,
+    # so anything added since build 12 is appended at the END whatever its
+    # direction, rather than inserted where it would look tidy and hand
+    # every later value to its neighbour. All that still has to hold is
+    # that the C table and the descriptor agree port by port, which the
+    # check above does.
     dire("%s: every default is inside its own range" % name,
          all(p['min'] <= p['def'] <= p['max'] for p in ctl if p['def'] is not None))
     dire("%s: no logarithmic port reaches zero" % name,
@@ -231,6 +233,11 @@ def tableau(nom):
     return m.group(1) if m else ''
 
 
+h_sens = [int(x) for x in re.findall(r'^\s*([01]),', tableau('ctl_is_out'), re.M)]
+dire("ctl_is_out agrees with the descriptor, port by port",
+     [0 if p['input'] else 1 for p in mono if p['control']] == h_sens,
+     "%d in the ttl / %d in the table"
+     % (sum(1 for p in mono if p['control']), len(h_sens)))
 h_names = re.findall(r'"([^"]*)"', tableau('program_name'))
 h_col = [int(x) for x in re.findall(r'^\s*(-?\d+),', tableau('program_col'), re.M)]
 h_rows = [[float(v.rstrip('f')) for v in row.split(',') if v.strip()]

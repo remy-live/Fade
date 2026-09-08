@@ -171,6 +171,26 @@
 
 /* MUTE stops the sound, so it is the one control on the panel allowed to
    be red - and it is a switch, not a button, because it stays down. */
+/* The three encoders of a pedal page. Small on purpose: they are turned
+   with a foot's worth of attention on the pedal, not with a mouse. */
+/* The build number of the INTERFACE, which the browser caches hard: a
+   version judged from a stale template is a version nobody was running. */
+.voice-build{{{cns}}} {
+    position: absolute; top: 8px; left: 12px;
+    font-size: 8px; letter-spacing: 1px; color: #5d6b7c;
+}
+
+.voice-page{{{cns}}} { text-align: center; }
+.voice-page-cap{{{cns}}} {
+    font-size: 8px; letter-spacing: 1.5px; color: #93a2b4; margin-bottom: 2px;
+}
+.voice-page-knobs{{{cns}}} { display: flex; gap: 6px; }
+.voice-page-dial{{{cns}}} {
+    width: 22px; height: 22px; border-radius: 50%; cursor: ns-resize;
+    background: radial-gradient(circle at 50% 34%, #6e7c90 0%, #3b4552 72%);
+    border: 1px solid #171c23;
+}
+
 .voice-mute{{{cns}}} { text-align: center; }
 .voice-mute-cap{{{cns}}} {
     margin-top: 3px; font-size: 8px; letter-spacing: 1.5px; color: #93a2b4;

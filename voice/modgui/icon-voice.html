@@ -8,6 +8,8 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
+    <div class="voice-build{{{cns}}}">GUI 12</div>
+
     <!-- ---------------- the program list ---------------- -->
     <div class="voice-prog{{{cns}}}">
         <div class="voice-prog-nav{{{cns}}} voice-prev" title="Previous sound">&#9664;</div>
@@ -64,6 +66,30 @@
              title="Step to the next USER slot that has something in it">USER &#9654;</div>
 
         <div class="voice-bar-space{{{cns}}}"></div>
+
+        <!-- The pedal page. These three are meant for the encoders of
+             one Dwarf page, not for a mouse - but they have to be here
+             to be assignable, and the readout says where the page is. -->
+        <div class="voice-page{{{cns}}}">
+            <div class="voice-page-cap{{{cns}}}">PEDAL PAGE</div>
+            <div class="voice-page-knobs{{{cns}}}">
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="enc_slot"
+                     mod-widget-rotation="270"
+                     title="Encoder 1: the favourite, then the cursor"></div>
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="enc_param"
+                     mod-widget-rotation="270"
+                     title="Encoder 2: the parameter, then the letter"></div>
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="enc_value"
+                     mod-widget-rotation="270"
+                     title="Encoder 3: the value, then yes or no"></div>
+            </div>
+        </div>
 
         <div class="voice-mute{{{cns}}}">
             <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
