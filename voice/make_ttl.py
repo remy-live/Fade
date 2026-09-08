@@ -906,10 +906,9 @@ TAIL = [
  # one character per change. Measured on the machine; the atom port, which
  # would have been the obvious way, arrives nowhere on this firmware.
  ("in", "web_char", "WEB CHAR", 0.0, 255.0, 0.0, None, ["lv2:integer"],
-  "One character from the web page, or an order: 1 clears what is being "
-  "typed, 2 stores it on the slot chosen, 8 rubs out the last letter, and "
-  "11 to 16 choose which USER slot the next name is for. Anything from 32 "
-  "to 126 is a character. Not meant to be turned by hand."),
+  "One character for the slot WEB SLOT names, or an order: 1 clears the "
+  "name, 8 rubs out its last letter. Anything from 32 to 126 is a "
+  "character, appended. Not meant to be turned by hand."),
  ("in", "web_strobe", "WEB STROBE", 0.0, 255.0, 0.0, None, ["lv2:integer"],
   "Changes once per character. It is the CHANGE that counts, not the value: "
   "a port carries no events, so this is how one is made. Not meant to be "
@@ -926,6 +925,14 @@ TAIL = [
  ("out", "n5", "NAME 5", 0.0, 255.0, 32.0, None, [], "Output. Fifth character."),
  ("out", "n6", "NAME 6", 0.0, 255.0, 32.0, None, [], "Output. Sixth character."),
  ("out", "n7", "NAME 7", 0.0, 255.0, 32.0, None, [], "Output. Seventh character."),
+
+ # The slot travels WITH each character rather than being chosen by an
+ # order of its own. A code that goes missing is then one lost letter,
+ # not a whole name landing on the wrong favourite - and the page holds
+ # no state the host can lose when it rebuilds the interface.
+ ("in", "web_slot", "WEB SLOT", 0.0, 6.0, 0.0, None, ["lv2:integer"],
+  "Which USER slot the character on WEB CHAR is for, 1 to 6. Zero means "
+  "nowhere and nothing is typed. Not meant to be turned by hand."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for

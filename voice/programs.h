@@ -250,6 +250,7 @@ static const uint8_t ctl_is_out[CTL_COUNT] = {
     1,   /* n5 */
     1,   /* n6 */
     1,   /* n7 */
+    0,   /* web_slot */
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
@@ -326,6 +327,7 @@ static const int8_t program_col[CTL_COUNT] = {
     -1,  /* n5 */
     -1,  /* n6 */
     -1,  /* n7 */
+    -1,  /* web_slot */
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {

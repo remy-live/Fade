@@ -1,0 +1,100 @@
+<!-- The settings panel.
+     mod-ui builds one of its own from the descriptor when a plugin does
+     not ship a template, and that one has no place to type a name: a
+     control port carries a number, so the six favourites can only be
+     named through a text box the plugin's own interface puts there.
+
+     Everything else here is the standard panel, generated from the ports
+     rather than written out one by one - a knob for each control, in the
+     order of the descriptor, so nothing is lost by replacing the default.
+
+     The boxes are read by a timer, never by an event: mod-ui copies the
+     interface after building it and any binding made by the script goes
+     with the copy. A text box keeps what is typed into it without
+     asking anything of anybody. -->
+<div class="mod-pedal-settings voice-set{{{cns}}}">
+    <header class="clearfix">
+        <h1 class="alignleft">{{effect.name}}
+            <span class="plugin-label">{{#userLabel}} - {{userLabel}}{{/userLabel}}</span>
+            <span class="mod-edit"></span>
+            <span class="plugin-global-snapshot icon-camera"></span>
+        </h1>
+        <button class="js-close alignright btn btn-danger">Close</button>
+    </header>
+
+    <div class="mod-controls clearfix">
+        <div class="mod-control-group clearfix voice-set-grid{{{cns}}}">
+
+            <div class="mod-switch bypass voice-set-cell{{{cns}}}">
+                <span class="mod-switch-title">ON/OFF</span>
+                <div class="mod-light on" mod-role="bypass-light"></div>
+                <div class="mod-switch-background"></div>
+                <div class="mod-switch-image" mod-role="bypass"></div>
+                <div class="mod-address {{#isPerformanceView}}mod-hidden{{/isPerformanceView}}"
+                     mod-role="bypass-address"></div>
+                <span class="mod-knob-snapshot-status icon-camera"
+                      mod-role="bypass-snapshotable"></span>
+            </div>
+
+            <!-- The six favourites, by name. This is the one thing the
+                 default panel cannot draw. -->
+            <div class="voice-set-names{{{cns}}}">
+                <div class="voice-set-names-head{{{cns}}}">FAVORIS &mdash; seven letters each</div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 1</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="1" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 2</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="2" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 3</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="3" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 4</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="4" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 5</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="5" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-name{{{cns}}}">
+                    <span class="voice-set-name-cap{{{cns}}}">USER 6</span>
+                    <input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"
+                           data-slot="6" maxlength="7" placeholder="type a name">
+                </div>
+                <div class="voice-set-names-note{{{cns}}}">The name goes into the
+                    slot, onto the disc and onto the footswitch as you type.
+                    Nothing to press, and SAVE never touches it.</div>
+            </div>
+
+            <!-- and every control the descriptor has, as mod-ui would -->
+            {{#effect.ports.control.input}}
+            <div class="mod-knob voice-set-cell{{{cns}}}" title="{{comment}}">
+                <span class="mod-knob-title">{{name}}</span>
+                <span class="mod-knob-min-value" mod-role="input-control-minimum"
+                      mod-port-symbol="{{symbol}}"></span>
+                <span class="mod-knob-max-value" mod-role="input-control-maximum"
+                      mod-port-symbol="{{symbol}}"></span>
+                <span class="mod-knob-current-value" mod-role="input-control-value"
+                      mod-port-symbol="{{symbol}}"></span>
+                <div class="mod-knob-background"></div>
+                <div class="mod-knob-image" mod-role="input-control-port"
+                     mod-port-symbol="{{symbol}}"></div>
+                <div class="mod-address {{#isPerformanceView}}mod-hidden{{/isPerformanceView}}"
+                     mod-role="input-control-address" mod-port-symbol="{{symbol}}"></div>
+                <span class="mod-knob-snapshot-status icon-camera"
+                      mod-role="input-control-snapshotable" mod-port-symbol="{{symbol}}"></span>
+            </div>
+            {{/effect.ports.control.input}}
+
+        </div>
+    </div>
+</div>

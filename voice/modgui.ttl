@@ -8,6 +8,9 @@
         modgui:iconTemplate <modgui/icon-voice.html> ;
         modgui:stylesheet <modgui/style-voice.css> ;
         modgui:javascript <modgui/script-voice.js> ;
+        # A panel of our own: mod-ui's default one is built from the
+        # descriptor, and the descriptor has nowhere to type a name.
+        modgui:settingsTemplate <modgui/settings-voice.html> ;
         modgui:screenshot <modgui/screenshot-voice.png> ;
         modgui:thumbnail <modgui/thumbnail-voice.png> ;
         modgui:brand "REMY" ;
@@ -41,6 +44,9 @@
         modgui:iconTemplate <modgui/icon-voice.html> ;
         modgui:stylesheet <modgui/style-voice.css> ;
         modgui:javascript <modgui/script-voice.js> ;
+        # A panel of our own: mod-ui's default one is built from the
+        # descriptor, and the descriptor has nowhere to type a name.
+        modgui:settingsTemplate <modgui/settings-voice.html> ;
         modgui:screenshot <modgui/screenshot-voice-stereo.png> ;
         modgui:thumbnail <modgui/thumbnail-voice-stereo.png> ;
         modgui:brand "REMY" ;

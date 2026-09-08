@@ -157,6 +157,34 @@ function jqOf(el) {
     return api;
 }
 
+/* The script looks for its boxes in the WHOLE page with jQuery, not
+   inside the icon: the settings panel is not a descendant of the icon.
+   So give it one, backed by the real document. */
+function jqAll(sel) {
+    const els = (typeof sel === 'string') ? [...doc.querySelectorAll(sel)] : [sel];
+    const api = {
+        length: els.length,
+        each: (f) => { els.forEach((e, i) => f.call(e, i, e)); return api; },
+        attr: (k, v) => {
+            if (v === undefined) { return els[0] ? els[0].getAttribute(k) : null; }
+            els.forEach(e => e.setAttribute(k, v)); return api;
+        },
+        val: (v) => {
+            if (v === undefined) { return els[0] ? els[0].value : undefined; }
+            els.forEach(e => { e.value = v; }); return api;
+        },
+        text: (t) => {
+            if (t === undefined) { return els[0] ? els[0].textContent : ''; }
+            els.forEach(e => { e.textContent = t; }); return api;
+        },
+        toggleClass: (c, on) => { els.forEach(e => e.classList.toggle(c, !!on)); return api; },
+        css: () => api,
+    };
+    return api;
+}
+global.jQuery = jqAll;
+dom.window.jQuery = jqAll;
+
 const differe = [];
 if (typeof fn === 'function') {
     const icon = { find: jq, data: (k, v) => (v === undefined ? store['icon' + k]
@@ -239,32 +267,40 @@ if (typeof fn === 'function') {
             ecrits.length === 1 && ecrits[0][0] === 'program'
             && ecrits[0][1] === premierUser2 + 2, JSON.stringify(ecrits));
 
-        /* --- the favourites: the list mod-ui cannot draw --- */
-        ecrits = [];
-        doc.querySelector('.voice-fav-btn')
-           .dispatchEvent(new dom.window.Event('click'));
-        say('the FAVORIS button opens the list',
-            doc.querySelector('.voice-fav-panel').classList.contains('ouvert'));
-        say('and writes no port doing it', ecrits.length === 0,
-            JSON.stringify(ecrits));
+        /* --- the favourites: the list mod-ui cannot draw ---
+           Nothing here is clicked with a dispatched event, on purpose:
+           in the pedalboard mod-ui copies the interface after building
+           it and every binding the script made goes with the copy. What
+           is tested is what actually survives that - form controls the
+           browser keeps for us, read back by the script's own clock. */
 
-        ecrits = [];
-        doc.querySelector('.voice-fav-pick[data-slot="4"]')
-           .dispatchEvent(new dom.window.Event('click'));
-        say('picking the fourth favourite goes to the fourth USER slot',
-            ecrits.length === 1 && ecrits[0][0] === 'program'
-            && ecrits[0][1] === premierUser2 + 3, JSON.stringify(ecrits));
+        /* the panel opens with a checkbox and CSS, no script at all */
+        const coche = doc.querySelector('input.voice-fav-open' + data.cns);
+        const etiqOuvre = doc.querySelector('label.voice-fav-btn');
+        say('the FAVORIS button is a label, not a handler',
+            coche !== null && etiqOuvre !== null
+            && etiqOuvre.getAttribute('for') === coche.id);
+        say('and its checkbox stands beside the panel, so CSS can open it',
+            coche !== null && coche.nextElementSibling !== null
+            && coche.nextElementSibling.className.indexOf('voice-fav-panel') >= 0);
+        /* the rule itself is checked with the stylesheet, further down */
 
-        /* A name typed here goes down web_char one character per change
-           of web_strobe: 10 + the slot, the letters, then 2 to store. */
+        /* a favourite is chosen with a radio, read back by the clock */
         ecrits = [];
+        doc.querySelector('.voice-fav-pick[data-slot="4"]').checked = true;
+        apres.push(() => {
+            const vers = ecrits.filter(e => e[0] === 'program');
+            say('ticking the fourth favourite goes to the fourth USER slot',
+                vers.some(e => e[1] === premierUser2 + 3), JSON.stringify(vers));
+        });
+
+        /* A name typed here goes down web_slot / web_char, one character
+           per change of web_strobe - clear first, then the letters. */
         const boite = doc.querySelector('.voice-fav-name[data-slot="2"]');
         boite.value = 'chorus';
-        boite.dispatchEvent(new dom.window.Event('change'));
-        say('a typed name is upper-cased to the shape the plugin stores',
-            boite.value === 'CHORUS', boite.value);
-        say('and nothing goes down in the same breath as the typing',
-            ecrits.length === 0, JSON.stringify(ecrits));
+        say('nothing goes down in the same breath as the typing',
+            ecrits.filter(e => e[0] === 'web_char').length === 0,
+            JSON.stringify(ecrits));
 
         /* The echo is a snapshot the host relays when it feels like it,
            so straight after typing it can still be carrying the name
@@ -281,37 +317,43 @@ if (typeof fn === 'function') {
         };
         echo(2, 'VERSE');
 
-        /* Looked at once the eight codes of CHORUS have all gone down -
-           until then the queue itself holds the echo off - but while the
-           two seconds are still running. */
+        /* Looked at once the codes of CHORUS have all gone down - until
+           then the queue itself holds the echo off - but while the two
+           seconds are still running. */
         setTimeout(() => {
             say('a stale echo does not undo what was just typed',
-                doc.querySelector('.voice-fav-pick[data-slot="2"]')
+                doc.querySelector('.voice-fav-label[data-slot="2"]')
                    .textContent === 'CHORUS',
-                doc.querySelector('.voice-fav-pick[data-slot="2"]').textContent);
+                doc.querySelector('.voice-fav-label[data-slot="2"]').textContent);
             /* and then the six coming back, one slot per second */
             echo(5, 'GROWL');
         }, 1250);
 
         apres.push(() => {
+            const slots   = ecrits.filter(e => e[0] === 'web_slot').map(e => e[1]);
             const lettres = ecrits.filter(e => e[0] === 'web_char').map(e => e[1]);
-            const tops = ecrits.filter(e => e[0] === 'web_strobe').map(e => e[1]);
-            say('a name goes down as slot, letters, store',
+            const tops    = ecrits.filter(e => e[0] === 'web_strobe').map(e => e[1]);
+            say('a name typed into a box goes down on its own, unprompted',
                 JSON.stringify(lettres) ===
-                JSON.stringify([12, 67, 72, 79, 82, 85, 83, 2]),
+                JSON.stringify([1, 67, 72, 79, 82, 85, 83]),
                 JSON.stringify(lettres));
-            say('with a strobe that changes for every one of them',
+            say('with the slot beside every character of it',
+                slots.length === lettres.length && slots.every(v => v === 2),
+                JSON.stringify(slots));
+            say('and a strobe that changes for every one of them',
                 tops.length === lettres.length
                 && tops.every((v, i) => i === 0 || v !== tops[i - 1]),
                 JSON.stringify(tops));
+            say('the box is put in the shape the plugin stores',
+                boite.value === 'CHORUS', boite.value);
             say('and the list says the name rather than USER 2',
-                doc.querySelector('.voice-fav-pick[data-slot="2"]')
+                doc.querySelector('.voice-fav-label[data-slot="2"]')
                    .textContent === 'CHORUS',
-                doc.querySelector('.voice-fav-pick[data-slot="2"]').textContent);
+                doc.querySelector('.voice-fav-label[data-slot="2"]').textContent);
             say('a name coming back up lands in its row',
-                doc.querySelector('.voice-fav-pick[data-slot="5"]')
+                doc.querySelector('.voice-fav-label[data-slot="5"]')
                    .textContent === 'GROWL',
-                doc.querySelector('.voice-fav-pick[data-slot="5"]').textContent);
+                doc.querySelector('.voice-fav-label[data-slot="5"]').textContent);
             say('and in its box, ready to be edited',
                 doc.querySelector('.voice-fav-name[data-slot="5"]')
                    .value === 'GROWL');
@@ -347,9 +389,45 @@ const css = fs.readFileSync('modgui/style-voice.css', 'utf8');
 say('{{{cns}}} unescaped in the stylesheet', !/\\\{\\\{/.test(css));
 const renderedCss = Mustache.render(css, data);
 say('stylesheet substitutes completely', !/\{\{|\}\}/.test(renderedCss));
+say('the panel is opened by its checkbox, with no script at all',
+    /voice-fav-open[^{]*:checked\s*~\s*\.voice-fav-panel/.test(renderedCss));
+
+/* --- the settings panel: mod-ui's default one has nowhere to type --- */
+const reglages = fs.readFileSync('modgui/settings-voice.html', 'utf8');
+let rendu2 = '';
+try {
+    rendu2 = Mustache.render(reglages, data);
+    say('the settings template renders without error', true);
+} catch (e) {
+    say('the settings template renders without error', false, e.message);
+}
+say('no mustache braces left in the settings panel', !/\{\{|\}\}/.test(rendu2));
+const dom2 = new JSDOM('<body>' + rendu2 + '</body>',
+                       { url: 'https://mod.local/voice' });
+const doc2 = dom2.window.document;
+say('a .mod-pedal-settings root exists',
+    doc2.querySelector('.mod-pedal-settings') !== null);
+say('the six name boxes are in the settings panel',
+    doc2.querySelectorAll('.voice-fav-name').length === 6);
+const boitesSlots = [...doc2.querySelectorAll('.voice-fav-name')]
+    .map(e => e.getAttribute('data-slot')).join(',');
+say('one per USER slot, in order', boitesSlots === '1,2,3,4,5,6', boitesSlots);
+const placesSet = new Set([...doc2.querySelectorAll('[mod-port-symbol]')]
+    .map(el => el.getAttribute('mod-port-symbol')));
+const manquants2 = ports.filter(p => p.control && p.input && !placesSet.has(p.symbol))
+                        .map(p => p.symbol);
+say('every control input is reachable from the settings panel',
+    manquants2.length === 0, manquants2.join(' '));
+for (const r of ['bypass', 'bypass-light']) {
+    say('settings role ' + r + ' present',
+        doc2.querySelector('[mod-role="' + r + '"]') !== null);
+}
+
 const styled = new Set([...renderedCss.matchAll(/\.(voice-[a-z0-9-]+)_http/g)].map(m => m[1]));
-const orphelines = [...styled].filter(c => !doc.querySelector('[class*="' + c + '"]'));
-say('no styled class missing from the template', orphelines.length === 0,
+const orphelines = [...styled].filter(
+    c => !doc.querySelector('[class*="' + c + '"]')
+      && !doc2.querySelector('[class*="' + c + '"]'));
+say('no styled class missing from the templates', orphelines.length === 0,
     orphelines.join(' '));
 
 /* --- the jacks live outside the panel, so the panel must not clip ---

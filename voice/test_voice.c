@@ -2872,9 +2872,11 @@ static void essai_noms(void)
    are called, so the plugin says, one slot per second, on name_slot and
    the seven letters beside it. */
 
-/* one code down the wire, the way the page sends it */
-static void taper(Banc* b, int code)
+/* one code down the wire, the way the page sends it: the slot travels
+   with the character, so nothing here depends on what went before */
+static void taper(Banc* b, int slot, int code)
 {
+    b->ctl[CTL_WEB_SLOT]   = (float)slot;
     b->ctl[CTL_WEB_CHAR]   = (float)code;
     b->ctl[CTL_WEB_STROBE] = b->ctl[CTL_WEB_STROBE] + 1.0f;
     silence(b); tourner(b);
@@ -2882,9 +2884,8 @@ static void taper(Banc* b, int code)
 
 static void taper_nom(Banc* b, int slot, const char* mot)
 {
-    taper(b, 10 + slot);
-    for (const char* p = mot; *p; ++p) { taper(b, (unsigned char)*p); }
-    taper(b, 2);
+    taper(b, slot, 1);                        /* clear, then spell it */
+    for (const char* p = mot; *p; ++p) { taper(b, slot, (unsigned char)*p); }
 }
 
 /* the name the plugin is showing the page at this instant */
@@ -2921,11 +2922,10 @@ static void essai_nom_web(void)
                  !strcmp(((Voice*)b.h)->user[3].name, "ABCDEFG"));
 
     /* rubbing out */
-    taper(&b, 15);
-    taper(&b, 'S'); taper(&b, 'O'); taper(&b, 'L'); taper(&b, 'X');
-    taper(&b, 8);
-    taper(&b, 'O');
-    taper(&b, 2);
+    taper(&b, 5, 1);
+    taper(&b, 5, 'S'); taper(&b, 5, 'O'); taper(&b, 5, 'L'); taper(&b, 5, 'X');
+    taper(&b, 5, 8);
+    taper(&b, 5, 'O');
     verifie_vrai("and backspace rubs out the last letter only",
                  !strcmp(((Voice*)b.h)->user[4].name, "SOLO"));
 
@@ -2935,6 +2935,20 @@ static void essai_nom_web(void)
     for (int k = 0; k < 10; ++k) { silence(&b); tourner(&b); }
     verifie_vrai("a character with no strobe behind it types nothing",
                  !strcmp(((Voice*)b.h)->user[4].name, "SOLO"));
+
+    /* slot 0 is nowhere: a strobe with no slot behind it types nothing */
+    taper(&b, 0, 'Z');
+    verifie_vrai("and a character with no slot behind it goes nowhere",
+                 !strcmp(((Voice*)b.h)->user[4].name, "SOLO"));
+
+    /* every letter carries its own slot, so two names can be spelt at
+       once without either landing on the other */
+    taper(&b, 6, 'A'); taper(&b, 1, 'B');
+    taper(&b, 6, 'C'); taper(&b, 1, 'D');
+    verifie_vrai("two names spelt at once do not mix",
+                 !strcmp(((Voice*)b.h)->user[5].name, "AC")
+                 && !strcmp(((Voice*)b.h)->user[0].name, "BD"));
+    taper(&b, 6, 1); taper(&b, 1, 1);          /* and put them back empty */
 
     /* --- and the six coming back up, one per second --- */
     int vus[N_USER + 1];
@@ -2980,14 +2994,12 @@ static void essai_nom_web(void)
         b.d->connect_port(b.h, b.n_audio + (uint32_t)i, &b.ctl[i]);
     }
     b.d->activate(b.h);
-    b.ctl[CTL_WEB_CHAR]   = 11.0f;
+    b.ctl[CTL_WEB_SLOT]   = 1.0f;
+    b.ctl[CTL_WEB_CHAR]   = (float)'X';
     b.ctl[CTL_WEB_STROBE] = 4.0f;
     silence(&b); tourner(&b);
-    b.ctl[CTL_WEB_CHAR]   = (float)'X';
+    b.ctl[CTL_WEB_CHAR]   = (float)'Y';
     b.ctl[CTL_WEB_STROBE] = 5.0f;
-    silence(&b); tourner(&b);
-    b.ctl[CTL_WEB_CHAR]   = 2.0f;
-    b.ctl[CTL_WEB_STROBE] = 6.0f;
     silence(&b); tourner(&b);
     verifie_vrai("a board being restored types nothing at all",
                  !((Voice*)b.h)->user[0].name[0]);
@@ -2999,14 +3011,42 @@ static void essai_nom_web(void)
                  !strcmp(((Voice*)b.h)->user[0].name, "OK"));
     fermer(&b);
 
-    /* A name is a thing the player typed: it goes to the disc the moment
-       it is stored, like a save, rather than waiting for the pedalboard
-       to be saved - which on stage may be never. */
+    /* A name is a thing the player typed: it goes to the disc on its own,
+       rather than waiting for the pedalboard to be saved - which on stage
+       may be never. Half a second after the last letter, so a seven
+       letter word is one write of the file and not seven. */
+    remove("voice-slots.bin");
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    taper_nom(&b, 3, "GROWL");
+    verifie_vrai("nothing on the disc while the letters are still coming",
+                 fopen("voice-slots.bin", "rb") == NULL);
+    /* six tenths of a second, and no more typing */
+    for (int k = 0; k < 230; ++k) { silence(&b); tourner(&b); }
+    FILE* fw = fopen("voice-slots.bin", "rb");
+    verifie_vrai("and the file written once the typing stops", fw != NULL);
+    if (fw) { fclose(fw); }
+    fermer(&b);
+
     garder_disque = 1;
     ouvrir(&b, 0, 48000.0, 128, 0);
     garder_disque = 0;
     verifie_vrai("and the name is still there in a fresh instance",
-                 !strcmp(((Voice*)b.h)->user[0].name, "OK"));
+                 !strcmp(((Voice*)b.h)->user[2].name, "GROWL"));
+    fermer(&b);
+
+    /* and a pedalboard closed before that half second is up does not
+       lose the name: the way out writes what the clock had not */
+    remove("voice-slots.bin");
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    taper_nom(&b, 6, "LAST");
+    fermer(&b);                            /* straight away, mid-countdown */
+    garder_disque = 1;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    garder_disque = 0;
+    verifie_vrai("a name typed and closed on at once is not lost",
+                 !strcmp(((Voice*)b.h)->user[5].name, "LAST"));
     fermer(&b);
 }
 

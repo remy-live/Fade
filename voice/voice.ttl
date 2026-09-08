@@ -783,7 +783,7 @@
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 255.0 ;
-        rdfs:comment "One character from the web page, or an order: 1 clears what is being typed, 2 stores it on the slot chosen, 8 rubs out the last letter, and 11 to 16 choose which USER slot the next name is for. Anything from 32 to 126 is a character. Not meant to be turned by hand."
+        rdfs:comment "One character for the slot WEB SLOT names, or an order: 1 clears the name, 8 rubs out its last letter. Anything from 32 to 126 is a character, appended. Not meant to be turned by hand."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
         lv2:index 64 ;
@@ -866,4 +866,14 @@
         lv2:minimum 0.0 ;
         lv2:maximum 255.0 ;
         rdfs:comment "Output. Seventh character."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 73 ;
+        lv2:symbol "web_slot" ;
+        lv2:name "WEB SLOT" ;
+        lv2:portProperty lv2:integer ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 6.0 ;
+        rdfs:comment "Which USER slot the character on WEB CHAR is for, 1 to 6. Zero means nowhere and nothing is typed. Not meant to be turned by hand."
     ] .

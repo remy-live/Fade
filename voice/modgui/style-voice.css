@@ -135,10 +135,12 @@
     user-select: none;
 }
 .voice-fav-btn{{{cns}}}:hover { filter: brightness(1.15); }
-.voice-fav-btn{{{cns}}}.ouvert {
-    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
-    color: #10251c; border-color: #12351f;
-}
+
+/* The panel is opened by its checkbox and nothing else - no script, no
+   binding, so it works in the pedalboard where mod-ui copies the icon and
+   every handler the script attached goes with the copy. */
+.voice-fav-open{{{cns}}} { position: absolute; opacity: 0; pointer-events: none; }
+.voice-fav-open{{{cns}}}:checked ~ .voice-fav-panel{{{cns}}} { display: block; }
 
 .voice-fav-panel{{{cns}}} {
     display: none;
@@ -149,14 +151,17 @@
     border: 1px solid rgba(255,255,255,.18);
     box-shadow: 0 8px 18px rgba(0,0,0,.65);
 }
-.voice-fav-panel{{{cns}}}.ouvert { display: block; }
+
 .voice-fav-head{{{cns}}} {
     font-size: 9px; letter-spacing: 2px; color: #8fa6ba; margin-bottom: 5px;
 }
 .voice-fav-row{{{cns}}} {
     display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
 }
-.voice-fav-pick{{{cns}}} {
+/* The radio is the thing that is really clicked - a form control keeps
+   its own state - and the label beside it is what the eye sees. */
+.voice-fav-pick{{{cns}}} { position: absolute; opacity: 0; pointer-events: none; }
+.voice-fav-label{{{cns}}} {
     flex: 1; min-width: 0;
     padding: 3px 7px; border-radius: 4px; cursor: pointer;
     font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #7fe3c4;
@@ -165,9 +170,9 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     user-select: none;
 }
-.voice-fav-pick{{{cns}}}:hover { color: #10251c; background: #7fe3c4; }
-.voice-fav-pick{{{cns}}}.vide { color: #6b7c8d; }
-.voice-fav-pick{{{cns}}}.actif {
+.voice-fav-label{{{cns}}}:hover { color: #10251c; background: #7fe3c4; }
+.voice-fav-label{{{cns}}}.vide { color: #6b7c8d; }
+.voice-fav-label{{{cns}}}.actif {
     color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
 }
 .voice-fav-name{{{cns}}} {
@@ -178,7 +183,6 @@
     font-family: inherit; text-transform: uppercase;
 }
 .voice-fav-name{{{cns}}}::placeholder { color: #6b7c8d; text-transform: none; }
-.voice-fav-name{{{cns}}}.envoi { border-color: #7ff0b4; }
 .voice-fav-note{{{cns}}} {
     margin-top: 5px; font-size: 8px; line-height: 1.5; color: #7c8b9b;
 }
@@ -467,4 +471,29 @@
 
 .mod-pedal-voice{{{cns}}} .mod-footswitch {
     position: absolute; bottom: 10px; right: 18px;
+}
+
+/* ---------- the settings panel ----------
+   mod-ui builds one of its own when a plugin ships no template, and that
+   one has nowhere to type a name. This one is the same panel with the six
+   boxes added; the classes below only dress those. */
+
+.voice-set-names{{{cns}}} {
+    flex: 0 0 auto; margin: 0 14px 10px 0; padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.14);
+}
+.voice-set-names-head{{{cns}}} {
+    font-size: 10px; letter-spacing: 2px; color: #8fa6ba; margin-bottom: 6px;
+}
+.voice-set-name{{{cns}}} {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.voice-set-name-cap{{{cns}}} {
+    width: 52px; font-size: 10px; letter-spacing: 1px; color: #93a7ba;
+}
+.voice-set-names-note{{{cns}}} {
+    margin-top: 6px; max-width: 230px;
+    font-size: 9px; line-height: 1.5; color: #7c8b9b;
 }

@@ -164,7 +164,7 @@ that means "yes" becomes impossible to say.
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
 | **WORD** | A word from a list of thirty-two. Turning it names the slot USER SLOT points at, there and then, and puts it on the disc — it does not wait for a SAVE, and SAVE does not read it. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. Nothing is named during the settle window, or opening a pedalboard would rename a slot every time. |
-| **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: one character per *change* of the strobe. Written by the interface, never by hand. See *Naming* below. |
+| **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
@@ -361,19 +361,41 @@ tell them to.
 **The FAVORIS list.** mod-ui's own PROGRAM menu reads the descriptor, and
 the descriptor was written before you named anything: it can only ever say
 USER 1 to USER 6. So the web UI keeps its own list, and it says the names.
-Click **FAVORIS** and the six are there — click one to go to it, type in
-the box beside it to rename it. The button itself carries the name of the
-sound in force.
+**FAVORIS** in the pedal opens the six; the same six boxes are in the
+plugin's settings panel, which is where there is room for them. Type, and
+the name is in the slot, on the disc and on the footswitch — there is
+nothing to press.
 
 A name has no port to travel on: a control port carries a number, not a
-word. So it goes down one character at a time — **WEB CHAR** holds the
-character, **WEB STROBE** changes to say "look at it now", and the plugin
-counts the *changes*, never the value, or a pedalboard putting its ports
-back would type a character of its own every time you opened it. Which is
-also why nothing is typed during the first two seconds. Coming back the
-other way, the plugin publishes the six names on **NAME SLOT** and
-**N1**–**N7**, one slot per second, and that is how the page learns what
-the pedal was told to call them — whoever typed them.
+word. So it goes down one character at a time — **WEB SLOT** says which
+favourite, **WEB CHAR** holds the character, **WEB STROBE** changes to say
+"look at it now", and the plugin counts the *changes*, never the value, or
+a pedalboard putting its ports back would type a character of its own every
+time you opened it. Which is also why nothing is typed during the first two
+seconds. The slot travels *with* the character rather than being chosen by
+an order of its own, so a code lost on the way costs one letter instead of
+landing a whole name on the wrong favourite. Coming back the other way, the
+plugin publishes the six names on **NAME SLOT** and **N1**–**N7**, one slot
+per second, and that is how the page learns what the pedal was told to call
+them — whoever typed them.
+
+**Why none of that is bound to an event.** In the pedalboard, mod-ui copies
+the interface after building it, and every event binding the script made
+goes with the copy: only mod-ui's own widgets keep working. That is why the
+first version of this — a box with a `change` handler and a button with a
+`click` handler — worked on the bench and not on the machine. So nothing in
+the naming binds anything. The panel is opened by a checkbox and a CSS rule,
+a favourite is chosen with a radio, a name is typed into a plain box: three
+form controls the browser keeps for us whether or not the script ever ran.
+A clock reads them back eight times a second, looking through the *whole
+page* rather than inside the icon — the settings panel is not a descendant
+of the icon, and that is where most of the boxes live. For the same reason
+the state it keeps lives on `window` and not on the icon, which may be a
+copy about to be thrown away with a name half sent.
+
+The disc is written half a second after the last letter, so a seven-letter
+word is one write of the file and not seven; closing the plugin before that
+half second is up writes it anyway, on the way out.
 
 **USER ▶** — the cycle switch — steps to the next USER slot that has
 something in it, skipping the empty ones, and the screen says where you
@@ -408,6 +430,13 @@ USER ▶, the three encoder dials of the pedal page, and MUTE. The
 compressor box carries a gain-reduction meter and the levels box an output
 meter, both fed by the plugin's own outputs. TAP is a button as well as a
 port.
+
+The plugin also ships its own **settings panel**, which mod-ui would
+otherwise build from the descriptor — and a panel built from the descriptor
+has nowhere to type a name, since a control port carries a number. Ours is
+that same panel with the six name boxes added; every control input is still
+there, generated from the port list rather than written out one by one, so
+nothing is lost by replacing the default.
 
 The jacks sit *outside* the panel, on a socket rail down each edge — which
 is why the stylesheet must never put `overflow: hidden` on the pedal. The

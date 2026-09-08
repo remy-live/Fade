@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD14_AARCH64_20260908";
+static const volatile char build_tag[] = "VOICE_BUILD15_AARCH64_20260908";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -395,7 +395,11 @@ typedef enum {
     CTL_N5            = 68,
     CTL_N6            = 69,
     CTL_N7            = 70,
-    CTL_COUNT         = 71
+    /* The slot travels with the character rather than being chosen by an
+       order of its own: a code that goes missing is then one lost letter
+       instead of a whole name landing on the wrong favourite. */
+    CTL_WEB_SLOT      = 71,  /* which slot the character is for */
+    CTL_COUNT         = 72
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -491,6 +495,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "n5",             0.0f,  255.0f,    32.0f },
     { "n6",             0.0f,  255.0f,    32.0f },
     { "n7",             0.0f,  255.0f,    32.0f },
+    { "web_slot",       0.0f,    6.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -999,8 +1004,11 @@ typedef struct {
     float    slot_name_prev;   /* the NAME list, followed by its changes */
     /* --- a name typed in the web page --- */
     float    strobe_prev;      /* the strobe, followed by its CHANGES */
-    int      web_slot;         /* which slot the typing is for, 0 for none */
-    char     web_buf[NAME_LEN + 1];
+    /* A name arrives one letter at a time, and each letter is a change
+       worth keeping - but seven writes of the same small file, one per
+       letter, is six too many. The disc is written half a second after
+       the typing stops. */
+    uint32_t name_dirty_left;
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
 
@@ -1323,8 +1331,10 @@ forget_caches(Voice* self)
 }
 
 /* Defined with the rest of the file handling, further down; needed here
-   because a slot has to be on the knobs before the first block runs. */
+   because a slot has to be on the knobs before the first block runs, and
+   because a name typed in the last half second is written on the way out. */
 static void slots_from_disk(Voice* self);
+static void slots_to_disk(const Voice* self);
 
 static LV2_Handle
 instantiate(const LV2_Descriptor*     descriptor,
@@ -1584,6 +1594,14 @@ static void name_set(char* dst, const char* src)
     /* trailing spaces are not sent to the screen: they read as a name
        that has lost its end */
     for (i = NAME_LEN - 1; i >= 0 && dst[i] == ' '; --i) { dst[i] = '\0'; }
+}
+
+/* A name has changed: the disc owes an update. Half a second after the
+   last letter, so a word typed in the page is one write and not seven -
+   and still long before the player has walked away from the pedal. */
+static void name_dirty(Voice* self)
+{
+    self->name_dirty_left = (uint32_t)(self->rate * 0.5f);
 }
 
 /* What to write on the screen for a program. A USER slot says the word
@@ -1859,10 +1877,9 @@ activate(LV2_Handle instance)
     self->drive_fix         = 1.0f;
     self->slot_name_prev    = ctl_read(self, CTL_SLOT_NAME);
     self->strobe_prev       = ctl_read(self, CTL_WEB_STROBE);
-    self->web_slot          = 0;
+    self->name_dirty_left   = 0u;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
-    name_set(self->web_buf, "");
     /* never zero: a window of the kind "blocks since the last detent" is
        wide open for the first moments of a plugin's life, and the first
        turn of a knob would be read as a flick */
@@ -1984,7 +2001,16 @@ activate(LV2_Handle instance)
 static void
 deactivate(LV2_Handle instance)
 {
-    (void)instance;
+    Voice* self = (Voice*)instance;
+    /* A name typed in the last half second has not reached the disc yet:
+       the write waits for the typing to stop. The audio thread is done
+       with this instance by now, so write it here rather than lose it -
+       closing a pedalboard is exactly when a player expects to have
+       finished typing. */
+    if (self && self->name_dirty_left) {
+        self->name_dirty_left = 0u;
+        slots_to_disk(self);
+    }
 }
 
 static void
@@ -2578,6 +2604,19 @@ run(LV2_Handle instance, uint32_t n_samples)
         self->save_flash = (self->save_flash > n_samples)
                          ? self->save_flash - n_samples : 0u;
     }
+    /* the disc, half a second after the last letter */
+    if (self->name_dirty_left) {
+        if (self->name_dirty_left > n_samples) {
+            self->name_dirty_left -= n_samples;
+        } else {
+            self->name_dirty_left = 0u;
+            if (self->sched && self->sched->schedule_work) {
+                const uint32_t tag = 1u;
+                self->sched->schedule_work(self->sched->handle,
+                                           sizeof(tag), &tag);
+            }
+        }
+    }
 
 
     /* ---------------- the program list ----------------
@@ -2604,49 +2643,40 @@ run(LV2_Handle instance, uint32_t n_samples)
        type a character of its own at every opening. That is also why
        nothing here counts during the first two seconds.
 
-       The orders are small numbers: 1 clears, 2 stores what has been
-       typed onto the chosen slot, 8 rubs out, 11 to 16 choose the slot.
-       Everything from 32 to 126 is a letter. */
+       The slot comes with the character, on WEB SLOT, and the character
+       goes STRAIGHT onto that slot's name. There is no buffer to select
+       into and no order to store: the page holds no state the host can
+       lose when it rebuilds the interface, and a code that goes missing
+       costs one letter rather than a name landing on the wrong slot.
+
+       1 clears the name, 8 rubs out its last letter, 32 to 126 append. */
     {
         const float st = ctl_read(self, CTL_WEB_STROBE);
         if (st != self->strobe_prev) {
             self->strobe_prev = st;
-            if (self->settle_left == 0u) {
-                const int c = (int)(ctl_read(self, CTL_WEB_CHAR) + 0.5f);
-                if (c >= 11 && c <= 10 + N_USER) {
-                    self->web_slot = c - 10;       /* this name is for slot n */
-                    name_set(self->web_buf, "");
-                } else if (c == 1) {
-                    name_set(self->web_buf, "");
-                } else if (c == 2) {
-                    const int u = self->web_slot - 1;
-                    if (u >= 0 && u < N_USER) {
-                        name_set(self->user[u].name, self->web_buf);
-                        if (self->sched && self->sched->schedule_work) {
-                            const uint32_t tag = 1u;
-                            self->sched->schedule_work(self->sched->handle,
-                                                       sizeof(tag), &tag);
-                        }
-                    }
+            const int u = (int)(ctl_read(self, CTL_WEB_SLOT) + 0.5f) - 1;
+            const int c = (int)(ctl_read(self, CTL_WEB_CHAR) + 0.5f);
+            if (self->settle_left == 0u && u >= 0 && u < N_USER) {
+                char tmp[NAME_LEN + 1];
+                int  k;
+                name_pad(tmp, self->user[u].name);
+                for (k = NAME_LEN - 1; k >= 0 && tmp[k] == ' '; --k) { }
+                /* k is the last letter, -1 when the name is empty */
+                if (c == 1) {
+                    name_set(self->user[u].name, "");
+                    name_dirty(self);
                 } else if (c == 8 || c == 127) {
-                    int k = NAME_LEN - 1;
-                    while (k >= 0 && (self->web_buf[k] == ' '
-                                      || self->web_buf[k] == '\0')) { --k; }
                     if (k >= 0) {
-                        char tmp[NAME_LEN + 1];
-                        name_pad(tmp, self->web_buf);
                         tmp[k] = ' ';
-                        name_set(self->web_buf, tmp);
+                        name_set(self->user[u].name, tmp);
+                        name_dirty(self);
                     }
                 } else if (c >= 32 && c <= 126) {
-                    char tmp[NAME_LEN + 1];
-                    int k;
-                    name_pad(tmp, self->web_buf);
-                    for (k = 0; k < NAME_LEN && tmp[k] != ' '; ++k) { }
-                    if (k < NAME_LEN) {
-                        tmp[k] = (char)((c >= 'a' && c <= 'z')
-                                        ? c - 'a' + 'A' : c);
-                        name_set(self->web_buf, tmp);
+                    if (k + 1 < NAME_LEN) {
+                        tmp[k + 1] = (char)((c >= 'a' && c <= 'z')
+                                            ? c - 'a' + 'A' : c);
+                        name_set(self->user[u].name, tmp);
+                        name_dirty(self);
                     }
                 }
             }
@@ -2678,11 +2708,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                 name_set(self->user[u].name, slot_word[k]);
                 /* to the disc with it, like any other naming: a name the
                    player has to remember to save is a name they lose */
-                if (self->sched && self->sched->schedule_work) {
-                    const uint32_t tag = 1u;
-                    self->sched->schedule_work(self->sched->handle,
-                                               sizeof(tag), &tag);
-                }
+                name_dirty(self);
             }
         }
     }
@@ -2814,6 +2840,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                     name_set(self->page_buf, self->page_was);
                 } else if (u >= 0) {        /* right: keep it */
                     name_set(self->user[u].name, self->page_buf);
+                    name_dirty(self);
                     if (self->sched && self->sched->schedule_work) {
                         const uint32_t tag = 1u;
                         self->sched->schedule_work(self->sched->handle,

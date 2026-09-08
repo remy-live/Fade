@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 14</div>
+    <div class="voice-build{{{cns}}}">GUI 15</div>
 
     <!-- ---------------- the program list ---------------- -->
     <div class="voice-prog{{{cns}}}">
@@ -19,8 +19,13 @@
             <div class="voice-prog-value{{{cns}}} voice-prog-value"
                  mod-role="input-control-value"
                  mod-port-symbol="program"></div>
-            <div class="voice-fav-btn{{{cns}}} voice-fav-btn"
-                 title="The six favourites, by name. Click one to go to it, type in a box to rename it.">FAVORIS &#9662;</div>
+            <!-- A label, not a button with a handler: mod-ui copies the
+                 icon after building it and any binding the script made is
+                 lost with the copy. Its checkbox sits beside the panel,
+                 further down, so that CSS alone can open it. -->
+            <label class="voice-fav-btn{{{cns}}} voice-fav-btn"
+                   for="voice-fav-open{{{cns}}}"
+                   title="The six favourites, by name. Tick one to go to it, type in a box to rename it.">FAVORIS &#9662;</label>
         </div>
 
         <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
@@ -34,41 +39,67 @@
              ever say USER 1 to USER 6 - the names live in the plugin, not
              in the descriptor - so the page keeps its own list, fed by
              the six names the plugin sends back one per second. -->
+        <input type="checkbox" id="voice-fav-open{{{cns}}}"
+               class="voice-fav-open{{{cns}}}">
         <div class="voice-fav-panel{{{cns}}} voice-fav-panel">
             <div class="voice-fav-head{{{cns}}}">FAVORIS</div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="1">USER 1</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="1"
+                       id="voice-fav-1{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="1"
+                       for="voice-fav-1{{{cns}}}">USER 1</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="1"
                        type="text" maxlength="7" placeholder="USER 1">
             </div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="2">USER 2</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="2"
+                       id="voice-fav-2{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="2"
+                       for="voice-fav-2{{{cns}}}">USER 2</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="2"
                        type="text" maxlength="7" placeholder="USER 2">
             </div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="3">USER 3</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="3"
+                       id="voice-fav-3{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="3"
+                       for="voice-fav-3{{{cns}}}">USER 3</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="3"
                        type="text" maxlength="7" placeholder="USER 3">
             </div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="4">USER 4</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="4"
+                       id="voice-fav-4{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="4"
+                       for="voice-fav-4{{{cns}}}">USER 4</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="4"
                        type="text" maxlength="7" placeholder="USER 4">
             </div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="5">USER 5</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="5"
+                       id="voice-fav-5{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="5"
+                       for="voice-fav-5{{{cns}}}">USER 5</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="5"
                        type="text" maxlength="7" placeholder="USER 5">
             </div>
             <div class="voice-fav-row{{{cns}}}">
-                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="6">USER 6</div>
+                <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="6"
+                       id="voice-fav-6{{{cns}}}"
+                       class="voice-fav-pick{{{cns}}} voice-fav-pick">
+                <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="6"
+                       for="voice-fav-6{{{cns}}}">USER 6</label>
                 <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="6"
                        type="text" maxlength="7" placeholder="USER 6">
             </div>
             <div class="voice-fav-note{{{cns}}}">Seven letters, the width of the
-                pedal's screen. ENTER stores the name in the slot, on the disc
-                and on the footswitch.</div>
+                pedal's screen. It goes into the slot, onto the disc and onto
+                the footswitch as you type - there is nothing to press.</div>
         </div>
 
         <!-- The two ports a name travels on: one character per change of
@@ -76,6 +107,7 @@
              to turn by hand, but every control input has to be reachable. -->
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_char"></div>
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_strobe"></div>
+        <div class="voice-wire{{{cns}}}" mod-port-symbol="web_slot"></div>
     </div>
 
     <!-- ---------------- storing, comparing, cutting ---------------- -->
