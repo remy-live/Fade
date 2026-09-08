@@ -175,6 +175,9 @@
 .voice-fav-label{{{cns}}}.actif {
     color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
 }
+/* The boxes a name is typed into. One per slot and no more: two boxes for
+   the same name would each read the other as a change and fight over it,
+   so they live in the settings panel and the pedal only shows the list. */
 .voice-fav-name{{{cns}}} {
     width: 96px;
     background: #2a333e; color: #e9f0f7;
@@ -478,8 +481,26 @@
    one has nowhere to type a name. This one is the same panel with the six
    boxes added; the classes below only dress those. */
 
+/* The panel is a column of named sections, not a wall of knobs in port
+   order - which is what mod-ui builds when a plugin ships no template. */
+.voice-set-grid{{{cns}}} { display: block; }
+.voice-set-sec{{{cns}}} {
+    margin: 0 0 10px; padding: 6px 10px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+}
+.voice-set-sec-head{{{cns}}} {
+    font-size: 10px; letter-spacing: 2px; color: #8fa6ba; margin-bottom: 4px;
+}
+.voice-set-row{{{cns}}} {
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 10px;
+}
+.voice-set-cell{{{cns}}} { flex: 0 0 auto; }
+
 .voice-set-names{{{cns}}} {
-    flex: 0 0 auto; margin: 0 14px 10px 0; padding: 8px 10px;
+    flex: 0 0 auto; margin: 8px 0 0; padding: 8px 10px;
+    border-radius: 8px;
     border-radius: 8px;
     background: rgba(0,0,0,.25);
     border: 1px solid rgba(255,255,255,.14);

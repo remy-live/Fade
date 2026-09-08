@@ -953,6 +953,35 @@ STEP = {
     "harm_2": 1.0, "voices": 1.0, "mod_speed": 0.1, "delay_time": 10.0,
 }
 
+# How the settings panel is laid out. mod-ui builds one of its own from
+# the descriptor when a plugin ships no template, and that one is every
+# port in index order: a wall of sixty knobs with no shape, and nowhere at
+# all to type a name. This says where each control goes, and the panel is
+# GENERATED from it - so a port added to the descriptor and forgotten here
+# stops the build rather than quietly vanishing from the interface.
+PANEL = [
+    ("FAVORIS", ["program", "user_slot", "save", "next_user", "ab",
+                 "slot_name"]),
+    ("IN AND OUT", ["in_gain", "output", "mute", "fx", "fx_2", "tap"]),
+    ("GATE",     ["gate_on", "gate"]),
+    ("COMP",     ["comp_on", "comp"]),
+    ("DE-ESS",   ["de_ess_on", "de_ess", "de_ess_freq"]),
+    ("EQ",       ["eq_on", "low_cut", "body", "mid_freq", "presence", "air"]),
+    ("DRIVE",    ["drive_on", "drive"]),
+    ("PITCH",    ["pitch_on", "pitch", "pitch_mix"]),
+    ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_mix"]),
+    ("DOUBLE",   ["doubler_on", "doubler", "spread", "voices"]),
+    ("MOD",      ["mod_on", "modulation", "mod_speed"]),
+    ("NO HOWL",  ["feedback_on", "feedback"]),
+    ("DELAY",    ["delay_on", "delay_time", "delay_repeats", "delay_mix"]),
+    ("REVERB",   ["reverb_on", "reverb", "reverb_mix"]),
+    ("PEDAL PAGE", ["enc_slot", "enc_param", "enc_value"]),
+    # Present because every control input has to be reachable, and for
+    # nothing else: these three are written by the interface a character
+    # at a time. Turning one by hand does no harm and no good.
+    ("NOT BY HAND", ["web_slot", "web_char", "web_strobe"]),
+]
+
 # Scale points: the lists a knob walks through on the device.
 SCALE = {
     "voices": [("2 voices", 2.0), ("3 voices", 3.0), ("4 voices", 4.0)],
@@ -1326,6 +1355,165 @@ def write_programs(path):
     return len(cont)
 
 
+def write_settings(path):
+    """The settings panel, from the port list and the layout above.
+
+    Two things it does that mod-ui's own panel cannot: the six boxes a
+    name is typed into, and a PROGRAM list whose USER entries carry the
+    names rather than the words USER 1 to USER 6 - the descriptor was
+    written before anything was named, so the script repaints those six
+    from what the plugin sends back. Everything else is the standard
+    panel, generated so it can never fall behind the descriptor."""
+    spec = {c[0]: c for c in CONTROLS}
+    # the ports appended in the TAIL are inputs too, and just as reachable
+    for way, symbol, pname, mn, mx, default, unit, props, comment in TAIL:
+        if way == "in":
+            spec[symbol] = (symbol, pname, mn, mx, default, unit, props, comment)
+    placed = []
+    for _, syms in PANEL:
+        placed += syms
+    manquants = [k for k in spec if k not in placed]
+    if manquants:
+        raise SystemExit("PANEL forgets: " + " ".join(manquants))
+    deux = [x for x in placed if placed.count(x) > 1]
+    if deux:
+        raise SystemExit("PANEL repeats: " + " ".join(sorted(set(deux))))
+    inconnus = [x for x in placed if x not in spec]
+    if inconnus:
+        raise SystemExit("PANEL names ports that do not exist: "
+                         + " ".join(inconnus))
+
+    A = '{{#isPerformanceView}}mod-hidden{{/isPerformanceView}}'
+
+    def adresse(sym):
+        return ('<div class="mod-address %s" mod-role="input-control-address"'
+                ' mod-port-symbol="%s"></div>'
+                '<span class="mod-knob-snapshot-status icon-camera"'
+                ' mod-role="input-control-snapshotable"'
+                ' mod-port-symbol="%s"></span>' % (A, sym, sym))
+
+    def cellule(sym):
+        symbol, name, mn, mx, default, unit, props, comment = spec[sym]
+        titre = name
+        pts = SCALE.get(sym)
+        if pts:
+            opts = []
+            premier_user = len(PRESETS) + 1
+            for label, value in pts:
+                cls = ""
+                if sym == "program" and value >= premier_user:
+                    # the six the script repaints with the real names
+                    cls = (' class="voice-prog-user{{{cns}}} voice-prog-user"'
+                           ' data-slot="%d"' % (int(value) - premier_user + 1))
+                opts.append('<div mod-role="enumeration-option"%s'
+                            ' mod-port-value="%s">%s</div>'
+                            % (cls, fmt(value), label))
+            return ('<div class="mod-enumerated voice-set-cell{{{cns}}}">'
+                    '<span class="mod-enumerated-title">%s</span>%s'
+                    '<div class="mod-enumerated-list" mod-role="input-control-port"'
+                    ' mod-port-symbol="%s" mod-widget="custom-select">%s</div>'
+                    '</div>' % (titre, adresse(sym), sym, "".join(opts)))
+        if "lv2:toggled" in props:
+            return ('<div class="mod-switch voice-set-cell{{{cns}}}">'
+                    '<span class="mod-switch-title">%s</span>'
+                    '<div class="mod-switch-background"></div>'
+                    '<div class="mod-switch-image" mod-role="input-control-port"'
+                    ' mod-port-symbol="%s"></div>%s</div>'
+                    % (titre, sym, adresse(sym)))
+        return ('<div class="mod-knob voice-set-cell{{{cns}}}">'
+                '<span class="mod-knob-title">%s</span>'
+                '<span class="mod-knob-min-value" mod-role="input-control-minimum"'
+                ' mod-port-symbol="%s"></span>'
+                '<span class="mod-knob-max-value" mod-role="input-control-maximum"'
+                ' mod-port-symbol="%s"></span>'
+                '<span class="mod-knob-current-value" mod-role="input-control-value"'
+                ' mod-port-symbol="%s"></span>'
+                '<div class="mod-knob-background"></div>'
+                '<div class="mod-knob-image" mod-role="input-control-port"'
+                ' mod-port-symbol="%s"></div>%s</div>'
+                % (titre, sym, sym, sym, sym, adresse(sym)))
+
+    boites = []
+    for i in range(N_USER):
+        boites.append(
+            '                <div class="voice-set-name{{{cns}}}">'
+            '<span class="voice-set-name-cap{{{cns}}}">USER %d</span>'
+            '<input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"'
+            ' data-slot="%d" maxlength="7" placeholder="type a name"></div>'
+            % (i + 1, i + 1))
+
+    corps = []
+    for titre, syms in PANEL:
+        corps.append('            <div class="voice-set-sec{{{cns}}}">')
+        corps.append('                <div class="voice-set-sec-head{{{cns}}}">'
+                     '%s</div>' % titre)
+        corps.append('                <div class="voice-set-row{{{cns}}}">')
+        for sym in syms:
+            corps.append("                    " + cellule(sym))
+        corps.append('                </div>')
+        if titre == "FAVORIS":
+            corps.append('                <div class="voice-set-names{{{cns}}}">')
+            corps.append('                <div class="voice-set-names-head{{{cns}}}">'
+                         'THE SIX NAMES &mdash; seven letters each</div>')
+            corps += boites
+            corps.append('                <div class="voice-set-names-note{{{cns}}}">'
+                         'The name goes into the slot, onto the disc and onto the '
+                         'footswitch as you type. Nothing to press, and SAVE never '
+                         'touches it. The list above says them too.</div>')
+            corps.append('                </div>')
+        if titre == "NOT BY HAND":
+            corps.append('                <div class="voice-set-names-note{{{cns}}}">'
+                         'Written by the interface, one character at a time. '
+                         'Here because every control has to be reachable, and for '
+                         'nothing else.</div>')
+        corps.append('            </div>')
+
+    html = """<!-- GENERATED by make_ttl.py from CONTROLS and PANEL - do not edit.
+
+     mod-ui builds a settings panel of its own when a plugin ships no
+     template, and that one is every port in index order: a wall of sixty
+     knobs with no shape, and nowhere at all to type a name. This one is
+     the same panel with a shape, the six name boxes, and a PROGRAM list
+     whose USER entries carry the names.
+
+     The boxes are read by a timer, never by an event: mod-ui copies the
+     interface after building it and any binding made by the script goes
+     with the copy. A text box keeps what is typed into it without asking
+     anything of anybody. -->
+<div class="mod-pedal-settings voice-set{{{cns}}}">
+    <header class="clearfix">
+        <h1 class="alignleft">{{effect.name}}
+            <span class="plugin-label">{{#userLabel}} - {{userLabel}}{{/userLabel}}</span>
+            <span class="mod-edit"></span>
+            <span class="plugin-global-snapshot icon-camera"></span>
+        </h1>
+        <button class="js-close alignright btn btn-danger">Close</button>
+    </header>
+
+    <div class="mod-controls clearfix">
+        <div class="mod-control-group clearfix voice-set-grid{{{cns}}}">
+
+            <div class="mod-switch bypass voice-set-cell{{{cns}}}">
+                <span class="mod-switch-title">ON/OFF</span>
+                <div class="mod-light on" mod-role="bypass-light"></div>
+                <div class="mod-switch-background"></div>
+                <div class="mod-switch-image" mod-role="bypass"></div>
+                <div class="mod-address %s" mod-role="bypass-address"></div>
+                <span class="mod-knob-snapshot-status icon-camera"
+                      mod-role="bypass-snapshotable"></span>
+            </div>
+
+%s
+        </div>
+    </div>
+</div>
+""" % (A, "\n".join(corps))
+
+    with open(path, "w") as f:
+        f.write(html)
+    return len(placed)
+
+
 if __name__ == "__main__":
     n = write("voice.ttl", "http://remy-live.github.io/lv2/voice",
               "Voice", "VOICE", MONO_AUDIO)
@@ -1335,8 +1523,11 @@ if __name__ == "__main__":
     write_manifest("manifest.ttl")
     c = write_programs("programs.h")
     h = write_bounds("voice.c", "modgui/script-voice.js")
+    g = write_settings("modgui/settings-voice.html")
     print("voice.ttl: %d ports, voice_stereo.ttl: %d ports, presets.ttl: %d,"
           " programs.h: %d programs x %d controls"
           % (n, m, p, len(PRESETS) + 1, c))
     print("PROGRAM runs 0..%d, in voice.ttl, voice.c and the web UI" % h)
+    print("settings-voice.html: %d controls in %d sections"
+          % (g, len(PANEL)))
     sys.exit(0)

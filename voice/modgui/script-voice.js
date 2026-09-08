@@ -283,6 +283,32 @@ function (event, funcs) {
             bouton.text(courant ? (nomDe(d, courant) || ('USER ' + courant))
                                 : 'FAVORIS ▾');
         }
+
+        /* And the PROGRAM list itself. mod-ui builds it from the
+           descriptor, which was written before anything was named and can
+           only say USER 1 to USER 6 - so the six entries at the end of it
+           are given the names here, every tick, which also puts them back
+           whenever mod-ui rebuilds the list. */
+        for (var u = 1; u <= N_SLOT; u++) {
+            var nomU = nomDe(d, u);
+            var entree = tourJq('.voice-prog-user[data-slot="' + u + '"]');
+            if (entree && entree.length) {
+                var voulu = nomU || ('USER ' + u);
+                if (entree.text() !== voulu) { entree.text(voulu); }
+            }
+        }
+        /* the line that shows which one is chosen is written by mod-ui
+           when it is clicked, so it needs the same treatment */
+        if (courant) {
+            var choisi = tourJq('.mod-enumerated-selected');
+            if (choisi && choisi.length) {
+                var dit = nomDe(d, courant) || ('USER ' + courant);
+                if (/^USER \d$/.test(choisi.text() || '')
+                    || choisi.text() === 'User ' + courant) {
+                    choisi.text(dit);
+                }
+            }
+        }
     }
 
     /* mod-ui writes USER 1 to USER 6 into the readout, because that is

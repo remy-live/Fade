@@ -67,10 +67,23 @@ try {
 }
 say('no mustache braces left', !/\{\{|\}\}/.test(rendered));
 
+/* The settings panel is rendered into the SAME document as the icon,
+   because that is where it lives in mod-ui - and because the script looks
+   for its boxes across the whole page rather than inside the icon. */
+const reglages = fs.readFileSync('modgui/settings-voice.html', 'utf8');
+let rendu2 = '';
+try {
+    rendu2 = Mustache.render(reglages, data);
+    say('the settings template renders without error', true);
+} catch (e) {
+    say('the settings template renders without error', false, e.message);
+}
+say('no mustache braces left in the settings panel', !/\{\{|\}\}/.test(rendu2));
+
 /* A URL, so the document has a real origin: without one jsdom refuses
    localStorage, and the USER slots the script keeps there would look
    broken here while working in a browser. */
-const dom = new JSDOM('<body>' + rendered + '</body>',
+const dom = new JSDOM('<body>' + rendered + rendu2 + '</body>',
                       { url: 'https://mod.local/voice' });
 global.document = dom.window.document;
 global.window = dom.window;
@@ -92,7 +105,8 @@ say('every mod-port-symbol exists in the descriptor', inconnus.length === 0,
    buttons the script pulses rather than knobs that hold a value, so they
    carry mod-port-symbol without a mod-role: that attribute is inert to
    mod-ui and says here which port the button drives. */
-const places = new Set([...doc.querySelectorAll('[mod-port-symbol]')]
+const pedale = doc.querySelector('.mod-pedal');
+const places = new Set([...pedale.querySelectorAll('[mod-port-symbol]')]
     .map(el => el.getAttribute('mod-port-symbol')));
 const manquants = ports.filter(p => p.control && p.input && !places.has(p.symbol))
                        .map(p => p.symbol);
@@ -357,6 +371,17 @@ if (typeof fn === 'function') {
             say('and in its box, ready to be edited',
                 doc.querySelector('.voice-fav-name[data-slot="5"]')
                    .value === 'GROWL');
+            /* The PROGRAM list is built from the descriptor, which was
+               written before anything was named: it can only say USER 1
+               to USER 6. The script gives the six entries their names. */
+            say('the PROGRAM list says the names, not USER 2',
+                doc.querySelector('.voice-prog-user[data-slot="2"]')
+                   .textContent === 'CHORUS',
+                doc.querySelector('.voice-prog-user[data-slot="2"]').textContent);
+            say('and USER n where there is no name yet',
+                doc.querySelector('.voice-prog-user[data-slot="3"]')
+                   .textContent === 'USER 3',
+                doc.querySelector('.voice-prog-user[data-slot="3"]').textContent);
         });
 
     } catch (e) {
@@ -393,25 +418,20 @@ say('the panel is opened by its checkbox, with no script at all',
     /voice-fav-open[^{]*:checked\s*~\s*\.voice-fav-panel/.test(renderedCss));
 
 /* --- the settings panel: mod-ui's default one has nowhere to type --- */
-const reglages = fs.readFileSync('modgui/settings-voice.html', 'utf8');
-let rendu2 = '';
-try {
-    rendu2 = Mustache.render(reglages, data);
-    say('the settings template renders without error', true);
-} catch (e) {
-    say('the settings template renders without error', false, e.message);
-}
-say('no mustache braces left in the settings panel', !/\{\{|\}\}/.test(rendu2));
-const dom2 = new JSDOM('<body>' + rendu2 + '</body>',
-                       { url: 'https://mod.local/voice' });
-const doc2 = dom2.window.document;
-say('a .mod-pedal-settings root exists',
-    doc2.querySelector('.mod-pedal-settings') !== null);
+const doc2 = doc.querySelector('.mod-pedal-settings');
+say('a .mod-pedal-settings root exists', doc2 !== null);
 say('the six name boxes are in the settings panel',
     doc2.querySelectorAll('.voice-fav-name').length === 6);
 const boitesSlots = [...doc2.querySelectorAll('.voice-fav-name')]
     .map(e => e.getAttribute('data-slot')).join(',');
 say('one per USER slot, in order', boitesSlots === '1,2,3,4,5,6', boitesSlots);
+say('and one editor per slot in the whole page, never two',
+    doc.querySelectorAll('.voice-fav-name').length === 6,
+    String(doc.querySelectorAll('.voice-fav-name').length));
+say('the PROGRAM list has an entry per USER slot to be renamed',
+    doc2.querySelectorAll('.voice-prog-user').length === 6);
+say('the panel is in sections, not a wall of knobs in port order',
+    doc2.querySelectorAll('.voice-set-sec' + data.cns).length >= 10);
 const placesSet = new Set([...doc2.querySelectorAll('[mod-port-symbol]')]
     .map(el => el.getAttribute('mod-port-symbol')));
 const manquants2 = ports.filter(p => p.control && p.input && !placesSet.has(p.symbol))
