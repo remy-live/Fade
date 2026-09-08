@@ -57,21 +57,31 @@
 #    include <lv2/urid/urid.h>
 #    include <lv2/state/state.h>
 #    include <lv2/atom/atom.h>
+#    include <lv2/worker/worker.h>
 #  else
 #    include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #    include <lv2/lv2plug.in/ns/ext/state/state.h>
 #    include <lv2/lv2plug.in/ns/ext/atom/atom.h>
+#    include <lv2/lv2plug.in/ns/ext/worker/worker.h>
 #  endif
 #else
 #  include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #  include <lv2/lv2plug.in/ns/ext/state/state.h>
 #  include <lv2/lv2plug.in/ns/ext/atom/atom.h>
+#  include <lv2/lv2plug.in/ns/ext/worker/worker.h>
 #endif
 
+#include <stdio.h>    /* the slots file, and NOTHING else: no printf here */
 #include <stdlib.h>
 #include <string.h>   /* also pulls in stddef for size_t, which lv2-hmi.h needs */
 
 #include "lv2-hmi.h"
+/* The host-blessed way for a plugin to move its own control inputs. A
+   plugin may not write them itself; mod-host implements this request, and
+   it is what makes the encoders and the web page follow a program instead
+   of showing the sound before it. Optional: without it the plugin plays
+   exactly the same, and only the knobs go stale. */
+#include "control-input-port-change-request.h"
 
 #define VOICE_URI        "http://remy-live.github.io/lv2/voice"
 /* Where the four USER slots live in the host's saved state. */
@@ -86,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD10_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD11_AARCH64_20260905";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -911,6 +921,13 @@ typedef struct {
     uint32_t save_flash;      /* samples left to say SAVED on the screen */
     int fx2_prev;
 
+    /* --- the two host services that make a save visible and durable --- */
+    const LV2_ControlInputPort_Change_Request* portreq;
+    LV2_Worker_Schedule* sched;
+    float    ctl_ask[CTL_COUNT];    /* the value a request asked the host for */
+    uint8_t  ctl_asked[CTL_COUNT];  /* ...and whether one is still in flight */
+    char     slots_path[512];       /* where the USER slots live between boots */
+
     LV2_URID_Map* map;
     LV2_URID      urid_slots;
     LV2_URID      urid_chunk;
@@ -1225,14 +1242,16 @@ forget_caches(Voice* self)
     }
 }
 
+/* Defined with the rest of the file handling, further down; needed here
+   because a slot has to be on the knobs before the first block runs. */
+static void slots_from_disk(Voice* self);
+
 static LV2_Handle
 instantiate(const LV2_Descriptor*     descriptor,
             double                    rate,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-    (void)bundle_path;
-
     Voice* self = (Voice*)calloc(1, sizeof(Voice));
     if (!self) {
         return NULL;
@@ -1241,6 +1260,31 @@ instantiate(const LV2_Descriptor*     descriptor,
     self->n_ch    = (descriptor && !strcmp(descriptor->URI, VOICE_STEREO_URI)) ? 2u : 1u;
     self->n_audio = self->n_ch * 2u;
     self->rate    = (rate > 0.0) ? (float)rate : 48000.0f;
+
+    /* Where the USER slots live between boots. Beside the bundle, like
+       the sounds of the EQ that showed us how: the LV2 state travels with
+       a pedalboard, but only once the pedalboard is SAVED - press SAVE,
+       walk away, and the slot was gone. This file is written the moment
+       SAVE is pressed. */
+    {
+        const char* b = (bundle_path && bundle_path[0]) ? bundle_path : "./";
+        const size_t n = strlen(b);
+        const int slash = (n > 0 && b[n - 1] == '/');
+        copy_bounded(self->slots_path, sizeof(self->slots_path), b);
+        if (!slash) {
+            copy_bounded(self->slots_path + n, sizeof(self->slots_path) - n, "/");
+        }
+        copy_bounded(self->slots_path + n + (slash ? 0u : 1u),
+                     sizeof(self->slots_path) - n - (slash ? 0u : 1u),
+                     "voice-slots.bin");
+    }
+
+
+    /* Whatever the last SAVE left on the disc. A pedalboard that carries
+       its own state will overwrite this a moment later through
+       state_restore(), which is right: the board is the more specific
+       answer. This is the one that survives never saving the board. */
+    slots_from_disk(self);
 
     /* Each control reads its OWN default until the host connects it. One
        shared zero cell would leave the gate threshold at 0 dB, which
@@ -1316,6 +1360,12 @@ instantiate(const LV2_Descriptor*     descriptor,
                 self->hmi = (const LV2_HMI_WidgetControl*)features[i]->data;
             } else if (!strcmp(features[i]->URI, LV2_URID__map)) {
                 self->map = (LV2_URID_Map*)features[i]->data;
+            } else if (!strcmp(features[i]->URI,
+                               LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI)) {
+                self->portreq = (const LV2_ControlInputPort_Change_Request*)
+                                features[i]->data;
+            } else if (!strcmp(features[i]->URI, LV2_WORKER__schedule)) {
+                self->sched = (LV2_Worker_Schedule*)features[i]->data;
             }
         }
     }
@@ -1415,6 +1465,35 @@ static const char* program_label(const Voice* self, int prog, char* buf,
     return program_name[(prog > 0) ? prog : 0];
 }
 
+/* Ask the host to move a knob. A plugin may not write its own control
+   inputs - mod-host implements this request instead, and declines it when
+   something else owns the port. What comes back arrives as an ordinary
+   port change a block or two later, so the value asked for is written
+   into ctl_seen as well: otherwise the plugin reads its own request as
+   "the player turned that knob" and hands the control back to a knob
+   nobody touched.
+
+   Without the feature this does nothing at all and the plugin plays
+   exactly as before - the program table is still what is heard. Only the
+   knobs stay where they were, which is where this plugin was until now. */
+static void push_port(Voice* self, int i, float value)
+{
+    if (!self->portreq || !self->portreq->request_change) { return; }
+    if (i < 0 || i >= (int)CTL_COUNT) { return; }
+    if (*self->ctl[i] == value) { return; }
+    const LV2_ControlInputPort_Change_Status st =
+        self->portreq->request_change(self->portreq->handle,
+                                      self->n_audio + (uint32_t)i, value);
+    if (st == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) {
+        /* Not a time window: the VALUE. The host writes the port a block
+           or two later, and until it does the port still holds the old
+           value - so the plugin has to recognise its own request when it
+           arrives, and a window would swallow a knob turned inside it. */
+        self->ctl_ask[i]   = value;
+        self->ctl_asked[i] = 1u;
+    }
+}
+
 /* Everything that happens when a program comes into force, whether the
    knob was turned, the pedalboard was loaded, or A/B went back to it.
    The program in force is NOT the port: A/B moves one and not the other. */
@@ -1425,8 +1504,9 @@ static void program_enter(Voice* self, int prog)
     /* A new program starts clean: nothing is the player's yet, and the
        values it is about to install must not read as changes. */
     for (int i = 0; i < (int)CTL_COUNT; ++i) {
-        self->ctl_seen[i] = ctl_read(self, i);
-        self->ctl_mine[i] = 0u;
+        self->ctl_seen[i]  = ctl_read(self, i);
+        self->ctl_mine[i]  = 0u;
+        self->ctl_asked[i] = 0u;
     }
     const int u = prog - N_PROGRAM;
     const uint8_t* adopt = NULL;
@@ -1440,6 +1520,19 @@ static void program_enter(Voice* self, int prog)
             self->sw_state[k] = adopt[k] ? 1 : 0;
             self->sw_prev[k]  = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
         }
+    }
+
+    /* And now MOVE THE KNOBS. Everything above decides what is heard; this
+       is what makes the pedal and the web page show it. Without the
+       host's change-request feature it does nothing and the sound is the
+       same - which is what this plugin did until now, and why picking a
+       sound looked as though nothing had happened. */
+    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+        if (program_col[i] >= 0) { push_port(self, i, param_read(self, i)); }
+    }
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        push_port(self, switch_ctl[k], self->sw_state[k] ? 1.0f : 0.0f);
+        self->sw_prev[k] = self->sw_state[k];
     }
 }
 
@@ -1507,8 +1600,9 @@ activate(LV2_Handle instance)
         self->sw[k]       = on ? 1.0f : 0.0f;
     }
     for (int i = 0; i < (int)CTL_COUNT; ++i) {
-        self->ctl_seen[i] = ctl_read(self, i);
-        self->ctl_mine[i] = 0u;
+        self->ctl_seen[i]  = ctl_read(self, i);
+        self->ctl_mine[i]  = 0u;
+        self->ctl_asked[i] = 0u;
     }
 
     for (uint32_t c = 0; c < self->n_ch; ++c) {
@@ -2123,6 +2217,13 @@ run(LV2_Handle instance, uint32_t n_samples)
         /* Say so. A save with no sign that it happened is a save nobody
            believes in, and there is nothing else on the pedal to tell. */
         self->save_flash = (uint32_t)(self->rate * 1.2f);
+        /* And put it on the disc NOW, from the worker: a slot that only
+           reaches the disc when the pedalboard is saved is a slot the
+           player loses by walking away, which is what happened. */
+        if (self->sched && self->sched->schedule_work) {
+            const uint32_t tag = 1u;
+            self->sched->schedule_work(self->sched->handle, sizeof(tag), &tag);
+        }
     }
     self->save_prev = save_now;
     if (self->save_flash) {
@@ -2182,10 +2283,17 @@ run(LV2_Handle instance, uint32_t n_samples)
             continue;
         }
         const float v = ctl_read(self, i);
-        if (v != self->ctl_seen[i]) {
-            self->ctl_seen[i] = v;
-            self->ctl_mine[i] = 1u;
+        if (v == self->ctl_seen[i]) {
+            continue;                       /* nothing has moved */
         }
+        if (self->ctl_asked[i] && v == self->ctl_ask[i]) {
+            self->ctl_seen[i]  = v;         /* our own request, landing */
+            self->ctl_asked[i] = 0u;
+            continue;
+        }
+        self->ctl_seen[i]  = v;             /* a hand, and it wins */
+        self->ctl_mine[i]  = 1u;
+        self->ctl_asked[i] = 0u;
     }
 
     /* ---------------- controls, read and clamped once ---------------- */
@@ -3059,6 +3167,117 @@ run(LV2_Handle instance, uint32_t n_samples)
 #define SLOT_FLOATS  (2 + N_PROGRAM_COL + SW_COUNT)   /* filled, name, ... */
 #define STATE_FLOATS (N_USER * SLOT_FLOATS)
 
+/* ------------------------------------------------------------------ */
+/* The USER slots, on the disk                                         */
+/*                                                                     */
+/* The LV2 state below travels with a pedalboard, which is the right    */
+/* thing when a board is copied to another machine - but it only        */
+/* reaches the disc when the board is SAVED. A singer who presses SAVE  */
+/* and walks away has saved nothing, which is exactly what happened.    */
+/* So the slots are also written to a file beside the bundle, the       */
+/* moment SAVE is pressed, from the worker thread: never touch a disc   */
+/* from run(). Written to a temporary and renamed, because a rename is  */
+/* atomic and a Dwarf switched off mid-write must not leave half a file.*/
+/* ------------------------------------------------------------------ */
+
+#define SLOTS_MAGIC   0x56534C31u        /* "VSL1" */
+#define SLOTS_VERSION 1u
+
+typedef struct {
+    uint32_t magic;
+    uint32_t version;
+    uint32_t n_user;
+    uint32_t n_col;
+    uint32_t n_switch;
+    struct {
+        float   value[N_PROGRAM_COL];
+        uint8_t sw[SW_COUNT];
+        uint8_t filled;
+        uint8_t name;
+        uint8_t pad[2];
+    } slot[N_USER];
+} SlotsFile;
+
+static void slots_to_disk(const Voice* self)
+{
+    if (!self->slots_path[0]) { return; }
+    SlotsFile f;
+    memset(&f, 0, sizeof(f));
+    f.magic    = SLOTS_MAGIC;
+    f.version  = SLOTS_VERSION;
+    f.n_user   = (uint32_t)N_USER;
+    f.n_col    = (uint32_t)N_PROGRAM_COL;
+    f.n_switch = (uint32_t)SW_COUNT;
+    for (int u = 0; u < N_USER; ++u) {
+        for (int i = 0; i < N_PROGRAM_COL; ++i) {
+            f.slot[u].value[i] = self->user[u].value[i];
+        }
+        for (int k = 0; k < (int)SW_COUNT; ++k) {
+            f.slot[u].sw[k] = self->user[u].sw[k];
+        }
+        f.slot[u].filled = self->user[u].filled;
+        f.slot[u].name   = self->user[u].name;
+    }
+
+    char tmp[sizeof(self->slots_path) + 8];
+    copy_bounded(tmp, sizeof(tmp), self->slots_path);
+    copy_bounded(tmp + strlen(tmp), sizeof(tmp) - strlen(tmp), ".tmp");
+
+    FILE* h = fopen(tmp, "wb");
+    if (!h) { return; }
+    const size_t n = fwrite(&f, 1, sizeof(f), h);
+    fclose(h);
+    if (n == sizeof(f)) { rename(tmp, self->slots_path); }
+    else                { remove(tmp); }
+}
+
+static void slots_from_disk(Voice* self)
+{
+    if (!self->slots_path[0]) { return; }
+    FILE* h = fopen(self->slots_path, "rb");
+    if (!h) { return; }
+    SlotsFile f;
+    const size_t n = fread(&f, 1, sizeof(f), h);
+    fclose(h);
+    if (n != sizeof(f) || f.magic != SLOTS_MAGIC || f.version != SLOTS_VERSION
+        || f.n_user != (uint32_t)N_USER || f.n_col != (uint32_t)N_PROGRAM_COL
+        || f.n_switch != (uint32_t)SW_COUNT) {
+        return;                       /* not ours, or from another build */
+    }
+    for (int u = 0; u < N_USER; ++u) {
+        for (int i = 0; i < N_PROGRAM_COL; ++i) {
+            const float v = f.slot[u].value[i];
+            self->user[u].value[i] = (v == v) ? v : 0.0f;    /* never a NaN */
+        }
+        for (int k = 0; k < (int)SW_COUNT; ++k) {
+            self->user[u].sw[k] = f.slot[u].sw[k] ? 1u : 0u;
+        }
+        self->user[u].filled = f.slot[u].filled ? 1u : 0u;
+        self->user[u].name   = (f.slot[u].name < (uint8_t)N_SLOT_WORD)
+                             ? f.slot[u].name : 0u;
+    }
+}
+
+static LV2_Worker_Status
+work(LV2_Handle instance, LV2_Worker_Respond_Function respond,
+     LV2_Worker_Respond_Handle handle, uint32_t size, const void* data)
+{
+    (void)respond; (void)handle; (void)size; (void)data;
+    slots_to_disk((const Voice*)instance);
+    return LV2_WORKER_SUCCESS;
+}
+
+static LV2_Worker_Status
+work_response(LV2_Handle instance, uint32_t size, const void* body)
+{
+    (void)instance; (void)size; (void)body;
+    return LV2_WORKER_SUCCESS;
+}
+
+static const LV2_Worker_Interface worker_interface = {
+    work, work_response, NULL
+};
+
 static LV2_State_Status
 state_save(LV2_Handle instance, LV2_State_Store_Function store,
            LV2_State_Handle handle, uint32_t flags,
@@ -3143,6 +3362,9 @@ extension_data(const char* uri)
 {
     if (uri && !strcmp(uri, LV2_HMI__PluginNotification)) {
         return &notification;
+    }
+    if (uri && !strcmp(uri, LV2_WORKER__interface)) {
+        return &worker_interface;
     }
     if (uri && !strcmp(uri, LV2_STATE__interface)) {
         return &state_interface;

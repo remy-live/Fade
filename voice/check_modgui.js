@@ -193,24 +193,13 @@ if (typeof fn === 'function') {
     try {
         ecrits = [];
         doc.querySelector('.voice-next').dispatchEvent(new dom.window.Event('click'));
-        /* It writes the program AND the sound: an LV2 plugin may not
-           move its own knobs, so if the web UI does not write them,
-           picking a sound leaves every control showing the one before. */
-        const rangee = /var PROGRAMMES = \[\s*\n\s*null,[^\n]*\n\s*\[([^\]]*)\]/
-                       .exec(script);
-        const attendu = rangee ? rangee[1].split(',').map(Number) : [];
-        const symboles = /var SYMBOLES = \[([^\]]*)\]/.exec(script)[1]
-                         .split(',').map(t => t.trim().replace(/"/g, ''));
-        const ecritsApres = ecrits.slice(1);
+        /* It writes the program and NOTHING else. Moving the knobs to
+           match is the plugin's job now: it asks the host through the kx
+           change-request feature, so the pedal's encoders and this page
+           follow one truth rather than two copies that can disagree. */
         say('the next button walks the program list',
-            ecrits.length === 1 + symboles.length
-            && ecrits[0][0] === 'program' && ecrits[0][1] === 1,
-            JSON.stringify(ecrits[0]) + ' + ' + ecritsApres.length + ' controls');
-        say('and moves every knob the program owns',
-            attendu.length === symboles.length
-            && ecritsApres.every((e, i) => e[0] === symboles[i]
-                                        && Math.abs(e[1] - attendu[i]) < 1e-6),
-            JSON.stringify(ecritsApres.slice(0, 3)));
+            ecrits.length === 1 && ecrits[0][0] === 'program'
+            && ecrits[0][1] === 1, JSON.stringify(ecrits));
         ecrits = [];
         doc.querySelector('.voice-tap').dispatchEvent(new dom.window.Event('click'));
         say('the tap button pulses the tap port',
@@ -230,36 +219,29 @@ if (typeof fn === 'function') {
             ecrits.filter(e => e[0] === 'program').length === 0,
             JSON.stringify(ecrits));
         apres.push(() => {
-            /* the first of them: there is a second SAVE further down,
-               into the next slot, and it lands in the same list */
+            /* PROGRAM NOW was pushed through further down and wrote the
+               port too, so look for the one this SAVE asked for rather
+               than assuming it is the only one */
             const versSlot = ecrits.filter(e => e[0] === 'program');
             say('and then selects the slot it wrote to',
-                versSlot.length >= 1 && versSlot[0][1] === premierUser,
+                versSlot.some(e => e[1] === premierUser),
                 JSON.stringify(versSlot));
         });
-        /* The round trip the whole thing exists for: dial a sound, SAVE
-           it, go somewhere else, come back - and find the knobs where
-           you left them. The plugin keeps its own copy for the pedal;
-           this copy is what moves the screen. */
-        fn({ type: 'change', icon: icon, symbol: 'user_slot', value: 2 }, funcs);
-        fn({ type: 'change', icon: icon, symbol: 'low_cut', value: 133 }, funcs);
-        fn({ type: 'change', icon: icon, symbol: 'reverb_mix', value: 44 }, funcs);
+        /* PROGRAM NOW is how A/B and the cycle switch reach the page:
+           the plugin cannot write its own PROGRAM port, so it publishes
+           what is in force and the page follows it. Moving the knobs to
+           match is the plugin's job now, through the host. */
         ecrits = [];
-        doc.querySelector('.voice-save').dispatchEvent(new dom.window.Event('click'));
-        const slotDeux = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10) + 1;
-        apres.push(() => {
-            ecrits = [];
-            fn({ type: 'change', icon: icon, symbol: 'program', value: 3 }, funcs);
-            ecrits = [];
-            fn({ type: 'change', icon: icon, symbol: 'program', value: slotDeux }, funcs);
-            const rendu = {};
-            ecrits.forEach(e => { rendu[e[0]] = e[1]; });
-            say('a saved USER slot puts the knobs back where they were',
-                rendu['low_cut'] === 133 && rendu['reverb_mix'] === 44,
-                JSON.stringify([rendu['low_cut'], rendu['reverb_mix']]));
-        });
+        const premierUser2 = parseInt(/var PREMIER_USER = (\d+)/.exec(script)[1], 10);
+        fn({ type: 'change', icon: icon, symbol: 'program_now',
+             value: premierUser2 + 2 }, funcs);
+        say('PROGRAM NOW moves the list to where the pedal went',
+            ecrits.length === 1 && ecrits[0][0] === 'program'
+            && ecrits[0][1] === premierUser2 + 2, JSON.stringify(ecrits));
+
     } catch (e) {
-        say('the buttons that write ports work', false, e.message);
+        say('the buttons that write ports work', false,
+            e.message + ' | ' + (e.stack || '').split('\n')[1]);
     }
 }
 

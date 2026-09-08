@@ -7,6 +7,7 @@
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix state:  <http://lv2plug.in/ns/ext/state#> .
+@prefix work:   <http://lv2plug.in/ns/ext/worker#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 @prefix urid:   <http://lv2plug.in/ns/ext/urid#> .
 
@@ -25,8 +26,11 @@
     lv2:minorVersion 5 ;
     lv2:microVersion 0 ;
 
-    lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl , urid:map ;
-    lv2:extensionData hmi:PluginNotification , state:interface ;
+    lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl , urid:map ,
+        work:schedule ,
+        <http://kx.studio/ns/lv2ext/control-input-port-change-request> ;
+    lv2:extensionData hmi:PluginNotification , state:interface ,
+        work:interface ;
 
     lv2:port [
         a lv2:AudioPort , lv2:InputPort ;

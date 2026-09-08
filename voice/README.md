@@ -250,28 +250,37 @@ the web UI waits for the pulse to finish before jumping. Slots saved with
 an earlier build kept the sound they had *before* the edit; save them
 again.
 
-The slots travel with the pedalboard: the plugin implements the LV2 State
-extension and writes them out with it. That is *when the pedalboard is
-saved*, so a slot stored and never followed by a board save is gone at the
-next reboot — the same rule as everything else on a board.
+**The slots reach the disc when you press SAVE, not when the board is
+saved.** They travel with the pedalboard too — the plugin implements the
+LV2 State extension — but state only reaches the disc when the *board* is
+saved, so pressing SAVE and walking away used to save nothing at all.
+There is now a file beside the bundle, `voice-slots.bin`, written from the
+worker thread the moment SAVE is pressed: never a disc from `run()`, and
+written to a temporary and renamed, so a Dwarf switched off mid-write
+cannot leave half a file. It is read back at startup, and a pedalboard
+that carries its own copy overwrites it a moment later, which is right —
+the board is the more specific answer.
 
-**Why the knobs used to lie.** An LV2 plugin is not allowed to write its
-own control input ports, so nothing the plugin does can move a knob on your
-screen: it can only change what you hear. Selecting a sound therefore
-changed the sound and left every control showing the one before it, which
-made the whole list — and the USER slots with it — look like it was doing
-nothing. The web UI now carries the program table itself, written into
-`modgui/script-voice.js` by the same `make_ttl.py` that writes the
-plugin's, and moves the knobs when the program changes, wherever the change
-came from: the arrows, the dial, a footswitch, or the pedal. For a USER
-slot it writes back a copy it kept in the browser at SAVE time. If you save
-a slot on the pedal and then open the board on a browser that has never
-seen it, the *sound* is right — that copy lives in the plugin — and the
-knobs will be the ones the board was saved with. The one case to know
-about: save a slot from the pedal, then select that slot in a browser
-that has an *older* copy of it, and the browser's copy wins, because
-selecting it writes the knobs. Save it again from the browser and the two
-agree. The device screen never
+**The knobs move themselves now.** An LV2 plugin may not write its own
+control input ports — but on a MOD it may *ask*. `kx.studio`'s
+[control-input-port-change-request][kx] feature is the host-blessed way,
+mod-host implements it, and picking a sound now moves the encoders and the
+web page to what that sound holds. That is the difference between a preset
+list that works and one that changes the sound while every control on the
+screen still shows the sound before it — which is what this did until
+build 11, and why the USER slots looked as though they were not saving
+anything.
+
+[kx]: http://kx.studio/ns/lv2ext/control-input-port-change-request
+
+A request the host declines changes nothing: the program table is still
+what is heard. And a knob turned afterwards still wins — the plugin knows
+its own request by the *value* it asked for, not by a window of time, so a
+hand landing on a control a millisecond later is a hand and not an echo.
+
+There is one truth now instead of two. The web UI used to keep its own
+copy of every slot in the browser to move the knobs with; it does not, and
+cannot disagree with the plugin any more. The device screen never
 had this problem: it always showed what was in force.
 
 **Naming** works in two halves, for a reason worth stating plainly. A
@@ -402,7 +411,7 @@ gcc -std=c99 -O1 -g -fsanitize=address,undefined -I.. -I. -o test_voice test_voi
 ./test_voice
 ```
 
-393 checks: the approximations against libm, every block of the chain
+401 checks: the approximations against libm, every block of the chain
 against what it claims to do, every switch for what it removes and for the
 click it must not make, all seventy-two presets for the level they land on,
 the delay against a clock at three sample rates, and a simulated HMI

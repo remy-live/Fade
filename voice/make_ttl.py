@@ -23,6 +23,7 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix state:  <http://lv2plug.in/ns/ext/state#> .
+@prefix work:   <http://lv2plug.in/ns/ext/worker#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 @prefix urid:   <http://lv2plug.in/ns/ext/urid#> .
 
@@ -41,8 +42,11 @@ HEAD = """@prefix doap:   <http://usefulinc.com/ns/doap#> .
     lv2:minorVersion 5 ;
     lv2:microVersion 0 ;
 
-    lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl , urid:map ;
-    lv2:extensionData hmi:PluginNotification , state:interface ;
+    lv2:optionalFeature lv2:hardRTCapable , hmi:WidgetControl , urid:map ,
+        work:schedule ,
+        <http://kx.studio/ns/lv2ext/control-input-port-change-request> ;
+    lv2:extensionData hmi:PluginNotification , state:interface ,
+        work:interface ;
 
     lv2:port """
 
@@ -1129,44 +1133,6 @@ def write_bounds(c_path, js_path):
     return haut
 
 
-def write_modgui_programs(path):
-    """Writes the program table into the web UI's script.
-
-    The plugin has the same table in programs.h, and needs it: it must
-    work with no browser anywhere near it. The web UI needs its own copy
-    for a different reason - an LV2 plugin may not write its own control
-    INPUT ports, so nothing the plugin does can move a knob on the screen.
-    Without this, picking a sound left every knob showing the sound
-    before it, which is what made the whole preset list look broken."""
-    cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
-    syms = [c[0] for c in cont] + list(SWITCHES)
-
-    def row(values):
-        out = []
-        for c in cont:
-            symbol, _n, _mn, _mx, default, _u, _p, _cm = c
-            out.append(fmt(values.get(symbol, default)))
-        for symbol in SWITCHES:
-            out.append("%d" % int(values.get(symbol, 1.0)))
-        return "[" + ",".join(out) + "]"
-
-    lignes = ["    /* PROGRAMMES-DEBUT - written by make_ttl.py, do not edit */",
-              "    var SYMBOLES = [%s];"
-              % ", ".join('"%s"' % s for s in syms),
-              "    var PROGRAMMES = [",
-              "        null,          /* MANUAL: a program that changes nothing */"]
-    for _k, label, _short, v in PRESETS:
-        lignes.append("        %s,  /* %s */" % (row(v), label))
-    lignes.append("    ];")
-    lignes.append("    /* PROGRAMMES-FIN */")
-
-    src = open(path).read()
-    deb = src.index("    /* PROGRAMMES-DEBUT")
-    fin = src.index("/* PROGRAMMES-FIN */") + len("/* PROGRAMMES-FIN */")
-    open(path, "w").write(src[:deb] + "\n".join(lignes) + src[fin:])
-    return len(syms)
-
-
 def write_programs(path):
     cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
     col = {}
@@ -1231,11 +1197,9 @@ if __name__ == "__main__":
     p = write_presets("presets.ttl")
     write_manifest("manifest.ttl")
     c = write_programs("programs.h")
-    j = write_modgui_programs("modgui/script-voice.js")
     h = write_bounds("voice.c", "modgui/script-voice.js")
     print("voice.ttl: %d ports, voice_stereo.ttl: %d ports, presets.ttl: %d,"
           " programs.h: %d programs x %d controls"
           % (n, m, p, len(PRESETS) + 1, c))
-    print("modgui/script-voice.js: %d programs x %d columns" % (len(PRESETS) + 1, j))
     print("PROGRAM runs 0..%d, in voice.ttl, voice.c and the web UI" % h)
     sys.exit(0)

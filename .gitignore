@@ -20,3 +20,6 @@ voice/voice-demo.wav
 
 # Python bytecode from the descriptor generator.
 __pycache__/
+
+# The USER slots, written beside the bundle by the plugin itself.
+voice/voice-slots.bin

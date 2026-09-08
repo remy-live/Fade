@@ -151,8 +151,39 @@ static LV2_URID f_map(LV2_URID_Map_Handle h, const char* uri)
 static LV2_URID_Map map_feature = { NULL, f_map };
 static LV2_Feature feat_map = { LV2_URID__map, &map_feature };
 
-static const LV2_Feature* features[]     = { &feat_hmi, &feat_map, NULL };
-static const LV2_Feature* features_map[] = { &feat_map, NULL };
+/* --- a host that answers the two requests a save depends on ---------
+   mod-host moves a control input when the plugin asks, and runs the
+   worker off the audio thread. Both are optional features, so without
+   them here the plugin was never exercised the way it runs on a Dwarf -
+   which is where "the saves do not work" came from. */
+typedef struct Banc Banc;
+static Banc* banc_courant = NULL;      /* whose ports to move; set by ouvrir */
+static int   refus_requetes = 0;       /* a host that says no, for one test */
+static int   n_requetes = 0;
+
+static LV2_ControlInputPort_Change_Status
+f_request(LV2_ControlInputPort_Change_Request_Handle h, uint32_t index,
+          float value);
+
+static LV2_ControlInputPort_Change_Request portreq_feature = { NULL, f_request };
+static LV2_Feature feat_portreq = {
+    LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI, &portreq_feature
+};
+
+/* The worker, run straight away rather than on another thread: the point
+   here is that the work HAPPENS, not that it happens elsewhere. */
+static LV2_Worker_Status
+f_schedule(LV2_Worker_Schedule_Handle h, uint32_t size, const void* data);
+
+static LV2_Worker_Schedule sched_feature = { NULL, f_schedule };
+static LV2_Feature feat_sched = { LV2_WORKER__schedule, &sched_feature };
+
+static const LV2_Feature* features[]     = { &feat_hmi, &feat_map,
+                                             &feat_portreq, &feat_sched, NULL };
+static const LV2_Feature* features_map[] = { &feat_map, &feat_portreq,
+                                             &feat_sched, NULL };
+/* and a host that offers neither, to prove the plugin still plays */
+static const LV2_Feature* features_nues[] = { &feat_map, NULL };
 
 #define TOUTES_CAPS (LV2_HMI_AddressingCapability_LED       | \
                      LV2_HMI_AddressingCapability_Label     | \
@@ -162,7 +193,7 @@ static const LV2_Feature* features_map[] = { &feat_map, NULL };
 
 /* ---------------- the bench ---------------- */
 
-typedef struct {
+struct Banc {
     const LV2_Descriptor* d;
     LV2_Handle            h;
     uint32_t              n_ch, n_audio, bloc;
@@ -170,14 +201,56 @@ typedef struct {
     float*                out[MAX_CH];
     float                 ctl[CTL_COUNT];
     double                sr, phase;
-} Banc;
+};
 
-static void ouvrir(Banc* b, int stereo, double sr, uint32_t bloc, int avec_ecran)
+/* The two host services need a bench to point at, and the bench is
+   declared below them - so they are wired up here, where both exist. */
+static LV2_ControlInputPort_Change_Status
+f_request(LV2_ControlInputPort_Change_Request_Handle h, uint32_t index,
+          float value)
 {
+    (void)h;
+    ++n_requetes;
+    if (refus_requetes) { return LV2_CONTROL_INPUT_PORT_CHANGE_ERR_UNKNOWN; }
+    if (!banc_courant) { return LV2_CONTROL_INPUT_PORT_CHANGE_ERR_UNKNOWN; }
+    if (index < banc_courant->n_audio) {
+        return LV2_CONTROL_INPUT_PORT_CHANGE_ERR_INVALID_INDEX;
+    }
+    const uint32_t i = index - banc_courant->n_audio;
+    if (i >= (uint32_t)CTL_COUNT) {
+        return LV2_CONTROL_INPUT_PORT_CHANGE_ERR_INVALID_INDEX;
+    }
+    /* mod-host writes the port itself: the plugin sees it on a later
+       block, exactly as it will on the device */
+    banc_courant->ctl[i] = value;
+    return LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS;
+}
+
+static LV2_Worker_Status
+f_schedule(LV2_Worker_Schedule_Handle h, uint32_t size, const void* data)
+{
+    (void)h;
+    if (!banc_courant || !banc_courant->d) { return LV2_WORKER_ERR_UNKNOWN; }
+    const LV2_Worker_Interface* w = (const LV2_Worker_Interface*)
+        banc_courant->d->extension_data(LV2_WORKER__interface);
+    if (!w || !w->work) { return LV2_WORKER_ERR_NO_SPACE; }
+    return w->work(banc_courant->h, NULL, NULL, size, data);
+}
+
+/* The slots now reach the disc the moment SAVE is pressed, which is the
+   whole point - and means one test's slots would be the next test's
+   starting point. Every bench starts from a clean file unless it is
+   testing exactly that. */
+static int garder_disque = 0;
+
+static void ouvrir_avec(Banc* b, int stereo, double sr, uint32_t bloc,
+                        const LV2_Feature* const* feats)
+{
+    if (!garder_disque) { remove("voice-slots.bin"); }
     memset(b, 0, sizeof(*b));
+    banc_courant = b;
     b->d       = lv2_descriptor(stereo ? 1u : 0u);
-    b->h       = b->d->instantiate(b->d, sr, ".",
-                                   avec_ecran ? features : features_map);
+    b->h       = b->d->instantiate(b->d, sr, ".", feats);
     b->n_ch    = stereo ? 2u : 1u;
     b->n_audio = b->n_ch * 2u;
     b->bloc    = bloc;
@@ -194,6 +267,11 @@ static void ouvrir(Banc* b, int stereo, double sr, uint32_t bloc, int avec_ecran
         b->d->connect_port(b->h, b->n_audio + (uint32_t)i, &b->ctl[i]);
     }
     b->d->activate(b->h);
+}
+
+static void ouvrir(Banc* b, int stereo, double sr, uint32_t bloc, int avec_ecran)
+{
+    ouvrir_avec(b, stereo, sr, bloc, avec_ecran ? features : features_map);
 }
 
 static void fermer(Banc* b)
@@ -2261,8 +2339,13 @@ static void essai_etat(void)
     verifie("a restored slot plays what was saved in it",
             (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
 
-    /* an untouched slot must still be empty, not full of zeros */
+    /* An untouched slot must still be empty, not full of zeros. The knob
+       is set AFTER selecting it: entering a filled slot now moves the
+       knobs to what it holds, so "the knobs are elsewhere" has to be
+       arranged rather than assumed. */
     b.ctl[CTL_PROGRAM] = (float)N_PROGRAM;   /* USER 1, never saved */
+    silence(&b); tourner(&b);
+    b.ctl[CTL_DELAY_TIME] = 800.0f;
     silence(&b); tourner(&b);
     verifie("an empty slot stays empty across a restore",
             (double)b.ctl[CTL_TIME_OUT], 800.0, 0.01);
@@ -2743,6 +2826,98 @@ static void essai_noms(void)
     fermer(&b);
 }
 
+/* The two things a MOD host does that nothing here used to ask for, and
+   between them the whole of "the saves do not work".
+
+   One: a plugin may not write its own control inputs, but it may ASK -
+   mod-host implements the kx change-request feature. That is how picking
+   a sound moves the encoders and the web page instead of leaving them on
+   the sound before it, which is what made a save look like it had done
+   nothing.
+
+   Two: the LV2 state travels with a pedalboard, and reaches the disc when
+   the BOARD is saved. Press SAVE, walk away, and it was gone. The slots
+   are written to a file beside the bundle the moment SAVE is pressed. */
+static void essai_hote(void)
+{
+    Banc b;
+    n_requetes = 0;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    const int p_choir = programme_nomme("CHOIR");
+    const float attendu = program_value[p_choir][program_col[CTL_DOUBLER]];
+
+    b.ctl[CTL_DOUBLER] = 0.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_PROGRAM] = (float)p_choir;
+    silence(&b); tourner(&b);
+    verifie("picking a sound moves the knob to what it holds",
+            (double)b.ctl[CTL_DOUBLER], (double)attendu, 0.01);
+    verifie_vrai("which took asking the host", n_requetes > 0);
+
+    /* and the knob still wins afterwards */
+    b.ctl[CTL_DOUBLER] = 7.0f;
+    silence(&b); tourner(&b);
+    silence(&b); tourner(&b);
+    verifie("a knob turned after that is still the player's",
+            (double)b.ctl[CTL_DOUBLER], 7.0, 0.01);
+    fermer(&b);
+
+    /* a host that declines every request: the sound must be right anyway */
+    refus_requetes = 1;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_DELAY_TIME] = 111.0f;
+    b.ctl[CTL_PROGRAM] = (float)programme_nomme("BALLAD");
+    silence(&b); tourner(&b);
+    verifie("a host that refuses to move the knobs still gets the sound",
+            (double)b.ctl[CTL_TIME_OUT],
+            (double)program_value[programme_nomme("BALLAD")]
+                                 [program_col[CTL_DELAY_TIME]], 0.01);
+    fermer(&b);
+    refus_requetes = 0;
+
+    /* a host with neither feature - an ordinary LV2 host - is the case
+       this plugin shipped with, and must keep working */
+    ouvrir_avec(&b, 0, 48000.0, 128, features_nues);
+    neutre(&b);
+    b.ctl[CTL_PROGRAM] = (float)p_choir;
+    silence(&b); tourner(&b);
+    verifie("with no such feature at all the sound is still right",
+            (double)b.ctl[CTL_TIME_OUT],
+            (double)program_value[p_choir][program_col[CTL_DELAY_TIME]], 0.01);
+    fermer(&b);
+
+    /* SAVE reaches the disc without the pedalboard being saved */
+    remove("voice-slots.bin");
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_USER_SLOT]  = 4.0f;
+    b.ctl[CTL_SLOT_NAME]  = 5.0f;               /* SOLO */
+    b.ctl[CTL_DELAY_TIME] = 275.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    fermer(&b);                                  /* no state save anywhere */
+
+    FILE* f = fopen("voice-slots.bin", "rb");
+    verifie_vrai("SAVE writes the slots to a file there and then", f != NULL);
+    if (f) { fclose(f); }
+
+    garder_disque = 1;                           /* a new instance, same disc */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    garder_disque = 0;
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 3); /* USER 4 */
+    silence(&b); tourner(&b);
+    verifie("and a fresh instance plays them",
+            (double)b.ctl[CTL_TIME_OUT], 275.0, 0.01);
+    verifie_vrai("with the name they were given",
+                 ((Voice*)b.h)->user[3].name == 5u);
+    fermer(&b);
+    remove("voice-slots.bin");
+}
+
 /* ================================================================== */
 /* The choir                                                           */
 /* ================================================================== */
@@ -3063,6 +3238,7 @@ int main(int argc, char** argv)
     printf("Names, and the cycle switch:\n"); essai_noms();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
+    printf("The host's part:\n");           essai_hote();
     printf("USER slots:\n");                essai_slots();
                                            essai_retouche();
                                            essai_etat();
