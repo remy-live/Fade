@@ -897,6 +897,34 @@ TAIL = [
  ("out", "param_now", "PARAMETER NOW", 0.0, 64.0, 0.0, None, [],
   "Output. Which parameter the pedal page points at: 0 is NAME, then the "
   "controls a program owns, in the order of the list."),
+
+ # --- a name typed in the web page, one character at a time -----------
+ # A control port carries a number, and a name typed into a browser could
+ # never reach a plugin - until this: the interface puts the code of one
+ # character in WEB CHAR and then CHANGES WEB STROBE, and the plugin reads
+ # one character per change. Measured on the machine; the atom port, which
+ # would have been the obvious way, arrives nowhere on this firmware.
+ ("in", "web_char", "WEB CHAR", 0.0, 255.0, 0.0, None, ["lv2:integer"],
+  "One character from the web page, or an order: 1 clears what is being "
+  "typed, 2 stores it on the slot chosen, 8 rubs out the last letter, and "
+  "11 to 16 choose which USER slot the next name is for. Anything from 32 "
+  "to 126 is a character. Not meant to be turned by hand."),
+ ("in", "web_strobe", "WEB STROBE", 0.0, 255.0, 0.0, None, ["lv2:integer"],
+  "Changes once per character. It is the CHANGE that counts, not the value: "
+  "a port carries no events, so this is how one is made. Not meant to be "
+  "turned by hand."),
+ ("out", "name_slot", "NAME SLOT", 0.0, 6.0, 0.0, None, [],
+  "Output. Which USER slot the seven characters below belong to. The plugin "
+  "can only show one name at a time, so it walks the six, one per second: "
+  "the web page hears them all within six seconds and can list them by "
+  "name, whether they were typed there or on the pedal."),
+ ("out", "n1", "NAME 1", 0.0, 255.0, 32.0, None, [], "Output. First character of that slot's name."),
+ ("out", "n2", "NAME 2", 0.0, 255.0, 32.0, None, [], "Output. Second character."),
+ ("out", "n3", "NAME 3", 0.0, 255.0, 32.0, None, [], "Output. Third character."),
+ ("out", "n4", "NAME 4", 0.0, 255.0, 32.0, None, [], "Output. Fourth character."),
+ ("out", "n5", "NAME 5", 0.0, 255.0, 32.0, None, [], "Output. Fifth character."),
+ ("out", "n6", "NAME 6", 0.0, 255.0, 32.0, None, [], "Output. Sixth character."),
+ ("out", "n7", "NAME 7", 0.0, 255.0, 32.0, None, [], "Output. Seventh character."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for

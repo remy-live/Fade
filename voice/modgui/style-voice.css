@@ -71,6 +71,8 @@
     display: flex; align-items: center; gap: 7px;
     height: 52px; margin-bottom: 8px;
     padding: 0 10px;
+    /* the favourites drop out of this bar */
+    position: relative;
     border-radius: 9px;
     background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
     border: 1px solid rgba(255,255,255,.14);
@@ -113,15 +115,77 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     min-width: 92px;
 }
-.voice-prog-rename{{{cns}}} {
-    flex: 1; min-width: 120px;
-    background: #2a333e; color: #e9f0f7;
-    border: 1px solid rgba(255,255,255,.16); border-radius: 5px;
-    padding: 3px 7px; font-size: 12px;
-    font-family: inherit;
+
+/* ---------- the favourites ----------
+   The list mod-ui cannot draw: its PROGRAM menu reads the descriptor,
+   which says USER 1 to USER 6 and can say nothing else, because the
+   names are typed after the plugin was built. So the page keeps its own
+   list, and the plugin sends the six names back one per second. */
+
+.voice-fav-btn{{{cns}}} {
+    /* A fixed width, not a share of the row: the readout beside it holds
+       the name of the sound in force and must not be squeezed out by a
+       button that only opens a list. */
+    flex: 0 0 148px; text-align: center;
+    padding: 4px 8px; border-radius: 5px; cursor: pointer;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #d7e2ee;
+    background: linear-gradient(180deg, #5a6779 0%, #39424f 100%);
+    border: 1px solid #171c23;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    user-select: none;
 }
-.voice-prog-rename{{{cns}}}::placeholder { color: #7c8b9b; }
-.voice-prog-rename{{{cns}}}:disabled { opacity: .35; }
+.voice-fav-btn{{{cns}}}:hover { filter: brightness(1.15); }
+.voice-fav-btn{{{cns}}}.ouvert {
+    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+    color: #10251c; border-color: #12351f;
+}
+
+.voice-fav-panel{{{cns}}} {
+    display: none;
+    position: absolute; z-index: 20; left: 44px; top: 50px;
+    width: 268px; padding: 8px 10px 6px;
+    border-radius: 8px;
+    background: #10151c;
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 8px 18px rgba(0,0,0,.65);
+}
+.voice-fav-panel{{{cns}}}.ouvert { display: block; }
+.voice-fav-head{{{cns}}} {
+    font-size: 9px; letter-spacing: 2px; color: #8fa6ba; margin-bottom: 5px;
+}
+.voice-fav-row{{{cns}}} {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.voice-fav-pick{{{cns}}} {
+    flex: 1; min-width: 0;
+    padding: 3px 7px; border-radius: 4px; cursor: pointer;
+    font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #7fe3c4;
+    background: #1d232c;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.7);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    user-select: none;
+}
+.voice-fav-pick{{{cns}}}:hover { color: #10251c; background: #7fe3c4; }
+.voice-fav-pick{{{cns}}}.vide { color: #6b7c8d; }
+.voice-fav-pick{{{cns}}}.actif {
+    color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+}
+.voice-fav-name{{{cns}}} {
+    width: 96px;
+    background: #2a333e; color: #e9f0f7;
+    border: 1px solid rgba(255,255,255,.16); border-radius: 4px;
+    padding: 2px 6px; font-size: 11px; letter-spacing: 1px;
+    font-family: inherit; text-transform: uppercase;
+}
+.voice-fav-name{{{cns}}}::placeholder { color: #6b7c8d; text-transform: none; }
+.voice-fav-name{{{cns}}}.envoi { border-color: #7ff0b4; }
+.voice-fav-note{{{cns}}} {
+    margin-top: 5px; font-size: 8px; line-height: 1.5; color: #7c8b9b;
+}
+
+/* The two ports the names travel on carry no widget: they are written a
+   character at a time by the script, and there is nothing to turn. */
+.voice-wire{{{cns}}} { display: none; }
 
 .voice-slot{{{cns}}} { text-align: center; }
 .voice-slot-dial{{{cns}}} {

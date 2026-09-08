@@ -9,9 +9,13 @@
  *   - drives the two meters from the monitored outputs
  *   - walks the program list, and pulses SAVE and TAP, which are ports
  *     that only respond to being written
- *   - lets a USER slot be given a LONG name, which lives in this browser
- *     because no port carries text. The short one, picked from a list on
- *     the NAME control, lives in the slot and reaches the pedal.
+ *   - names the six favourites, and lists them BY NAME. mod-ui's own
+ *     PROGRAM menu reads the descriptor, which says USER 1 to USER 6 and
+ *     can never say anything else, because the names are typed long after
+ *     the plugin was built. So the names go DOWN one character at a time
+ *     on web_char/web_strobe, and come back UP on name_slot + n1..n7, one
+ *     slot per second, which is how this page learns what the pedal was
+ *     told to call them.
  *
  * What it deliberately does NOT do any more: move the knobs. The plugin
  * asks the host to do that through the kx change-request feature, so the
@@ -26,6 +30,13 @@ function (event, funcs) {
     var PREMIER_USER = 73;
     var DERNIER = 78;
     var N_SLOT = 6;
+    /* seven letters: the width of a footswitch label on the Dwarf, and
+       so the width of a name everywhere else */
+    var LONG_NOM = 7;
+    /* one code per tick down the wire. Slow on purpose: a control port
+       is a value the host resends when it feels like it, and a name typed
+       faster than the host relays it is a name that arrives in pieces. */
+    var PAS_MS = 120;
 
 
     function nombre(v) {
@@ -40,34 +51,20 @@ function (event, funcs) {
     function etat(icon) {
         var d = icon.data('voiceState');
         if (!d) {
-            d = { program: 0, ports: {} };
+            d = { program: 0, ports: {},
+                  /* the six names as this page last heard them, the queue
+                     of codes still to go down, and the strobe that makes
+                     the plugin look at each one */
+                  noms: {}, file: [], strobe: 0, tape: 0,
+                  echo: 0, echoVu: -1, lettres: [] };
             icon.data('voiceState', d);
         }
         return d;
     }
 
-    function cleNom(slot) {
-        return 'voice.userName.' + slot;
-    }
-
-    function cleMot(slot) {
-        return 'voice.userWord.' + slot;
-    }
-
-    function lireMot(slot) {
-        try {
-            var t = window.localStorage.getItem(cleMot(slot));
-            return t === null ? -1 : Number(t);
-        } catch (e) {
-            return -1;
-        }
-    }
-
-    function ecrireMot(slot, mot) {
-        try { window.localStorage.setItem(cleMot(slot), String(mot)); }
-        catch (e) { /* the plugin has the word anyway, in the slot */ }
-    }
-
+    /* The names live in the plugin, on the disc beside the bundle. What
+       is kept here is only a copy to draw with before the first echo has
+       come round - six seconds is a long time to look at an empty list. */
     function cleNom(slot) {
         return 'voice.userName.' + slot;
     }
@@ -83,29 +80,114 @@ function (event, funcs) {
     function ecrireNom(slot, nom) {
         try {
             window.localStorage.setItem(cleNom(slot), nom);
-        } catch (e) { /* private mode: the sound still saves, the name does not */ }
+        } catch (e) { /* private mode: the plugin still has the name */ }
     }
 
-    /* The name box only means anything on a USER slot. */
-    function majProgramme(icon, valeur, slotDest) {
-        var p = Math.round(borner(valeur, 0, DERNIER));
-        var estUser = p >= PREMIER_USER;
-        var champ = icon.find('.voice-prog-rename');
-        /* The box names the slot being LOOKED at when a USER program is
-           selected, and otherwise the slot SAVE would write to - which is
-           the one the player is about to name. */
-        var slot = estUser ? (p - PREMIER_USER + 1)
-                           : Math.round(borner(slotDest || 1, 1, N_SLOT));
+    /* Seven upper-case letters, spaces trimmed: the same shape the plugin
+       stores, so what is typed here and what comes back are comparable. */
+    function propre(nom) {
+        var t = String(nom === undefined || nom === null ? '' : nom)
+                .toUpperCase().replace(/[^ -~]/g, ' ');
+        if (t.length > LONG_NOM) { t = t.substring(0, LONG_NOM); }
+        return t.replace(/\s+$/, '');
+    }
 
-        champ.prop('disabled', false);
-        champ.val(lireNom(slot));
-        /* say WHICH slot the box is naming: with a factory sound
-           selected it names the one SAVE would write to, which is not
-           obvious from a box that just says "name this slot" */
-        champ.attr('placeholder', 'name for USER ' + slot);
-        if (estUser) {
-            icon.find('.voice-prog-value').text(lireNom(slot) || ('USER ' + slot));
+    function nomDe(d, slot) {
+        var n = d.noms[slot];
+        if (n === undefined) { n = lireNom(slot); }
+        return propre(n);
+    }
+
+    /* ---------------- a name, one character at a time ----------------
+       11..16 chooses the slot, 32..126 is a letter, 2 stores what has
+       been spelt. Nothing here is sent twice in one tick: the plugin
+       counts CHANGES of the strobe, and two changes inside one audio
+       block are one change as far as it is concerned. */
+    function envoyerNom(icon, slot, nom) {
+        var d = etat(icon);
+        var t = propre(nom);
+        var i;
+        d.file.push(10 + slot);
+        for (i = 0; i < t.length; i++) { d.file.push(t.charCodeAt(i)); }
+        d.file.push(2);
+        /* draw it straight away rather than waiting for the echo: the
+           plugin has it a fifth of a second from now, the page a further
+           six at worst, and a box that seems to forget what was typed
+           into it is a box nobody types into twice */
+        d.noms[slot] = t;
+        ecrireNom(slot, t);
+        majFavoris(icon);
+    }
+
+    function pomper(icon) {
+        var d = etat(icon);
+        if (!d.file.length) { return; }
+        var c = d.file.shift();
+        d.strobe = (d.strobe % 250) + 1;
+        /* the character first, then the strobe: the plugin reads the
+           character it finds when the strobe has moved */
+        funcs.set_port_value('web_char', c);
+        funcs.set_port_value('web_strobe', d.strobe);
+        icon.find('.voice-fav-name').toggleClass('envoi', d.file.length > 0);
+    }
+
+    /* ---------------- and the six coming back ----------------
+       name_slot says whose name is on n1..n7, and it moves once a second.
+       Only ports that CHANGE are delivered, so the letters of a name that
+       happens to match the last one never arrive: read the lot on a tick
+       instead, once the slot has stayed still for one. */
+    function ecouterEcho(icon) {
+        var d = etat(icon);
+        var slot = Math.round(borner(d.echo, 0, N_SLOT));
+        if (slot < 1) { return; }
+        if (slot !== d.echoVu) { d.echoVu = slot; return; }
+        var t = '', k;
+        for (k = 0; k < LONG_NOM; k++) {
+            var c = Math.round(nombre(d.lettres[k]));
+            t += (c >= 32 && c <= 126) ? String.fromCharCode(c) : ' ';
         }
+        t = propre(t);
+        /* a name still on its way down would be overwritten by the old
+           one coming back up */
+        if (d.file.length) { return; }
+        if (d.noms[slot] !== t) {
+            d.noms[slot] = t;
+            ecrireNom(slot, t);
+            majFavoris(icon);
+        }
+    }
+
+    /* The list, and the button that opens it, both say the names. */
+    function majFavoris(icon) {
+        var d = etat(icon);
+        var p = Math.round(borner(d.program, 0, DERNIER));
+        var courant = (p >= PREMIER_USER) ? (p - PREMIER_USER + 1) : 0;
+        for (var slot = 1; slot <= N_SLOT; slot++) {
+            var nom = nomDe(d, slot);
+            var pick = icon.find('.voice-fav-pick[data-slot="' + slot + '"]');
+            pick.text(nom || ('USER ' + slot))
+                .toggleClass('vide', !nom)
+                .toggleClass('actif', slot === courant);
+            /* never while it is being typed into: a box that rewrites
+               itself under the cursor cannot be used */
+            if (d.tape === slot) { continue; }
+            icon.find('.voice-fav-name[data-slot="' + slot + '"]').val(nom);
+        }
+        icon.find('.voice-fav-btn').text(
+            courant ? (nomDe(d, courant) || ('USER ' + courant)) : 'FAVORIS \u25BE');
+    }
+
+    /* mod-ui writes USER 1 to USER 6 into the readout, because that is
+       what the descriptor says. Say the name instead, wherever there is
+       one, and light the row of the list the sound came from. */
+    function majProgramme(icon, valeur) {
+        var d = etat(icon);
+        var p = Math.round(borner(valeur, 0, DERNIER));
+        if (p >= PREMIER_USER) {
+            var slot = p - PREMIER_USER + 1;
+            icon.find('.voice-prog-value').text(nomDe(d, slot) || ('USER ' + slot));
+        }
+        majFavoris(icon);
     }
 
     function majMetres(icon, symbol, valeur) {
@@ -160,6 +242,7 @@ function (event, funcs) {
     function brancher(icon) {
         if (icon.data('voiceBound')) { return; }
         icon.data('voiceBound', true);
+        var d0 = etat(icon);
 
         icon.find('.voice-prev').on('click', function (e) {
             if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
@@ -188,7 +271,6 @@ function (event, funcs) {
                takes SAVE before the program list on purpose, but two
                port writes in one audio block are still two things
                happening at once, and this one costs nothing to order. */
-            ecrireMot(slot, Math.round(nombre(d.ports['slot_name'])));
             pulse(icon, 'save', 'flash', icon.find('.voice-save'), function () {
                 var p = PREMIER_USER + slot - 1;
                 d.program = p;
@@ -212,27 +294,83 @@ function (event, funcs) {
             pulse(icon, 'tap', 'flash', icon.find('.voice-tap'));
         });
 
+        /* ---------------- the favourites ---------------- */
+
+        icon.find('.voice-fav-btn').on('click', function (e) {
+            if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
+            var d = etat(icon);
+            d.ouvert = !d.ouvert;
+            icon.find('.voice-fav-panel').toggleClass('ouvert', d.ouvert);
+            icon.find('.voice-fav-btn').toggleClass('ouvert', d.ouvert);
+            if (d.ouvert) { majFavoris(icon); }
+        });
+
+        /* A row of the list is the sound: click it and go there. */
+        icon.find('.voice-fav-pick').on('click', function (e) {
+            if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
+            var cible = e && e.target ? e.target : null;
+            var slot = cible && cible.getAttribute
+                     ? Math.round(borner(Number(cible.getAttribute('data-slot')), 1, N_SLOT))
+                     : 1;
+            var d = etat(icon);
+            d.program = PREMIER_USER + slot - 1;
+            funcs.set_port_value('program', d.program);
+            majProgramme(icon, d.program);
+        });
+
         /* Typing in the pedal must not drag it around the board. */
-        icon.find('.voice-prog-rename').on('mousedown', function (e) {
+        icon.find('.voice-fav-name').on('mousedown', function (e) {
             if (e && e.stopPropagation) { e.stopPropagation(); }
         });
-        icon.find('.voice-prog-rename').on('change', function (e) {
+        icon.find('.voice-fav-name').on('focus', function (e) {
             var d = etat(icon);
-            var p = Math.round(d.program);
-            var nom = (e && e.target && typeof e.target.value === 'string')
-                    ? e.target.value : '';
-            var slot = (p >= PREMIER_USER) ? (p - PREMIER_USER + 1)
-                     : Math.round(borner(d.ports['user_slot'] || 1, 1, N_SLOT));
-            ecrireNom(slot, nom);
-            if (p >= PREMIER_USER) {
-                icon.find('.voice-prog-value').text(nom || ('USER ' + slot));
-            }
+            var c = e && e.target ? e.target : null;
+            d.tape = c && c.getAttribute ? Number(c.getAttribute('data-slot')) : 0;
         });
+        icon.find('.voice-fav-name').on('blur', function () {
+            etat(icon).tape = 0;
+        });
+        /* ENTER, or leaving the box, sends the name down. Not every
+           keystroke: seven characters and a store, per letter typed,
+           would be a hundred writes for one word. */
+        icon.find('.voice-fav-name').on('change', function (e) {
+            var c = e && e.target ? e.target : null;
+            if (!c || !c.getAttribute) { return; }
+            var slot = Math.round(borner(Number(c.getAttribute('data-slot')), 1, N_SLOT));
+            var nom = propre(typeof c.value === 'string' ? c.value : '');
+            c.value = nom;
+            envoyerNom(icon, slot, nom);
+        });
+
+        /* The one clock this page runs: it walks the queue of characters
+           down to the plugin, and reads the six names coming back. */
+        d0.horloge = window.setInterval(function () {
+            pomper(icon);
+            ecouterEcho(icon);
+        }, PAS_MS);
     }
 
     function changement(icon, symbol, valeur) {
         var d = etat(icon);
         d.ports[symbol] = valeur;
+        /* the six names coming back: whose, and its letters */
+        if (symbol === 'name_slot') {
+            d.echo = nombre(valeur);
+            return;
+        }
+        if (symbol.length === 2 && symbol.charAt(0) === 'n'
+            && symbol >= 'n1' && symbol <= 'n7') {
+            d.lettres[symbol.charCodeAt(1) - 49] = nombre(valeur);
+            return;
+        }
+        /* Pick the strobe up where the pedalboard left it: starting again
+           from zero after a reload could land on the value the port
+           already holds, and a strobe that does not change types nothing. */
+        if (symbol === 'web_strobe') {
+            d.strobe = Math.round(borner(valeur, 0, 250));
+            return;
+        }
+        if (symbol === 'web_char') { return; }
         if (symbol === 'program_now') {
             /* The plugin cannot write its own PROGRAM port, so A/B - and
                anything else that moves the program in force - is only
@@ -242,16 +380,13 @@ function (event, funcs) {
             if (d.demarre && p !== Math.round(d.program)) {
                 d.program = p;
                 funcs.set_port_value('program', p);
-                majProgramme(icon, p, d.ports['user_slot']);
+                majProgramme(icon, p);
             }
             return;
         }
         if (symbol === 'program') {
-            var avant = d.program;
             d.program = nombre(valeur);
-            majProgramme(icon, valeur, d.ports['user_slot']);
-        } else if (symbol === 'user_slot') {
-            majProgramme(icon, d.program, valeur);
+            majProgramme(icon, valeur);
         }
         majMetres(icon, symbol, valeur);
         majSection(icon, symbol, valeur);
@@ -263,8 +398,8 @@ function (event, funcs) {
         for (var i = 0; i < ports.length; i++) {
             changement(event.icon, ports[i].symbol, ports[i].value);
         }
-        majProgramme(event.icon, etat(event.icon).program,
-                     etat(event.icon).ports['user_slot']);
+        majProgramme(event.icon, etat(event.icon).program);
+        majFavoris(event.icon);
         etat(event.icon).demarre = true;
     } else if (event.type === 'change') {
         changement(event.icon, event.symbol, event.value);

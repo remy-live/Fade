@@ -239,6 +239,65 @@ if (typeof fn === 'function') {
             ecrits.length === 1 && ecrits[0][0] === 'program'
             && ecrits[0][1] === premierUser2 + 2, JSON.stringify(ecrits));
 
+        /* --- the favourites: the list mod-ui cannot draw --- */
+        ecrits = [];
+        doc.querySelector('.voice-fav-btn')
+           .dispatchEvent(new dom.window.Event('click'));
+        say('the FAVORIS button opens the list',
+            doc.querySelector('.voice-fav-panel').classList.contains('ouvert'));
+        say('and writes no port doing it', ecrits.length === 0,
+            JSON.stringify(ecrits));
+
+        ecrits = [];
+        doc.querySelector('.voice-fav-pick[data-slot="4"]')
+           .dispatchEvent(new dom.window.Event('click'));
+        say('picking the fourth favourite goes to the fourth USER slot',
+            ecrits.length === 1 && ecrits[0][0] === 'program'
+            && ecrits[0][1] === premierUser2 + 3, JSON.stringify(ecrits));
+
+        /* A name typed here goes down web_char one character per change
+           of web_strobe: 10 + the slot, the letters, then 2 to store. */
+        ecrits = [];
+        const boite = doc.querySelector('.voice-fav-name[data-slot="2"]');
+        boite.value = 'chorus';
+        boite.dispatchEvent(new dom.window.Event('change'));
+        say('a typed name is upper-cased to the shape the plugin stores',
+            boite.value === 'CHORUS', boite.value);
+        say('and nothing goes down in the same breath as the typing',
+            ecrits.length === 0, JSON.stringify(ecrits));
+
+        /* the six coming back the other way, one slot per second */
+        fn({ type: 'change', icon: icon, symbol: 'name_slot', value: 5 }, funcs);
+        const mot = 'GROWL  ';
+        for (let k = 0; k < 7; k++) {
+            fn({ type: 'change', icon: icon, symbol: 'n' + (k + 1),
+                 value: mot.charCodeAt(k) }, funcs);
+        }
+
+        apres.push(() => {
+            const lettres = ecrits.filter(e => e[0] === 'web_char').map(e => e[1]);
+            const tops = ecrits.filter(e => e[0] === 'web_strobe').map(e => e[1]);
+            say('a name goes down as slot, letters, store',
+                JSON.stringify(lettres) ===
+                JSON.stringify([12, 67, 72, 79, 82, 85, 83, 2]),
+                JSON.stringify(lettres));
+            say('with a strobe that changes for every one of them',
+                tops.length === lettres.length
+                && tops.every((v, i) => i === 0 || v !== tops[i - 1]),
+                JSON.stringify(tops));
+            say('and the list says the name rather than USER 2',
+                doc.querySelector('.voice-fav-pick[data-slot="2"]')
+                   .textContent === 'CHORUS',
+                doc.querySelector('.voice-fav-pick[data-slot="2"]').textContent);
+            say('a name coming back up lands in its row',
+                doc.querySelector('.voice-fav-pick[data-slot="5"]')
+                   .textContent === 'GROWL',
+                doc.querySelector('.voice-fav-pick[data-slot="5"]').textContent);
+            say('and in its box, ready to be edited',
+                doc.querySelector('.voice-fav-name[data-slot="5"]')
+                   .value === 'GROWL');
+        });
+
     } catch (e) {
         say('the buttons that write ports work', false,
             e.message + ' | ' + (e.stack || '').split('\n')[1]);
@@ -299,12 +358,13 @@ const png = fs.readFileSync('modgui/thumbnail-voice.png');
 const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
 say('thumbnail is wide, not a sliver', w >= 2 * h, w + 'x' + h);
 
-/* The buttons pulse for 120 ms and only then move the program, so the
-   last few checks cannot be made before that has happened. */
+/* The buttons pulse for 120 ms and only then move the program, and a
+   name is sent one character every 120 ms, so the last few checks cannot
+   be made before all of that has happened. */
 setTimeout(() => {
     for (const f of differe) { f(); }
     console.log('  (the LOOK is checked by make_screenshot.js, which photographs it)');
     console.log(failed ? '\n*** THE WEB UI HAS PROBLEMS ***'
                        : '\nWeb UI: all checks pass.');
     process.exit(failed);
-}, 300);
+}, 1600);

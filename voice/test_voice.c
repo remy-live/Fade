@@ -54,6 +54,7 @@ static void verifie_entre(const char* quoi, double vu, double bas, double haut)
 #define MAXTXT 64
 typedef struct {
     int   n_label, n_value, n_unit, n_indic, n_led, n_popup;
+    char  dernier_popup[MAXTXT], dernier_popup_titre[MAXTXT];
     char  dernier_label[MAXTXT];
     char  dernier_value[MAXTXT];
     char  dernier_unit[MAXTXT];
@@ -121,7 +122,10 @@ static void f_indic(LV2_HMI_WidgetControl_Handle h, LV2_HMI_Addressing a, const 
 
 static void f_popup(LV2_HMI_WidgetControl_Handle h, LV2_HMI_Addressing a,
                     LV2_HMI_Popup_Style st, const char* t, const char* m)
-{ (void)h; (void)a; (void)st; (void)t; (void)m; ecran.n_popup++; }
+{ (void)h; (void)a; (void)st; ecran.n_popup++;
+  note_texte(t, 8); note_texte(m, 8);
+  strncpy(ecran.dernier_popup_titre, t, MAXTXT - 1);
+  strncpy(ecran.dernier_popup, m, MAXTXT - 1); }
 
 static LV2_HMI_WidgetControl widget = {
     (LV2_HMI_WidgetControl_Handle)0x1,
@@ -245,6 +249,10 @@ static int garder_disque = 0;
 
 static void tourner(Banc* b);
 static void silence(Banc* b);
+/* Changing favourite opens a popup, and while one shows nothing else is
+   sent to the screen - a label written after it erases it. Anything that
+   reads a label has to let it pass first. */
+static void passer_popup(Banc* b);
 
 static void ouvrir_avec(Banc* b, int stereo, double sr, uint32_t bloc,
                         const LV2_Feature* const* feats)
@@ -1997,7 +2005,7 @@ static void essai_ecran_programme(void)
     verifie_vrai("the list shows MANUAL to start with",
                  !strcmp(ecran.dernier_value, "MANUAL"));
     b.ctl[CTL_PROGRAM] = (float)programme_nomme("BALLAD");
-    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    passer_popup(&b);
     verifie_vrai("and the name of whatever is picked",
                  !strcmp(ecran.dernier_value, "BALLAD"));
     verifie_vrai("under its own label", !strcmp(ecran.dernier_label, "PROGRAM"));
@@ -2814,12 +2822,18 @@ static void essai_noms(void)
     adresser(&b, CTL_PROGRAM, TOUTES_CAPS, (void*)0xF1);
     /* past the SAVED flash, which owns the readout for a second */
     for (int k = 0; k < 500; ++k) { silence(&b); tourner(&b); }
+    memset(&ecran, 0, sizeof(ecran));
     b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);          /* USER 2 */
     for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("landing on a favourite says its name in a popup",
+                 ecran.n_popup > 0 && !strcmp(ecran.dernier_popup, "CHORUS"));
+    verifie_vrai("under a title that says what it is",
+                 !strcmp(ecran.dernier_popup_titre, "FAVORI"));
+    passer_popup(&b);
     verifie_vrai("a named slot says its name on the screen",
                  !strcmp(ecran.dernier_value, "CHORUS"));
     b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 4);          /* USER 5 */
-    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    passer_popup(&b);
     verifie_vrai("and an unnamed one still says USER 5",
                  !strcmp(ecran.dernier_value, "USER 5"));
 
@@ -2830,7 +2844,7 @@ static void essai_noms(void)
             (double)b.ctl[CTL_PROGRAM_NOW], (double)(N_PROGRAM + 1), 0.01);
     verifie("and brings its sound with it",
             (double)b.ctl[CTL_TIME_OUT], 210.0, 0.01);
-    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    passer_popup(&b);
     verifie_vrai("under the name it was given",
                  !strcmp(ecran.dernier_value, "CHORUS"));
 
@@ -2848,6 +2862,154 @@ static void essai_noms(void)
     b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
     verifie("with no slot filled it stays where it is",
             (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
+    fermer(&b);
+}
+
+/* A name typed in the web page. A control port carries a number, not a
+   word, so the word goes down one character at a time: the plugin looks
+   at web_char every time web_strobe CHANGES, and the change is what
+   counts - a pedalboard restoring the port to whatever it held would
+   otherwise type a character of its own every time the board opened.
+
+   And back the other way: the page has no way to ask what the six slots
+   are called, so the plugin says, one slot per second, on name_slot and
+   the seven letters beside it. */
+
+/* one code down the wire, the way the page sends it */
+static void taper(Banc* b, int code)
+{
+    b->ctl[CTL_WEB_CHAR]   = (float)code;
+    b->ctl[CTL_WEB_STROBE] = b->ctl[CTL_WEB_STROBE] + 1.0f;
+    silence(b); tourner(b);
+}
+
+static void taper_nom(Banc* b, int slot, const char* mot)
+{
+    taper(b, 10 + slot);
+    for (const char* p = mot; *p; ++p) { taper(b, (unsigned char)*p); }
+    taper(b, 2);
+}
+
+/* the name the plugin is showing the page at this instant */
+static void echo_lu(Banc* b, int* slot, char* nom)
+{
+    *slot = (int)(b->ctl[CTL_NAME_SLOT] + 0.5f);
+    for (int k = 0; k < 7; ++k) {
+        const int c = (int)(b->ctl[CTL_N1 + k] + 0.5f);
+        nom[k] = (c >= 32 && c <= 126) ? (char)c : ' ';
+    }
+    nom[7] = '\0';
+    for (int k = 6; k >= 0 && nom[k] == ' '; --k) { nom[k] = '\0'; }
+}
+
+static void essai_nom_web(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+
+    taper_nom(&b, 2, "chorus");
+    verifie_vrai("a name typed in the page reaches the slot",
+                 !strcmp(((Voice*)b.h)->user[1].name, "CHORUS"));
+
+    /* lower case is not on the screen of the pedal */
+    taper_nom(&b, 3, "Growl");
+    verifie_vrai("and arrives in capitals whatever was typed",
+                 !strcmp(((Voice*)b.h)->user[2].name, "GROWL"));
+
+    /* eight characters into seven: the eighth is dropped rather than
+       running over the end of the name */
+    taper_nom(&b, 4, "ABCDEFGHIJ");
+    verifie_vrai("a name too long for the screen is cut, not overrun",
+                 !strcmp(((Voice*)b.h)->user[3].name, "ABCDEFG"));
+
+    /* rubbing out */
+    taper(&b, 15);
+    taper(&b, 'S'); taper(&b, 'O'); taper(&b, 'L'); taper(&b, 'X');
+    taper(&b, 8);
+    taper(&b, 'O');
+    taper(&b, 2);
+    verifie_vrai("and backspace rubs out the last letter only",
+                 !strcmp(((Voice*)b.h)->user[4].name, "SOLO"));
+
+    /* the strobe is what counts, not the value: the same character sent
+       again with no change of strobe is not a second character */
+    b.ctl[CTL_WEB_CHAR] = (float)'Z';
+    for (int k = 0; k < 10; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("a character with no strobe behind it types nothing",
+                 !strcmp(((Voice*)b.h)->user[4].name, "SOLO"));
+
+    /* --- and the six coming back up, one per second --- */
+    int vus[N_USER + 1];
+    memset(vus, 0, sizeof(vus));
+    char trouve[N_USER + 1][8];
+    memset(trouve, 0, sizeof(trouve));
+    /* seven seconds: six slots, one a second, and one to spare */
+    for (int k = 0; k < 7 * 375; ++k) {
+        silence(&b); tourner(&b);
+        int slot; char nom[8];
+        echo_lu(&b, &slot, nom);
+        if (slot >= 1 && slot <= N_USER) {
+            vus[slot] = 1;
+            memcpy(trouve[slot], nom, sizeof(nom));
+        }
+    }
+    int tous = 1;
+    for (int u = 1; u <= N_USER; ++u) { if (!vus[u]) { tous = 0; } }
+    verifie_vrai("every slot comes round on the echo", tous);
+    verifie_vrai("and says the name it was given",
+                 !strcmp(trouve[2], "CHORUS") && !strcmp(trouve[3], "GROWL")
+                 && !strcmp(trouve[5], "SOLO"));
+    verifie_vrai("an empty slot echoes an empty name", !trouve[1][0]);
+    fermer(&b);
+
+    /* Nothing is typed during the two seconds a pedalboard takes to put
+       its ports back, or opening a board would rename a slot. Opened by
+       hand, WITHOUT the wait ouvrir() does. */
+    remove("voice-slots.bin");
+    banc_courant = &b;
+    memset(&b, 0, sizeof(b));
+    b.d = lv2_descriptor(0u);
+    b.h = b.d->instantiate(b.d, 48000.0, ".", features_map);
+    b.n_ch = 1u; b.n_audio = 2u; b.bloc = 128u; b.sr = 48000.0;
+    for (uint32_t c = 0; c < b.n_ch; ++c) {
+        b.in[c]  = (float*)calloc(b.bloc, sizeof(float));
+        b.out[c] = (float*)calloc(b.bloc, sizeof(float));
+        b.d->connect_port(b.h, c, b.in[c]);
+        b.d->connect_port(b.h, b.n_ch + c, b.out[c]);
+    }
+    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+        b.ctl[i] = ctl_spec[i].def;
+        b.d->connect_port(b.h, b.n_audio + (uint32_t)i, &b.ctl[i]);
+    }
+    b.d->activate(b.h);
+    b.ctl[CTL_WEB_CHAR]   = 11.0f;
+    b.ctl[CTL_WEB_STROBE] = 4.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_WEB_CHAR]   = (float)'X';
+    b.ctl[CTL_WEB_STROBE] = 5.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_WEB_CHAR]   = 2.0f;
+    b.ctl[CTL_WEB_STROBE] = 6.0f;
+    silence(&b); tourner(&b);
+    verifie_vrai("a board being restored types nothing at all",
+                 !((Voice*)b.h)->user[0].name[0]);
+
+    /* and two seconds later the same three codes do type */
+    while (((Voice*)b.h)->settle_left) { silence(&b); tourner(&b); }
+    taper_nom(&b, 1, "OK");
+    verifie_vrai("two seconds later the page can type again",
+                 !strcmp(((Voice*)b.h)->user[0].name, "OK"));
+    fermer(&b);
+
+    /* A name is a thing the player typed: it goes to the disc the moment
+       it is stored, like a save, rather than waiting for the pedalboard
+       to be saved - which on stage may be never. */
+    garder_disque = 1;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    garder_disque = 0;
+    verifie_vrai("and the name is still there in a fresh instance",
+                 !strcmp(((Voice*)b.h)->user[0].name, "OK"));
     fermer(&b);
 }
 
@@ -2952,6 +3114,20 @@ static void essai_hote(void)
    over the course). Two clicks closer than FLICK_BLOCKS are a flick and
    count five, so a plain click is spaced out - a test that flicks by
    accident measures the wrong thing. */
+static void passer_popup(Banc* b)
+{
+    Voice* v = (Voice*)b->h;
+    /* A program written to the port is only seen when a block runs, and
+       the popup goes out a screen pass later: wait for it to appear, */
+    for (int k = 0; k < 200 && !v->popup_want && !v->popup_freeze; ++k) {
+        silence(b); tourner(b);
+    }
+    /* then for the two seconds during which it owns the screen, */
+    while (v->popup_want || v->popup_freeze) { silence(b); tourner(b); }
+    /* then long enough for the screen to be painted again. */
+    for (int k = 0; k < 40; ++k) { silence(b); tourner(b); }
+}
+
 static void cran_espace(Banc* b, int ctl, int sens, int vite)
 {
     float v = b->ctl[ctl] + (float)sens * 0.005f;
@@ -3460,6 +3636,7 @@ int main(int argc, char** argv)
     printf("Mute:\n");                      essai_mute();
     printf("A/B:\n");                       essai_ab();
     printf("Names, and the cycle switch:\n"); essai_noms();
+    printf("A name typed in the page:\n"); essai_nom_web();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("Waking up:\n");                 essai_reveil();

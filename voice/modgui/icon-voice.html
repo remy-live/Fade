@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 12</div>
+    <div class="voice-build{{{cns}}}">GUI 13</div>
 
     <!-- ---------------- the program list ---------------- -->
     <div class="voice-prog{{{cns}}}">
@@ -19,9 +19,8 @@
             <div class="voice-prog-value{{{cns}}} voice-prog-value"
                  mod-role="input-control-value"
                  mod-port-symbol="program"></div>
-            <input class="voice-prog-rename{{{cns}}} voice-prog-rename" type="text"
-                   maxlength="16" placeholder="name this slot"
-                   title="A long name for this USER slot. Kept in THIS browser only - the word on the right is the one that reaches the pedal.">
+            <div class="voice-fav-btn{{{cns}}} voice-fav-btn"
+                 title="The six favourites, by name. Click one to go to it, type in a box to rename it.">FAVORIS &#9662;</div>
         </div>
 
         <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
@@ -30,6 +29,53 @@
              mod-role="input-control-port"
              mod-port-symbol="program"
              mod-widget-rotation="270"></div>
+
+        <!-- The favourites, by name. mod-ui's own PROGRAM list can only
+             ever say USER 1 to USER 6 - the names live in the plugin, not
+             in the descriptor - so the page keeps its own list, fed by
+             the six names the plugin sends back one per second. -->
+        <div class="voice-fav-panel{{{cns}}} voice-fav-panel">
+            <div class="voice-fav-head{{{cns}}}">FAVORIS</div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="1">USER 1</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="1"
+                       type="text" maxlength="7" placeholder="USER 1">
+            </div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="2">USER 2</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="2"
+                       type="text" maxlength="7" placeholder="USER 2">
+            </div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="3">USER 3</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="3"
+                       type="text" maxlength="7" placeholder="USER 3">
+            </div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="4">USER 4</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="4"
+                       type="text" maxlength="7" placeholder="USER 4">
+            </div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="5">USER 5</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="5"
+                       type="text" maxlength="7" placeholder="USER 5">
+            </div>
+            <div class="voice-fav-row{{{cns}}}">
+                <div class="voice-fav-pick{{{cns}}} voice-fav-pick" data-slot="6">USER 6</div>
+                <input class="voice-fav-name{{{cns}}} voice-fav-name" data-slot="6"
+                       type="text" maxlength="7" placeholder="USER 6">
+            </div>
+            <div class="voice-fav-note{{{cns}}}">Seven letters, the width of the
+                pedal's screen. ENTER stores the name in the slot, on the disc
+                and on the footswitch.</div>
+        </div>
+
+        <!-- The two ports a name travels on: one character per change of
+             the strobe. Written by the script only - there is nothing here
+             to turn by hand, but every control input has to be reachable. -->
+        <div class="voice-wire{{{cns}}}" mod-port-symbol="web_char"></div>
+        <div class="voice-wire{{{cns}}}" mod-port-symbol="web_strobe"></div>
     </div>
 
     <!-- ---------------- storing, comparing, cutting ---------------- -->
@@ -53,7 +99,7 @@
             <div class="voice-slot-value{{{cns}}}"
                  mod-role="input-control-value"
                  mod-port-symbol="slot_name"></div>
-            <div class="voice-slot-cap{{{cns}}}">ON PEDAL</div>
+            <div class="voice-slot-cap{{{cns}}}">WORD</div>
         </div>
 
         <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"

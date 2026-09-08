@@ -23,7 +23,15 @@
                                 [ lv2:symbol "program_now" ] ,
                                 [ lv2:symbol "param_now" ] ,
                                 [ lv2:symbol "notches" ] ,
-                                [ lv2:symbol "time_out" ] ;
+                                [ lv2:symbol "time_out" ] ,
+                                [ lv2:symbol "name_slot" ] ,
+                                [ lv2:symbol "n1" ] ,
+                                [ lv2:symbol "n2" ] ,
+                                [ lv2:symbol "n3" ] ,
+                                [ lv2:symbol "n4" ] ,
+                                [ lv2:symbol "n5" ] ,
+                                [ lv2:symbol "n6" ] ,
+                                [ lv2:symbol "n7" ] ;
     ] .
 
 <http://remy-live.github.io/lv2/voice#stereo>
@@ -45,5 +53,13 @@
                                 [ lv2:symbol "program_now" ] ,
                                 [ lv2:symbol "param_now" ] ,
                                 [ lv2:symbol "notches" ] ,
-                                [ lv2:symbol "time_out" ] ;
+                                [ lv2:symbol "time_out" ] ,
+                                [ lv2:symbol "name_slot" ] ,
+                                [ lv2:symbol "n1" ] ,
+                                [ lv2:symbol "n2" ] ,
+                                [ lv2:symbol "n3" ] ,
+                                [ lv2:symbol "n4" ] ,
+                                [ lv2:symbol "n5" ] ,
+                                [ lv2:symbol "n6" ] ,
+                                [ lv2:symbol "n7" ] ;
     ] .

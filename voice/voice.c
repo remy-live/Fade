@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD12_AARCH64_20260905";
+static const volatile char build_tag[] = "VOICE_BUILD13_AARCH64_20260908";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -384,7 +384,18 @@ typedef enum {
     CTL_ENC_PARAM     = 58,  /* encoder 2: the parameter, then the letter */
     CTL_ENC_VALUE     = 59,  /* encoder 3: the value, then yes or no */
     CTL_PARAM_NOW     = 60,  /* output: which parameter the page points at */
-    CTL_COUNT         = 61
+    /* --- a name typed in the web page, one character at a time --- */
+    CTL_WEB_CHAR      = 61,  /* a character, or an order */
+    CTL_WEB_STROBE    = 62,  /* changes once per character */
+    CTL_NAME_SLOT     = 63,  /* output: whose name the seven below are */
+    CTL_N1            = 64,  /* output: and the name itself, in ASCII */
+    CTL_N2            = 65,
+    CTL_N3            = 66,
+    CTL_N4            = 67,
+    CTL_N5            = 68,
+    CTL_N6            = 69,
+    CTL_N7            = 70,
+    CTL_COUNT         = 71
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -470,6 +481,16 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "enc_param",      0.0f,    1.0f,     0.5f },
     { "enc_value",      0.0f,    1.0f,     0.5f },
     { "param_now",      0.0f,   64.0f,     0.0f },
+    { "web_char",       0.0f,  255.0f,     0.0f },
+    { "web_strobe",     0.0f,  255.0f,     0.0f },
+    { "name_slot",      0.0f,    6.0f,     0.0f },
+    { "n1",             0.0f,  255.0f,    32.0f },
+    { "n2",             0.0f,  255.0f,    32.0f },
+    { "n3",             0.0f,  255.0f,    32.0f },
+    { "n4",             0.0f,  255.0f,    32.0f },
+    { "n5",             0.0f,  255.0f,    32.0f },
+    { "n6",             0.0f,  255.0f,    32.0f },
+    { "n7",             0.0f,  255.0f,    32.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -949,6 +970,13 @@ typedef struct {
     int ab_prev;
     int next_prev;
     uint32_t save_flash;      /* samples left to say SAVED on the screen */
+    /* --- the popup: the name, big, when the favourite changes --- */
+    int      popup_want;      /* a popup is owed, on the slot that caused it */
+    int      popup_slot;      /* which screen slot to open it on */
+    char     popup_text[NAME_LEN + 1];
+    uint32_t popup_freeze;    /* samples during which nothing else is sent:
+                                 a label written after a popup erases it */
+    size_t   hmi_size;        /* how much of the widget control the host has */
     int fx2_prev;
 
     /* --- the two host services that make a save visible and durable --- */
@@ -969,6 +997,12 @@ typedef struct {
     uint32_t page_blink;       /* the cursor, on and off */
     uint32_t blocks;           /* blocks since instantiate, for the page */
     float    slot_name_prev;   /* the NAME list, followed by its changes */
+    /* --- a name typed in the web page --- */
+    float    strobe_prev;      /* the strobe, followed by its CHANGES */
+    int      web_slot;         /* which slot the typing is for, 0 for none */
+    char     web_buf[NAME_LEN + 1];
+    int      echo_slot;        /* which name is being shown to the page */
+    uint32_t echo_left;        /* samples until the next one */
 
     float    ctl_ask[CTL_COUNT];    /* the value a request asked the host for */
     uint8_t  ctl_asked[CTL_COUNT];  /* ...and whether one is still in flight */
@@ -1404,6 +1438,8 @@ instantiate(const LV2_Descriptor*     descriptor,
         for (int i = 0; features[i]; ++i) {
             if (!strcmp(features[i]->URI, LV2_HMI__WidgetControl)) {
                 self->hmi = (const LV2_HMI_WidgetControl*)features[i]->data;
+                /* popup_message is only there on a big enough struct */
+                self->hmi_size = self->hmi ? self->hmi->size : 0u;
             } else if (!strcmp(features[i]->URI, LV2_URID__map)) {
                 self->map = (LV2_URID_Map*)features[i]->data;
             } else if (!strcmp(features[i]->URI,
@@ -1515,6 +1551,17 @@ static void write_value(char* buf, size_t size, float v, int dec)
         if (dec == 2 && frac < 10 && n < size - 1) { buf[n++] = '0'; }
         write_int(buf + n, size - n, frac);
     }
+}
+
+/* The same seven characters, padded rather than trimmed: the editors
+   need somewhere to write, and name_set() takes the trailing spaces off
+   again on the way back. */
+static void name_pad(char* dst, const char* src)
+{
+    int i = 0;
+    while (i < NAME_LEN && src[i] != '\0') { dst[i] = src[i]; ++i; }
+    while (i < NAME_LEN) { dst[i] = ' '; ++i; }
+    dst[NAME_LEN] = '\0';
 }
 
 /* A name of nothing but spaces is no name at all. */
@@ -1655,7 +1702,13 @@ static int flicked(Voice* self, int e, int n)
    The program in force is NOT the port: A/B moves one and not the other. */
 static void program_enter(Voice* self, int prog)
 {
-    if (prog != self->program) { self->program_ab = self->program; }
+    if (prog != self->program) {
+        self->program_ab = self->program;
+        /* Say it on the screen, big: on a stage the name of what you have
+           just landed on is the one thing worth reading, and a label in
+           the corner of a footswitch is not it. */
+        self->popup_want = 1;
+    }
     self->program = prog;
     /* A new program starts clean: nothing is the player's yet, and the
        values it is about to install must not read as changes. */
@@ -1805,6 +1858,11 @@ activate(LV2_Handle instance)
     self->drive_out         = 0.0f;
     self->drive_fix         = 1.0f;
     self->slot_name_prev    = ctl_read(self, CTL_SLOT_NAME);
+    self->strobe_prev       = ctl_read(self, CTL_WEB_STROBE);
+    self->web_slot          = 0;
+    self->echo_slot         = 0;
+    self->echo_left         = 0u;
+    name_set(self->web_buf, "");
     /* never zero: a window of the kind "blocks since the last detent" is
        wide open for the first moments of a plugin's life, and the first
        turn of a knob would be read as a flick */
@@ -1882,6 +1940,9 @@ activate(LV2_Handle instance)
     self->fx2_prev        = (ctl_read(self, CTL_FX_2) > 0.5f) ? 1 : 0;
     self->save_prev       = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
     self->save_flash      = 0u;
+    self->popup_want      = 0;
+    self->popup_slot      = (int)SLOT_NEXT_USER;
+    self->popup_freeze    = 0u;
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
@@ -1958,6 +2019,41 @@ paint(Voice* self, int force)
     const LV2_HMI_WidgetControl* hmi = self->hmi;
     if (!hmi) {
         return;
+    }
+
+    /* A popup is erased by the next label written anywhere on the screen,
+       so while one is showing nothing else is sent at all. Two seconds,
+       measured on the machine by the plugin this was learnt from. */
+    if (self->popup_freeze) {
+        return;
+    }
+
+    /* One is owed: send it, and say nothing else until it has been read.
+       Never from inside addressed() - that runs on the host's thread
+       while the host may be writing to the same serial link, and two
+       writers interleaved make an invalid command. */
+    if (self->popup_want && hmi->popup_message
+        && self->hmi_size >= LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE) {
+        int s = self->popup_slot;
+        LV2_HMI_Addressing a =
+            self->addr[self->n_audio + (uint32_t)slot_ctl_of(s)];
+        if (!a) {                       /* whatever is addressed will do */
+            for (s = 0; s < (int)SLOT_COUNT; ++s) {
+                a = self->addr[self->n_audio + (uint32_t)slot_ctl_of(s)];
+                if (a) { break; }
+            }
+        }
+        self->popup_want = 0;
+        if (a) {
+            char nom[NAME_LEN + 1];
+            name_pad(nom, program_label(self, self->program, nom, sizeof(nom)));
+            name_set(nom, nom);
+            hmi->popup_message(hmi->handle, a, LV2_HMI_Popup_Style_Normal,
+                               "FAVORI", nom);
+            self->popup_freeze = (uint32_t)(self->rate * 2.0f);
+            forget_caches(self);        /* rebuild the screen afterwards */
+            return;
+        }
     }
 
     /* The time in force: the tap owns it until the knob moves. */
@@ -2497,6 +2593,62 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (prog != self->program_port) {
         self->program_port = prog;
         program_enter(self, prog);
+    }
+
+    /* ---------------- a name typed in the web page ----------------
+       One character per CHANGE of the strobe. A control port carries no
+       events, so a change is how one is made - and it is the change that
+       counts, never the value, or a pedalboard restoring the port would
+       type a character of its own at every opening. That is also why
+       nothing here counts during the first two seconds.
+
+       The orders are small numbers: 1 clears, 2 stores what has been
+       typed onto the chosen slot, 8 rubs out, 11 to 16 choose the slot.
+       Everything from 32 to 126 is a letter. */
+    {
+        const float st = ctl_read(self, CTL_WEB_STROBE);
+        if (st != self->strobe_prev) {
+            self->strobe_prev = st;
+            if (self->settle_left == 0u) {
+                const int c = (int)(ctl_read(self, CTL_WEB_CHAR) + 0.5f);
+                if (c >= 11 && c <= 10 + N_USER) {
+                    self->web_slot = c - 10;       /* this name is for slot n */
+                    name_set(self->web_buf, "");
+                } else if (c == 1) {
+                    name_set(self->web_buf, "");
+                } else if (c == 2) {
+                    const int u = self->web_slot - 1;
+                    if (u >= 0 && u < N_USER) {
+                        name_set(self->user[u].name, self->web_buf);
+                        if (self->sched && self->sched->schedule_work) {
+                            const uint32_t tag = 1u;
+                            self->sched->schedule_work(self->sched->handle,
+                                                       sizeof(tag), &tag);
+                        }
+                    }
+                } else if (c == 8 || c == 127) {
+                    int k = NAME_LEN - 1;
+                    while (k >= 0 && (self->web_buf[k] == ' '
+                                      || self->web_buf[k] == '\0')) { --k; }
+                    if (k >= 0) {
+                        char tmp[NAME_LEN + 1];
+                        name_pad(tmp, self->web_buf);
+                        tmp[k] = ' ';
+                        name_set(self->web_buf, tmp);
+                    }
+                } else if (c >= 32 && c <= 126) {
+                    char tmp[NAME_LEN + 1];
+                    int k;
+                    name_pad(tmp, self->web_buf);
+                    for (k = 0; k < NAME_LEN && tmp[k] != ' '; ++k) { }
+                    if (k < NAME_LEN) {
+                        tmp[k] = (char)((c >= 'a' && c <= 'z')
+                                        ? c - 'a' + 'A' : c);
+                        name_set(self->web_buf, tmp);
+                    }
+                }
+            }
+        }
     }
 
     /* The NAME list in the web page is a shortcut into the same buffer
@@ -3534,6 +3686,31 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self->ctl_out[CTL_FX_STATE]) {
         *self->ctl_out[CTL_FX_STATE] = self->fx_state ? 1.0f : 0.0f;
     }
+    /* The six names, shown to the web page one per second in turn: the
+       plugin can only put one on its outputs, and the page needs all six
+       to list them. Whoever typed a name - the browser or the pedal - it
+       comes back the same way, so the list is never wrong, only ever a
+       few seconds behind. */
+    if (self->echo_left <= n_samples) {
+        self->echo_left = (uint32_t)self->rate;          /* one per second */
+        self->echo_slot = (self->echo_slot % N_USER) + 1;
+    } else {
+        self->echo_left -= n_samples;
+    }
+    if (self->ctl_out[CTL_NAME_SLOT]) {
+        *self->ctl_out[CTL_NAME_SLOT] = (float)self->echo_slot;
+    }
+    {
+        char nom[NAME_LEN + 1];
+        const int u = self->echo_slot - 1;
+        name_pad(nom, (u >= 0 && u < N_USER) ? self->user[u].name : "");
+        for (int k = 0; k < NAME_LEN; ++k) {
+            if (self->ctl_out[CTL_N1 + k]) {
+                *self->ctl_out[CTL_N1 + k] = (float)(unsigned char)nom[k];
+            }
+        }
+    }
+
     if (self->ctl_out[CTL_PARAM_NOW]) {
         *self->ctl_out[CTL_PARAM_NOW] = (float)self->page_param;
     }
@@ -3560,6 +3737,10 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->forget_left -= n_samples;
         }
 
+        if (self->popup_freeze) {
+            self->popup_freeze = (self->popup_freeze > n_samples)
+                               ? self->popup_freeze - n_samples : 0u;
+        }
         if (self->screen_left <= n_samples || force) {
             self->screen_left = self->screen_period;
             /* the cursor of the name editor: half a second lit, half

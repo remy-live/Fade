@@ -163,17 +163,20 @@ that means "yes" becomes impossible to say.
 | **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
-| **NAME** | A word from a list of thirty-two, as a shortcut: moving it fills the same name buffer the pedal types into, and SAVE writes it onto the slot. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. |
+| **NAME** (shown as **WORD**) | A word from a list of thirty-two, as a shortcut: moving it fills the same name buffer the pedal types into, and SAVE writes it onto the slot. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. |
+| **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: one character per *change* of the strobe. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
 
-And six outputs, for the screen, the web UI and anything else that
+And the outputs, for the screen, the web UI and anything else that
 watches: **GR** (compressor reduction in dB), **LEVEL** (peak out),
-**GATE OPEN**, **FX STATE**, **PROGRAM NOW**, **NOTCHES** and **TIME**
-(the delay time actually in force).
+**GATE OPEN**, **FX STATE**, **PROGRAM NOW**, **PARAM NOW**, **NOTCHES**,
+**TIME** (the delay time actually in force), and **NAME SLOT** with
+**N1**–**N7**, which carry the six slot names back up to the page one per
+second.
 
 Those last two exist for the same reason Fade's STATE does: TOGGLE and
 TRIGGER drive one internal state, and TAP overrides a knob, but an LV2
@@ -342,12 +345,31 @@ write the same one:
 | | |
 |---|---|
 | **The pedal** | ENC 3 on NAME opens the editor and you type it, letter by letter. Nothing else needed: no browser, no computer. |
-| **NAME**, the list | Thirty-two ready-made words — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD… Moving it fills the buffer in one go; SAVE writes it. |
-| The text box | A long name for the web UI, kept **in that browser**, which the pedal cannot show. It says which slot it is naming, because with a factory sound selected it names the slot SAVE would write to. |
+| **The FAVORIS list**, in the web UI | Six boxes, one per slot. Type a name, press ENTER, and it is in the slot, on the disc and on the footswitch a fifth of a second later — no SAVE needed, because a name is not a sound. |
+| **WORD**, the list | Thirty-two ready-made words — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD… Moving it fills the buffer in one go; SAVE writes it. A shortcut left in place from before either editor existed. |
+
+**The FAVORIS list.** mod-ui's own PROGRAM menu reads the descriptor, and
+the descriptor was written before you named anything: it can only ever say
+USER 1 to USER 6. So the web UI keeps its own list, and it says the names.
+Click **FAVORIS** and the six are there — click one to go to it, type in
+the box beside it to rename it. The button itself carries the name of the
+sound in force.
+
+A name has no port to travel on: a control port carries a number, not a
+word. So it goes down one character at a time — **WEB CHAR** holds the
+character, **WEB STROBE** changes to say "look at it now", and the plugin
+counts the *changes*, never the value, or a pedalboard putting its ports
+back would type a character of its own every time you opened it. Which is
+also why nothing is typed during the first two seconds. Coming back the
+other way, the plugin publishes the six names on **NAME SLOT** and
+**N1**–**N7**, one slot per second, and that is how the page learns what
+the pedal was told to call them — whoever typed them.
 
 **USER ▶** — the cycle switch — steps to the next USER slot that has
 something in it, skipping the empty ones, and the screen says where you
-landed *by your name for it*. One footswitch, your own sounds, in order.
+landed *by your name for it*, in a **popup** that holds the screen for two
+seconds so you can read it with your hands full. One footswitch, your own
+sounds, in order.
 
 If you want a sound named everywhere and in your own words, add it to
 `PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2
