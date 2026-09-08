@@ -266,13 +266,32 @@ if (typeof fn === 'function') {
         say('and nothing goes down in the same breath as the typing',
             ecrits.length === 0, JSON.stringify(ecrits));
 
-        /* the six coming back the other way, one slot per second */
-        fn({ type: 'change', icon: icon, symbol: 'name_slot', value: 5 }, funcs);
-        const mot = 'GROWL  ';
-        for (let k = 0; k < 7; k++) {
-            fn({ type: 'change', icon: icon, symbol: 'n' + (k + 1),
-                 value: mot.charCodeAt(k) }, funcs);
-        }
+        /* The echo is a snapshot the host relays when it feels like it,
+           so straight after typing it can still be carrying the name
+           from before - which is how a box rewrites itself under the
+           player. The slot just named ignores it for two seconds. */
+        const echo = (slot, mot) => {
+            fn({ type: 'change', icon: icon, symbol: 'name_slot',
+                 value: slot }, funcs);
+            const sept = (mot + '       ').substring(0, 7);
+            for (let k = 0; k < 7; k++) {
+                fn({ type: 'change', icon: icon, symbol: 'n' + (k + 1),
+                     value: sept.charCodeAt(k) }, funcs);
+            }
+        };
+        echo(2, 'VERSE');
+
+        /* Looked at once the eight codes of CHORUS have all gone down -
+           until then the queue itself holds the echo off - but while the
+           two seconds are still running. */
+        setTimeout(() => {
+            say('a stale echo does not undo what was just typed',
+                doc.querySelector('.voice-fav-pick[data-slot="2"]')
+                   .textContent === 'CHORUS',
+                doc.querySelector('.voice-fav-pick[data-slot="2"]').textContent);
+            /* and then the six coming back, one slot per second */
+            echo(5, 'GROWL');
+        }, 1250);
 
         apres.push(() => {
             const lettres = ecrits.filter(e => e[0] === 'web_char').map(e => e[1]);
@@ -367,4 +386,4 @@ setTimeout(() => {
     console.log(failed ? '\n*** THE WEB UI HAS PROBLEMS ***'
                        : '\nWeb UI: all checks pass.');
     process.exit(failed);
-}, 1600);
+}, 2300);

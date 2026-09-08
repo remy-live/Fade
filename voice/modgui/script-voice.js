@@ -56,6 +56,7 @@ function (event, funcs) {
                      of codes still to go down, and the strobe that makes
                      the plugin look at each one */
                   noms: {}, file: [], strobe: 0, tape: 0,
+                  tic: 0, garde: {},
                   echo: 0, echoVu: -1, lettres: [] };
             icon.data('voiceState', d);
         }
@@ -116,11 +117,19 @@ function (event, funcs) {
            into it is a box nobody types into twice */
         d.noms[slot] = t;
         ecrireNom(slot, t);
+        /* And do not believe the echo about THIS slot for a moment: it
+           is a snapshot the host relays when it feels like it, so the
+           name on its way UP may have been read before the one going
+           DOWN arrived, and the box would rewrite itself with what it
+           said a second ago. Two seconds is longer than that round trip.
+           Per slot, so naming one does not deafen the page to the rest. */
+        d.garde[slot] = d.tic + Math.ceil(2000 / PAS_MS);
         majFavoris(icon);
     }
 
     function pomper(icon) {
         var d = etat(icon);
+        d.tic++;
         if (!d.file.length) { return; }
         var c = d.file.shift();
         d.strobe = (d.strobe % 250) + 1;
@@ -147,9 +156,10 @@ function (event, funcs) {
             t += (c >= 32 && c <= 126) ? String.fromCharCode(c) : ' ';
         }
         t = propre(t);
-        /* a name still on its way down would be overwritten by the old
-           one coming back up */
+        /* a name still on its way down, or only just arrived, would be
+           overwritten by the old one coming back up */
         if (d.file.length) { return; }
+        if ((d.garde[slot] || 0) > d.tic) { return; }
         if (d.noms[slot] !== t) {
             d.noms[slot] = t;
             ecrireNom(slot, t);

@@ -163,7 +163,7 @@ that means "yes" becomes impossible to say.
 | **FX 2** | A second switch on the same state, for a second footswitch or a MIDI controller — a port can only take one addressing. Either switch moving flips the state. |
 | **FX TRIGGER** | One pulse flips the same state. Meant for MIDI. |
 | **MUTE** | Cuts the output over 20 ms and lets it back the same way. Not the gate, which listens, and not FX, which shapes: this one stops the sound, which is what you want between two songs. The tails go on decaying behind it, so letting go does not release a frozen reverb. |
-| **NAME** (shown as **WORD**) | A word from a list of thirty-two, as a shortcut: moving it fills the same name buffer the pedal types into, and SAVE writes it onto the slot. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. |
+| **WORD** | A word from a list of thirty-two. Turning it names the slot USER SLOT points at, there and then, and puts it on the disc — it does not wait for a SAVE, and SAVE does not read it. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. Nothing is named during the settle window, or opening a pedalboard would rename a slot every time. |
 | **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: one character per *change* of the strobe. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
@@ -346,7 +346,17 @@ write the same one:
 |---|---|
 | **The pedal** | ENC 3 on NAME opens the editor and you type it, letter by letter. Nothing else needed: no browser, no computer. |
 | **The FAVORIS list**, in the web UI | Six boxes, one per slot. Type a name, press ENTER, and it is in the slot, on the disc and on the footswitch a fifth of a second later — no SAVE needed, because a name is not a sound. |
-| **WORD**, the list | Thirty-two ready-made words — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD… Moving it fills the buffer in one go; SAVE writes it. A shortcut left in place from before either editor existed. |
+| **WORD**, the list | Thirty-two ready-made words — INTRO, VERSE, CHORUS, SOLO, SONG 1, BALLAD… For whoever would rather turn one knob than spell anything. It names the slot **USER SLOT** points at the moment it is turned, and writes it to the disc; USER, at the top, means leave the name alone. |
+
+**SAVE never renames.** It stores the sound into the slot and nothing else.
+That was a real bug, and this is what it looked like: the WORD list and the
+pedal's editor shared one buffer, and SAVE stamped that buffer onto whatever
+slot it wrote. So a word picked once — or restored with a pedalboard, or
+merely passed over while browsing the favourites on the pedal — sat there for
+the rest of the session and renamed every slot saved afterwards. You typed
+CHORUS and it came back VERSE, hours later, with no visible cause. Saving a
+sound is not renaming it; the two editors write the slot themselves, when you
+tell them to.
 
 **The FAVORIS list.** mod-ui's own PROGRAM menu reads the descriptor, and
 the descriptor was written before you named anything: it can only ever say
@@ -391,7 +401,10 @@ mod-ui's default one drew switch states in a violet you could not see. The
 section a switch belongs to lights its border too.
 
 The bar across the top is the program list: arrows to walk it, the name of
-what is selected, a text box that names a USER slot, and SAVE. The
+what is selected, and **FAVORIS**, which drops the six USER slots by name —
+click one to go to it, type in the box beside it to rename it. The second bar
+is where a sound is stored, compared and cut: SAVE TO, WORD, SAVE, A/B,
+USER ▶, the three encoder dials of the pedal page, and MUTE. The
 compressor box carries a gain-reduction meter and the levels box an output
 meter, both fed by the plugin's own outputs. TAP is a button as well as a
 port.

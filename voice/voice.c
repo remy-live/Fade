@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD13_AARCH64_20260908";
+static const volatile char build_tag[] = "VOICE_BUILD14_AARCH64_20260908";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -2548,13 +2548,15 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (int k = 0; k < (int)SW_COUNT; ++k) {
             self->user[u].sw[k] = (uint8_t)self->sw_state[k];
         }
-        /* The name comes from the buffer, which the pedal fills letter by
-           letter and the web NAME list fills in one go. One name, two
-           ways in. A blank buffer leaves the slot's name alone rather
-           than wiping it: saving a sound is not renaming it. */
-        if (!name_blank(self->page_buf)) {
-            name_set(self->user[u].name, self->page_buf);
-        }
+        /* And NOT the name. Saving a sound is not renaming it, and this
+           is where that used to go wrong: the name was taken from the
+           buffer the WORD list and the pedal editor share, so a word
+           picked once - or restored with a pedalboard, or merely passed
+           over while browsing - sat in that buffer for the rest of the
+           session and stamped itself on every slot saved afterwards. A
+           favourite typed CHORUS came back VERSE. The name has two ways
+           in of its own now, the page and the editor, and both write the
+           slot the moment they are told to. */
         self->user[u].filled = 1u;
         /* Say so. A save with no sign that it happened is a save nobody
            believes in, and there is nothing else on the pedal to tell. */
@@ -2651,10 +2653,17 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
     }
 
-    /* The NAME list in the web page is a shortcut into the same buffer
-       the pedal types into: moving it puts that word in, and SAVE - or
-       the editor's yes - is what writes it onto the slot. One name, two
-       ways to fill it. */
+    /* The WORD list: thirty-two ready-made names, for whoever would
+       rather turn one knob than spell anything. It writes the slot USER
+       SLOT points at THE MOMENT it is turned - not into a buffer some
+       later SAVE would read, which is what made a favourite rename
+       itself hours after the word was picked. A word that acts when you
+       turn it is a word you can see land, and pick again if it was the
+       wrong one. Position 0 is USER, which means leave the name alone.
+
+       And nothing during the settle window, for the same reason nothing
+       is typed there: opening a pedalboard puts every port back, and a
+       restored WORD would rename a slot at every opening. */
     {
         const float w = ctl_read(self, CTL_SLOT_NAME);
         if (w != self->slot_name_prev) {
@@ -2662,7 +2671,19 @@ run(LV2_Handle instance, uint32_t n_samples)
             int k = (int)(w + 0.5f);
             if (k < 0)            { k = 0; }
             if (k >= N_SLOT_WORD) { k = N_SLOT_WORD - 1; }
-            if (k > 0) { name_set(self->page_buf, slot_word[k]); }
+            if (k > 0 && self->settle_left == 0u) {
+                int u = (int)(ctl_read(self, CTL_USER_SLOT) + 0.5f) - 1;
+                if (u < 0)       { u = 0; }
+                if (u >= N_USER) { u = N_USER - 1; }
+                name_set(self->user[u].name, slot_word[k]);
+                /* to the disc with it, like any other naming: a name the
+                   player has to remember to save is a name they lose */
+                if (self->sched && self->sched->schedule_work) {
+                    const uint32_t tag = 1u;
+                    self->sched->schedule_work(self->sched->handle,
+                                               sizeof(tag), &tag);
+                }
+            }
         }
     }
 

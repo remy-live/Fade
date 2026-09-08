@@ -223,12 +223,13 @@ CONTROLS = [
   "controller: a port can only take one addressing, so this doubles FX "
   "rather than replacing it. Either one flips the state; FX STATE publishes "
   "which way it actually is."),
- ("slot_name", "NAME", 0.0, 31.0, 0.0, None, LIST,
-  "The word the next SAVE writes on the slot, which is how a name reaches "
-  "the pedal at all: a control port carries a number, so a name typed in a "
-  "browser stays in that browser. Picked from a list, it is stored in the "
-  "slot, saved with the pedalboard, and shown on the device screen wherever "
-  "the slot is. USER means no name - the screen says USER 1 to USER 6."),
+ ("slot_name", "WORD", 0.0, 31.0, 0.0, None, LIST,
+  "Thirty-two ready-made names, for whoever would rather turn one knob than "
+  "spell anything. Turning it names the slot USER SLOT points at, there and "
+  "then, and writes it to the disc: it does not wait for a SAVE. USER, at "
+  "the top, means leave the name alone. The two editors - the boxes in the "
+  "web page and encoder 3 on the pedal - spell a name out instead, seven "
+  "characters of anything you like."),
  ("next_user", "NEXT USER", 0.0, 1.0, 0.0, None,
   ["lv2:toggled", "pprops:trigger"],
   "Steps to the next USER slot that has something in it, and round again. "

@@ -2345,7 +2345,6 @@ static void essai_etat(void)
     a.ctl[CTL_DELAY_TIME] = 333.0f;
     a.ctl[CTL_REVERB_MIX] = 44.0f;
     a.ctl[CTL_SLOT_NAME]  = 3.0f;                      /* called CHORUS */
-    ((Voice*)a.h)->page_buf[0] = '\0';                 /* the word fills it */
     silence(&a); tourner(&a);
     a.ctl[CTL_SAVE] = 1.0f; silence(&a); tourner(&a);
     a.ctl[CTL_SAVE] = 0.0f; silence(&a); tourner(&a);
@@ -2803,18 +2802,16 @@ static void essai_noms(void)
     /* slot 2 gets a sound and the word CHORUS */
     b.ctl[CTL_USER_SLOT]  = 2.0f;
     b.ctl[CTL_DELAY_TIME] = 210.0f;
-    b.ctl[CTL_SLOT_NAME]  = 3.0f;             /* CHORUS, into the buffer */
+    b.ctl[CTL_SLOT_NAME]  = 3.0f;             /* CHORUS, on the slot */
     silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
 
-    /* slot 5 gets another, with no name at all: the list back at USER
-       leaves the buffer alone, so the buffer is cleared by hand here -
-       which is what an empty text field does on the pedal */
+    /* slot 5 gets another, with no name at all: USER, at the top of the
+       list, means leave the name alone, and nothing has ever named it */
     b.ctl[CTL_USER_SLOT]  = 5.0f;
     b.ctl[CTL_DELAY_TIME] = 640.0f;
     b.ctl[CTL_SLOT_NAME]  = 0.0f;
-    ((Voice*)b.h)->page_buf[0] = '\0';
     silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
@@ -3010,6 +3007,124 @@ static void essai_nom_web(void)
     garder_disque = 0;
     verifie_vrai("and the name is still there in a fresh instance",
                  !strcmp(((Voice*)b.h)->user[0].name, "OK"));
+    fermer(&b);
+}
+
+/* The bug a singer found on stage: type CHORUS into a favourite, press
+   SAVE to keep the sound, and the favourite comes back called VERSE.
+
+   Two buffers held a name, and SAVE read the wrong one. The WORD list
+   and the pedal's editor shared one; the boxes in the web page wrote the
+   slot directly. So a word picked once - or restored with a pedalboard,
+   or merely passed over while browsing the favourites on the pedal - sat
+   in that shared buffer for the rest of the session and stamped itself
+   on every slot saved afterwards.
+
+   Saving a sound is not renaming it. SAVE no longer touches the name at
+   all, and the WORD list names the slot the moment it is turned. */
+static void essai_nom_pas_ecrase(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+
+    /* the word list, turned once, on the slot USER SLOT points at */
+    b.ctl[CTL_USER_SLOT] = 2.0f;
+    b.ctl[CTL_SLOT_NAME] = 2.0f;                       /* VERSE */
+    silence(&b); tourner(&b);
+    verifie_vrai("a word from the list names the slot as it is turned",
+                 !strcmp(((Voice*)b.h)->user[1].name, "VERSE"));
+
+    /* the player then types a real name into the same slot */
+    taper_nom(&b, 2, "CHORUS");
+    verifie_vrai("and typing over it wins, being the later word",
+                 !strcmp(((Voice*)b.h)->user[1].name, "CHORUS"));
+
+    /* ...and keeps the sound. THIS is the press that used to rename it */
+    b.ctl[CTL_DELAY_TIME] = 480.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    verifie_vrai("SAVE keeps the sound",
+                 ((Voice*)b.h)->user[1].value[program_col[CTL_DELAY_TIME]]
+                 > 479.0f);
+    verifie_vrai("and does not rename the slot behind the player's back",
+                 !strcmp(((Voice*)b.h)->user[1].name, "CHORUS"));
+
+    /* the same, the other way round: a slot named from the page, then a
+       word picked for ANOTHER slot, then a save on the first */
+    taper_nom(&b, 4, "SOLO");
+    b.ctl[CTL_USER_SLOT] = 6.0f;
+    b.ctl[CTL_SLOT_NAME] = 1.0f;                       /* INTRO, on slot 6 */
+    silence(&b); tourner(&b);
+    b.ctl[CTL_USER_SLOT] = 4.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    verifie_vrai("a word picked for one slot stays on that slot",
+                 !strcmp(((Voice*)b.h)->user[5].name, "INTRO"));
+    verifie_vrai("and does not follow the next save somewhere else",
+                 !strcmp(((Voice*)b.h)->user[3].name, "SOLO"));
+
+    /* browsing the favourites on the pedal fills the editor's buffer with
+       whatever it passes over. That used to leak into the next save too. */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 5);       /* USER 6, INTRO */
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 3.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    verifie_vrai("and a favourite looked at does not name the next one saved",
+                 !((Voice*)b.h)->user[2].name[0]);
+    fermer(&b);
+
+    /* A word reaches the disc on its own, without a save: a name the
+       player has to remember to keep is a name they lose. */
+    b.ctl[CTL_USER_SLOT] = 1.0f;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_USER_SLOT] = 1.0f;
+    b.ctl[CTL_SLOT_NAME] = 5.0f;                       /* SOLO */
+    silence(&b); tourner(&b);
+    fermer(&b);
+    garder_disque = 1;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    garder_disque = 0;
+    verifie_vrai("a word picked is on the disc without a save",
+                 !strcmp(((Voice*)b.h)->user[0].name, "SOLO"));
+    fermer(&b);
+
+    /* And nothing during the two seconds a pedalboard takes to put its
+       ports back, or every opening would rename a slot. Opened by hand,
+       WITHOUT the wait ouvrir() does. */
+    remove("voice-slots.bin");
+    banc_courant = &b;
+    memset(&b, 0, sizeof(b));
+    b.d = lv2_descriptor(0u);
+    b.h = b.d->instantiate(b.d, 48000.0, ".", features_map);
+    b.n_ch = 1u; b.n_audio = 2u; b.bloc = 128u; b.sr = 48000.0;
+    for (uint32_t c = 0; c < b.n_ch; ++c) {
+        b.in[c]  = (float*)calloc(b.bloc, sizeof(float));
+        b.out[c] = (float*)calloc(b.bloc, sizeof(float));
+        b.d->connect_port(b.h, c, b.in[c]);
+        b.d->connect_port(b.h, b.n_ch + c, b.out[c]);
+    }
+    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+        b.ctl[i] = ctl_spec[i].def;
+        b.d->connect_port(b.h, b.n_audio + (uint32_t)i, &b.ctl[i]);
+    }
+    b.d->activate(b.h);
+    /* the pedalboard had WORD stored on VERSE, as a saved port value */
+    b.ctl[CTL_USER_SLOT] = 2.0f;
+    b.ctl[CTL_SLOT_NAME] = 2.0f;
+    for (int k = 0; k < 20; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("a board being restored names nothing",
+                 !((Voice*)b.h)->user[1].name[0]);
+    while (((Voice*)b.h)->settle_left) { silence(&b); tourner(&b); }
+    b.ctl[CTL_SLOT_NAME] = 3.0f;                       /* CHORUS */
+    silence(&b); tourner(&b);
+    verifie_vrai("two seconds later the list names again",
+                 !strcmp(((Voice*)b.h)->user[1].name, "CHORUS"));
     fermer(&b);
 }
 
@@ -3637,6 +3752,7 @@ int main(int argc, char** argv)
     printf("A/B:\n");                       essai_ab();
     printf("Names, and the cycle switch:\n"); essai_noms();
     printf("A name typed in the page:\n"); essai_nom_web();
+    printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("Waking up:\n");                 essai_reveil();
