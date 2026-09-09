@@ -369,6 +369,11 @@ room for them — and where the PROGRAM list, in the same panel, says the
 names too. Type, and the name is in the slot, on the disc and on the
 footswitch: there is nothing to press.
 
+**Why not an atom port.** That is what LV2 has them for: one message
+carrying the whole string, and none of what follows would be needed. It
+arrives nowhere on this firmware — measured, on the machine, by the plugin
+this was learnt from. So:
+
 A name has no port to travel on: a control port carries a number, not a
 word. So it goes down one character at a time — **WEB SLOT** says which
 favourite, **WEB CHAR** holds the character, **WEB STROBE** changes to say
@@ -395,6 +400,15 @@ page* rather than inside the icon — the settings panel is not a descendant
 of the icon, and that is where most of the boxes live. For the same reason
 the state it keeps lives on `window` and not on the icon, which may be a
 copy about to be thrown away with a name half sent.
+
+**Type at whatever speed you like.** The page waits for the keys to stop —
+about a third of a second — before sending anything, because it sends the
+whole word each time and not the difference: on every keystroke, `SOLO`
+would go down as S, then SO, then SOL, then SOLO, fourteen codes for a four
+letter name. Waiting makes it five. And the echo for a slot is disbelieved
+from the instant a key is pressed in its box, not from the instant the word
+goes down, or the old name coming back up in between would land in the box
+and be sent as if it had been typed.
 
 The disc is written half a second after the last letter, so a seven-letter
 word is one write of the file and not seven; closing the plugin before that

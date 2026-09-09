@@ -309,9 +309,17 @@ if (typeof fn === 'function') {
         });
 
         /* A name typed here goes down web_slot / web_char, one character
-           per change of web_strobe - clear first, then the letters. */
+           per change of web_strobe - clear first, then the letters. Typed
+           the way a person types, one key at a time: sending on every
+           keystroke would send the WHOLE word each time, fourteen codes
+           for a four letter name, so it waits for the keys to stop. */
         const boite = doc.querySelector('.voice-fav-name[data-slot="2"]');
-        boite.value = 'chorus';
+        boite.value = 'c';
+        setTimeout(() => { boite.value = 'ch'; }, 130);
+        setTimeout(() => { boite.value = 'cho'; }, 260);
+        setTimeout(() => { boite.value = 'chor'; }, 390);
+        setTimeout(() => { boite.value = 'choru'; }, 520);
+        setTimeout(() => { boite.value = 'chorus'; }, 650);
         say('nothing goes down in the same breath as the typing',
             ecrits.filter(e => e[0] === 'web_char').length === 0,
             JSON.stringify(ecrits));
@@ -374,7 +382,7 @@ if (typeof fn === 'function') {
             const slots   = ecrits.filter(e => e[0] === 'web_slot').map(e => e[1]);
             const lettres = ecrits.filter(e => e[0] === 'web_char').map(e => e[1]);
             const tops    = ecrits.filter(e => e[0] === 'web_strobe').map(e => e[1]);
-            say('a name typed into a box goes down on its own, unprompted',
+            say('a name typed one key at a time goes down ONCE, whole',
                 JSON.stringify(lettres) ===
                 JSON.stringify([1, 67, 72, 79, 82, 85, 83]),
                 JSON.stringify(lettres));

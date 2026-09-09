@@ -17,6 +17,12 @@
  *     n1..n7, one slot per second, which is how this page learns what the
  *     pedal was told to call them.
  *
+ *     The obvious way would be an ATOM port - one message carrying the
+ *     whole string, which is what LV2 has them for. It arrives nowhere on
+ *     this firmware, measured; so a name goes down as numbers, and the
+ *     page waits for the keys to stop before sending, since a word sent
+ *     on every keystroke is the same word sent seven times.
+ *
  * THE RULE THAT SHAPES ALL OF THAT: in the pedalboard, mod-ui COPIES the
  * interface after building it, and every event binding the script made
  * goes with the copy. Only mod-ui's own widgets keep working. So nothing
@@ -78,7 +84,7 @@ function (event, funcs) {
     function fav() {
         var d = window.__voiceFav;
         if (!d) {
-            d = { noms: {}, vu: {}, file: [], strobe: 0, coche: 0,
+            d = { noms: {}, vu: {}, calme: {}, file: [], strobe: 0, coche: 0,
                   tic: 0, garde: {}, program: 0,
                   echo: 0, echoVu: -1, lettres: [],
                   horloge: null, envoi: function () {} };
@@ -211,9 +217,25 @@ function (event, funcs) {
                                              1, N_SLOT));
                 var texte = propre(champ.val() || '');
                 if (d.vu[slot] === undefined) { d.vu[slot] = texte; return; }
-                if (texte === d.vu[slot]) { return; }
-                d.vu[slot] = texte;
-                envoyerNom(slot, texte);
+                if (texte !== d.vu[slot]) {
+                    /* Still typing. Sending on every keystroke would send
+                       the WHOLE word each time - S, then SO, then SOL,
+                       then SOLO, fourteen codes for a four letter name -
+                       so it waits for the keys to stop. */
+                    d.vu[slot]    = texte;
+                    d.calme[slot] = 3;
+                    /* And stop believing the echo about this slot from
+                       the instant a key is pressed, not from the instant
+                       the word goes down: the old name coming back up in
+                       between would land in the box and be sent as if it
+                       had been typed. */
+                    d.garde[slot] = d.tic + Math.ceil(2000 / PAS_MS);
+                    return;
+                }
+                if (d.calme[slot]) {
+                    d.calme[slot]--;
+                    if (!d.calme[slot]) { envoyerNom(slot, texte); }
+                }
             });
         }
 
