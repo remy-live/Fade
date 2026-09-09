@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD16_AARCH64_20260908";
+static const volatile char build_tag[] = "VOICE_BUILD17_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -399,7 +399,8 @@ typedef enum {
        order of its own: a code that goes missing is then one lost letter
        instead of a whole name landing on the wrong favourite. */
     CTL_WEB_SLOT      = 71,  /* which slot the character is for */
-    CTL_COUNT         = 72
+    CTL_FAV_BROWSE    = 72,  /* trigger: walk the favourites, silently */
+    CTL_COUNT         = 73
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -496,6 +497,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "n6",             0.0f,  255.0f,    32.0f },
     { "n7",             0.0f,  255.0f,    32.0f },
     { "web_slot",       0.0f,    6.0f,     0.0f },
+    { "fav_browse",     0.0f,    1.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -803,7 +805,7 @@ typedef enum {
     SLOT_PITCH, SLOT_SAVE, SLOT_SPREAD, SLOT_HOWL, SLOT_USER,
     SLOT_MUTE, SLOT_AB, SLOT_HARM_1, SLOT_HARM_2, SLOT_HARM_MIX,
     SLOT_DE_ESS_FREQ, SLOT_NEXT_USER, SLOT_SLOT_NAME,
-    SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE,
+    SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE, SLOT_BROWSE,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -816,7 +818,7 @@ static uint8_t slot_ctl_of(int slot)
         CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT,
         CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
         CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME,
-        CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE
+        CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE, CTL_FAV_BROWSE
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
@@ -1009,6 +1011,16 @@ typedef struct {
        letter, is six too many. The disc is written half a second after
        the typing stops. */
     uint32_t name_dirty_left;
+    /* --- the browse switch: a favourite chosen but not yet entered ---
+       NEXT USER enters each slot it passes, which is right for cycling
+       and wrong for reaching the third of five in the middle of a song.
+       This one moves a CURSOR, and the sound does not follow until the
+       switch is held. */
+    int      browse_slot;      /* the favourite under the cursor, 0 for none */
+    uint32_t browse_left;      /* samples until the cursor gives up */
+    uint32_t browse_high;      /* samples the switch has been held, 0 = up */
+    int      browse_was;       /* the switch last block */
+    int      browse_done;      /* the hold has fired; swallow the release */
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
 
@@ -1878,6 +1890,11 @@ activate(LV2_Handle instance)
     self->slot_name_prev    = ctl_read(self, CTL_SLOT_NAME);
     self->strobe_prev       = ctl_read(self, CTL_WEB_STROBE);
     self->name_dirty_left   = 0u;
+    self->browse_slot       = 0;
+    self->browse_left       = 0u;
+    self->browse_high       = 0u;
+    self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
+    self->browse_done       = 0;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
     /* never zero: a window of the kind "blocks since the last detent" is
@@ -2229,6 +2246,28 @@ paint(Voice* self, int force)
             value = program_label(self, self->program, vbuf, sizeof(vbuf));
             led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
                                                  : LV2_HMI_LED_Colour_Off;
+            break;
+
+        case SLOT_BROWSE:
+            /* Where the next press of THIS switch would take you, which
+               is not where you are: NEXT USER beside it says that. The
+               LED blinks while a favourite is chosen and not yet entered
+               - a blink is the one thing readable from the back of a
+               stage - and settles the moment the sound follows. */
+            label = "GO TO";
+            if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
+                value = program_label(self, N_PROGRAM + self->browse_slot - 1,
+                                      vbuf, sizeof(vbuf));
+                led   = LV2_HMI_LED_Colour_Green;
+                /* in milliseconds, like the tap: this field is a period,
+                   not one of the LV2_HMI_LED_Blink presets, which are
+                   negative and would be sent as a negative on-time */
+                blink = 500;
+            } else {
+                value = program_label(self, self->program, vbuf, sizeof(vbuf));
+                led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
+                                                     : LV2_HMI_LED_Colour_Off;
+            }
             break;
 
         case SLOT_SLOT_NAME: {
@@ -2878,6 +2917,78 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (self->user[u].filled) {
                 program_enter(self, N_PROGRAM + u);
                 break;
+            }
+        }
+    }
+
+    /* ---------------- the browse switch ----------------
+       Five favourites cycling under one foot is the ordinary case, and
+       NEXT USER is right for it. What it cannot do is reach the third of
+       the five without playing the second on the way. So this switch
+       moves a CURSOR, silently, and the sound only follows when the
+       switch is HELD.
+
+       The step happens on the RELEASE, not on the press. Otherwise the
+       press that becomes the long one would move the cursor first, and
+       the favourite entered would be the one after the one aimed at.
+       A hundred milliseconds of latency on a tap, and no ambiguity.
+
+       For this to work at all the switch must be addressed as MOMENTARY:
+       the length of the press is the whole of the interface. */
+    {
+        const int now = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
+        const uint32_t tenir = (uint32_t)(self->rate * 0.6f);   /* held */
+        const uint32_t oubli = (uint32_t)(self->rate * 4.0f);   /* forgets */
+
+        if (self->settle_left) {
+            self->browse_was = now;          /* a board being restored */
+        } else if (now && !self->browse_was) {
+            self->browse_high = 1u;          /* pressed: start counting */
+            self->browse_done = 0;
+            self->browse_was  = 1;
+        } else if (now) {
+            self->browse_high += n_samples;
+            if (!self->browse_done && self->browse_high >= tenir) {
+                /* held: go there, and the release means nothing */
+                self->browse_done = 1;
+                if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
+                    program_enter(self, N_PROGRAM + self->browse_slot - 1);
+                }
+                self->browse_slot = 0;
+                self->browse_left = 0u;
+            }
+        } else if (self->browse_was) {
+            /* released */
+            if (!self->browse_done) {
+                /* One step, over the slots that have something in them.
+                   From the cursor if there is one, from the sound in
+                   force if there is not - so the first tap goes to the
+                   next favourite after the one being played. */
+                const int depuis = (self->browse_slot >= 1)
+                                 ? self->browse_slot - 1
+                                 : ((self->program >= N_PROGRAM)
+                                    ? self->program - N_PROGRAM : -1);
+                for (int k = 1; k <= N_USER; ++k) {
+                    const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+                    if (self->user[u].filled) {
+                        self->browse_slot = u + 1;
+                        self->browse_left = oubli;
+                        break;
+                    }
+                }
+            }
+            self->browse_high = 0u;
+            self->browse_done = 0;
+            self->browse_was  = 0;
+        }
+
+        /* A walk left half done must not fire ten minutes later. */
+        if (self->browse_left) {
+            if (self->browse_left > n_samples) {
+                self->browse_left -= n_samples;
+            } else {
+                self->browse_left = 0u;
+                self->browse_slot = 0;
             }
         }
     }

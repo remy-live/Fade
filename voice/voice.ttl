@@ -876,4 +876,14 @@
         lv2:minimum 0.0 ;
         lv2:maximum 6.0 ;
         rdfs:comment "Which USER slot the character on WEB CHAR is for, 1 to 6. Zero means nowhere and nothing is typed. Not meant to be turned by hand."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 74 ;
+        lv2:symbol "fav_browse" ;
+        lv2:name "FAV BROWSE" ;
+        lv2:portProperty lv2:toggled , pprops:trigger ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: a short press moves to the next one and says its name, holding it for half a second goes there. Four seconds without a press and it forgets, so a walk left half done cannot fire later. Meant for a footswitch, addressed as momentary - the length of the press is the whole of it."
     ] .

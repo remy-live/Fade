@@ -415,6 +415,14 @@ function (event, funcs) {
             pulse(icon, 'next_user', 'flash', icon.find('.voice-cycle'));
         });
 
+        /* One tap of the browse switch. A mouse cannot hold a footswitch
+           down for half a second in any way that means anything, so this
+           walks the cursor and the pedal does the going-there. */
+        icon.find('.voice-browse').on('click', function (e) {
+            if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
+            pulse(icon, 'fav_browse', 'flash', icon.find('.voice-browse'));
+        });
+
         icon.find('.voice-ab').on('click', function (e) {
             if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
             pulse(icon, 'ab', 'flash', icon.find('.voice-ab'));

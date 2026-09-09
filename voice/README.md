@@ -167,6 +167,7 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
+| **FAV BROWSE** | The second footswitch. A short press walks the filled USER slots **without changing the sound** and names the one under the cursor; holding it half a second goes there. Four seconds untouched and it forgets. Address it as momentary — see *Naming* below. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -403,6 +404,32 @@ something in it, skipping the empty ones, and the screen says where you
 landed *by your name for it*, in a **popup** that holds the screen for two
 seconds so you can read it with your hands full. One footswitch, your own
 sounds, in order.
+
+**GO TO ▷** — the browse switch — is the second footswitch, and it is the
+one for reaching the third of five in the middle of a song. What USER ▶
+cannot do is get there without playing the second on the way; this one
+moves a **cursor** instead of the sound:
+
+| | |
+|---|---|
+| **A short press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch says its name under the label GO TO, and its LED **blinks** — chosen, not entered. |
+| **Held half a second** | goes there. The LED settles, and the popup names it. |
+| **Four seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. |
+
+So: tap, tap, look at the switch, and stomp on the bar you meant. The two
+footswitches then say two different things — USER ▶ says where you *are*,
+GO TO ▷ says where you would *go* — which is the whole point of having
+both.
+
+The step happens on the **release**, not on the press. Otherwise the press
+that becomes the long one would move the cursor first, and the favourite
+entered would be the one after the one aimed at. That costs a tap about a
+tenth of a second, which nobody feels, and removes the only ambiguity in
+the gesture.
+
+It must be addressed as **momentary**: the length of the press is the whole
+of the interface. Addressed as a latch, the port stays high and every press
+would go straight there — which is USER ▶ again, with extra steps.
 
 If you want a sound named everywhere and in your own words, add it to
 `PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2

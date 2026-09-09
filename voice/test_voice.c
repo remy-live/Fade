@@ -3050,6 +3050,156 @@ static void essai_nom_web(void)
     fermer(&b);
 }
 
+/* The second footswitch. Five favourites under one foot is the ordinary
+   case and NEXT USER is right for it; what it cannot do is reach the
+   third of the five without playing the second on the way. This one walks
+   a cursor in silence and only goes there when it is held. */
+
+/* the switch, pressed for so many milliseconds and released */
+static void pied(Banc* b, double ms)
+{
+    const int blocs = (int)(ms * 0.001 * b->sr / (double)b->bloc + 0.5);
+    b->ctl[CTL_FAV_BROWSE] = 1.0f;
+    for (int k = 0; k < blocs; ++k) { silence(b); tourner(b); }
+    b->ctl[CTL_FAV_BROWSE] = 0.0f;
+    silence(b); tourner(b);
+}
+
+static void remplir(Banc* b, int slot, double temps)
+{
+    b->ctl[CTL_USER_SLOT]  = (float)slot;
+    b->ctl[CTL_DELAY_TIME] = (float)temps;
+    silence(b); tourner(b);
+    b->ctl[CTL_SAVE] = 1.0f; silence(b); tourner(b);
+    b->ctl[CTL_SAVE] = 0.0f; silence(b); tourner(b);
+}
+
+static void essai_parcours(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+
+    /* five favourites, the sixth left empty */
+    remplir(&b, 1, 110.0);
+    remplir(&b, 2, 220.0);
+    remplir(&b, 3, 330.0);
+    remplir(&b, 4, 440.0);
+    remplir(&b, 5, 550.0);
+    taper_nom(&b, 3, "TROIS");
+
+    /* on the first favourite, and playing it */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    passer_popup(&b);
+    verifie("the sound is the first favourite",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+
+    memset(&ecran, 0, sizeof(ecran));
+    adresser(&b, CTL_FAV_BROWSE, TOUTES_CAPS, (void*)0xB1);
+    verifie_vrai("the switch is labelled for where it would GO, not where you are",
+                 !strcmp(ecran.dernier_label, "GO TO"));
+    verifie_vrai("and says the sound in force while no walk is on",
+                 !strcmp(ecran.dernier_value, "USER 1"));
+
+    /* two taps: the cursor walks to the third, and NOTHING is heard */
+    pied(&b, 120.0);
+    verifie("a tap does not change the sound",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+    pied(&b, 120.0);
+    verifie("and nor does a second",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+    verifie("the cursor is on the third",
+            (double)((Voice*)b.h)->browse_slot, 3.0, 0.01);
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and the switch says where it would go",
+                 !strcmp(ecran.dernier_value, "TROIS"));
+    verifie_vrai("with an LED blinking to say not yet",
+                 ecran.clignote_on != 0);
+
+    /* held: now it goes there */
+    b.ctl[CTL_FAV_BROWSE] = 1.0f;
+    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }   /* 800 ms */
+    verifie("holding it goes to the one under the cursor",
+            (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
+    verifie("and the cursor lets go",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    b.ctl[CTL_FAV_BROWSE] = 0.0f;
+    silence(&b); tourner(&b);
+    verifie("the release after a hold is not another step",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    passer_popup(&b);
+    verifie_vrai("the switch settles on where you now are",
+                 !strcmp(ecran.dernier_value, "TROIS"));
+    verifie_vrai("and stops blinking", ecran.clignote_on == 0);
+
+    /* the first tap goes to the one AFTER the sound in force */
+    pied(&b, 120.0);
+    verifie("a fresh walk starts from the sound in force",
+            (double)((Voice*)b.h)->browse_slot, 4.0, 0.01);
+
+    /* four seconds of nothing and it forgets, so a walk left half done
+       cannot fire ten minutes later */
+    for (int k = 0; k < 1700; ++k) { silence(&b); tourner(&b); }
+    verifie("a walk left half done is forgotten",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    b.ctl[CTL_FAV_BROWSE] = 1.0f;
+    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_FAV_BROWSE] = 0.0f; silence(&b); tourner(&b);
+    verifie("and holding it then changes nothing",
+            (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
+
+    /* it skips the empty one: from the fifth, round to the first */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 4);
+    passer_popup(&b);
+    pied(&b, 120.0);
+    verifie("the walk skips the slots with nothing in them",
+            (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
+    fermer(&b);
+
+    /* with nothing stored the switch does nothing at all, rather than
+       landing on an empty slot - which on stage is a silent press */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    pied(&b, 120.0);
+    verifie("with nothing filled there is nowhere to walk",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    b.ctl[CTL_FAV_BROWSE] = 1.0f;
+    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_FAV_BROWSE] = 0.0f; silence(&b); tourner(&b);
+    verifie("and holding it stays where it is",
+            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
+    fermer(&b);
+
+    /* A pedalboard restores its ports: a switch stored high must not walk
+       anywhere while the plugin is still waking up. Opened by hand,
+       WITHOUT the wait ouvrir() does. */
+    remove("voice-slots.bin");
+    banc_courant = &b;
+    memset(&b, 0, sizeof(b));
+    b.d = lv2_descriptor(0u);
+    b.h = b.d->instantiate(b.d, 48000.0, ".", features_map);
+    b.n_ch = 1u; b.n_audio = 2u; b.bloc = 128u; b.sr = 48000.0;
+    for (uint32_t c = 0; c < b.n_ch; ++c) {
+        b.in[c]  = (float*)calloc(b.bloc, sizeof(float));
+        b.out[c] = (float*)calloc(b.bloc, sizeof(float));
+        b.d->connect_port(b.h, c, b.in[c]);
+        b.d->connect_port(b.h, b.n_ch + c, b.out[c]);
+    }
+    for (int i = 0; i < (int)CTL_COUNT; ++i) {
+        b.ctl[i] = ctl_spec[i].def;
+        b.d->connect_port(b.h, b.n_audio + (uint32_t)i, &b.ctl[i]);
+    }
+    b.ctl[CTL_FAV_BROWSE] = 1.0f;             /* stored high by the board */
+    b.d->activate(b.h);
+    for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
+    verifie("a switch restored high at load walks nowhere",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    verifie("and enters nothing",
+            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
+    fermer(&b);
+}
+
 /* The bug a singer found on stage: type CHORUS into a favourite, press
    SAVE to keep the sound, and the favourite comes back called VERSE.
 
@@ -3793,6 +3943,7 @@ int main(int argc, char** argv)
     printf("Names, and the cycle switch:\n"); essai_noms();
     printf("A name typed in the page:\n"); essai_nom_web();
     printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
+    printf("Walking the favourites without hearing them:\n"); essai_parcours();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("Waking up:\n");                 essai_reveil();

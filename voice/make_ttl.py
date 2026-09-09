@@ -933,6 +933,19 @@ TAIL = [
  ("in", "web_slot", "WEB SLOT", 0.0, 6.0, 0.0, None, ["lv2:integer"],
   "Which USER slot the character on WEB CHAR is for, 1 to 6. Zero means "
   "nowhere and nothing is typed. Not meant to be turned by hand."),
+
+ # The second footswitch: walk the favourites WITHOUT hearing them, and
+ # go to the one you stopped on. NEXT USER enters each one it passes,
+ # which is right for cycling and wrong for reaching the third of five
+ # in the middle of a song.
+ ("in", "fav_browse", "FAV BROWSE", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Walks the USER slots that have something in them WITHOUT changing the "
+  "sound: a short press moves to the next one and says its name, holding "
+  "it for half a second goes there. Four seconds without a press and it "
+  "forgets, so a walk left half done cannot fire later. Meant for a "
+  "footswitch, addressed as momentary - the length of the press is the "
+  "whole of it."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for
@@ -960,8 +973,8 @@ STEP = {
 # GENERATED from it - so a port added to the descriptor and forgotten here
 # stops the build rather than quietly vanishing from the interface.
 PANEL = [
-    ("FAVORIS", ["program", "user_slot", "save", "next_user", "ab",
-                 "slot_name"]),
+    ("FAVORIS", ["program", "user_slot", "save", "next_user", "fav_browse",
+                 "ab", "slot_name"]),
     ("IN AND OUT", ["in_gain", "output", "mute", "fx", "fx_2", "tap"]),
     ("GATE",     ["gate_on", "gate"]),
     ("COMP",     ["comp_on", "comp"]),
