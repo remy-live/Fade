@@ -3087,6 +3087,7 @@ static void essai_parcours(void)
     remplir(&b, 3, 330.0);
     remplir(&b, 4, 440.0);
     remplir(&b, 5, 550.0);
+    taper_nom(&b, 1, "UN");
     taper_nom(&b, 3, "TROIS");
 
     /* on the first favourite, and playing it */
@@ -3095,16 +3096,23 @@ static void essai_parcours(void)
     verifie("the sound is the first favourite",
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
 
+    /* The cycle switch says the NAME of where you are, in its LABEL -
+         the field a footswitch shows. Checked before the browse switch is
+         addressed, since the two paint in the same pass and the second
+         one written is the one the bench remembers. */
+    memset(&ecran, 0, sizeof(ecran));
+    adresser(&b, CTL_NEXT_USER, TOUTES_CAPS, (void*)0xB2);
+    verifie_vrai("the cycle switch is labelled with the name of the sound",
+                 !strcmp(ecran.dernier_label, "UN"));
+
     memset(&ecran, 0, sizeof(ecran));
     adresser(&b, CTL_FAV_BROWSE, TOUTES_CAPS, (void*)0xB1);
-    verifie_vrai("the switch is labelled for where it would GO, not where you are",
+    verifie_vrai("at rest the browse switch says what it is",
                  !strcmp(ecran.dernier_label, "GO TO"));
-    verifie_vrai("and says the sound in force while no walk is on",
-                 !strcmp(ecran.dernier_value, "USER 1"));
 
-    /* two taps: the cursor walks to the third, and NOTHING is heard */
+    /* two presses: the cursor walks to the third, and NOTHING is heard */
     pied(&b, 120.0);
-    verifie("a tap does not change the sound",
+    verifie("a press does not change the sound",
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
     pied(&b, 120.0);
     verifie("and nor does a second",
@@ -3112,49 +3120,52 @@ static void essai_parcours(void)
     verifie("the cursor is on the third",
             (double)((Voice*)b.h)->browse_slot, 3.0, 0.01);
     for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
-    verifie_vrai("and the switch says where it would go",
+    verifie_vrai("and the name of where it would go is the LABEL, which is "
+                 "the field a footswitch shows",
+                 !strcmp(ecran.dernier_label, "TROIS"));
+    verifie_vrai("and the value says it too",
                  !strcmp(ecran.dernier_value, "TROIS"));
-    verifie_vrai("with an LED blinking to say not yet",
+    verifie_vrai("with an LED blinking to say chosen, not entered",
                  ecran.clignote_on != 0);
 
-    /* held: now it goes there */
-    b.ctl[CTL_FAV_BROWSE] = 1.0f;
-    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }   /* 800 ms */
-    verifie("holding it goes to the one under the cursor",
+    /* USER NEXT is what leaves: choose with one foot, go with the other */
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("USER NEXT goes to the one under the cursor",
             (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
     verifie("and the cursor lets go",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    b.ctl[CTL_FAV_BROWSE] = 0.0f;
-    silence(&b); tourner(&b);
-    verifie("the release after a hold is not another step",
-            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
     passer_popup(&b);
-    verifie_vrai("the switch settles on where you now are",
-                 !strcmp(ecran.dernier_value, "TROIS"));
+    verifie_vrai("the browse switch says what it is again",
+                 !strcmp(ecran.dernier_label, "GO TO"));
     verifie_vrai("and stops blinking", ecran.clignote_on == 0);
 
-    /* the first tap goes to the one AFTER the sound in force */
+    /* with no cursor armed, USER NEXT is what it always was */
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("with nothing walked to, USER NEXT still cycles",
+            (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
+
+    /* the first press goes to the one AFTER the sound in force */
     pied(&b, 120.0);
     verifie("a fresh walk starts from the sound in force",
-            (double)((Voice*)b.h)->browse_slot, 4.0, 0.01);
+            (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
 
     /* four seconds of nothing and it forgets, so a walk left half done
        cannot fire ten minutes later */
     for (int k = 0; k < 1700; ++k) { silence(&b); tourner(&b); }
     verifie("a walk left half done is forgotten",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    b.ctl[CTL_FAV_BROWSE] = 1.0f;
-    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }
-    b.ctl[CTL_FAV_BROWSE] = 0.0f; silence(&b); tourner(&b);
-    verifie("and holding it then changes nothing",
-            (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("and USER NEXT then simply cycles",
+            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
 
     /* it skips the empty one: from the fifth, round to the first */
-    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 4);
-    passer_popup(&b);
     pied(&b, 120.0);
     verifie("the walk skips the slots with nothing in them",
             (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
+
     fermer(&b);
 
     /* with nothing stored the switch does nothing at all, rather than
@@ -3164,11 +3175,6 @@ static void essai_parcours(void)
     pied(&b, 120.0);
     verifie("with nothing filled there is nowhere to walk",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    b.ctl[CTL_FAV_BROWSE] = 1.0f;
-    for (int k = 0; k < 300; ++k) { silence(&b); tourner(&b); }
-    b.ctl[CTL_FAV_BROWSE] = 0.0f; silence(&b); tourner(&b);
-    verifie("and holding it stays where it is",
-            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
     fermer(&b);
 
     /* A pedalboard restores its ports: a switch stored high must not walk
@@ -3195,12 +3201,42 @@ static void essai_parcours(void)
     for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
     verifie("a switch restored high at load walks nowhere",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    verifie("and enters nothing",
-            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
     fermer(&b);
 }
 
-/* The bug a singer found on stage: type CHORUS into a favourite, press
+/* The capabilities of an addressing arrive EMPTY on this machine: an info
+   that is not null but entirely zero. Refusing to write on that comes to
+   never showing anything at all - the switches carried the label the host
+   had put on them and not one word from the plugin, and the popup, the one
+   send not gated on caps, was the only thing that ever appeared. Empty
+   means everything is permitted. */
+static void essai_caps_vides(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_OUTPUT, 0u, (void*)0xC0);
+    verifie_vrai("an addressing that announces nothing still gets a label",
+                 ecran.n_label > 0);
+    verifie_vrai("and a value", ecran.n_value > 0);
+    verifie_vrai("and an LED", ecran.n_led > 0);
+
+    fermer(&b);
+
+    /* and one that announces SOMETHING is still taken at its word. A
+       fresh instance: addressing anything repaints every slot, so a
+       second addressing beside a generous one proves nothing. */
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_COMP, LV2_HMI_AddressingCapability_Label, (void*)0xC1);
+    verifie_vrai("one that announces only a label gets only a label",
+                 ecran.n_label > 0 && ecran.n_value == 0);
+    fermer(&b);
+}
+
+/* The bug a singer found on stage: type CHORUS into a favourite, press/* The bug a singer found on stage: type CHORUS into a favourite, press
    SAVE to keep the sound, and the favourite comes back called VERSE.
 
    Two buffers held a name, and SAVE read the wrong one. The WORD list
@@ -3944,6 +3980,7 @@ int main(int argc, char** argv)
     printf("A name typed in the page:\n"); essai_nom_web();
     printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
     printf("Walking the favourites without hearing them:\n"); essai_parcours();
+    printf("A screen that announces nothing:\n"); essai_caps_vides();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("Waking up:\n");                 essai_reveil();

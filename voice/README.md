@@ -167,7 +167,7 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. A short press walks the filled USER slots **without changing the sound** and names the one under the cursor; holding it half a second goes there. Four seconds untouched and it forgets. Address it as momentary — see *Naming* below. |
+| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; **USER ▶** is what goes there. Four seconds untouched and it forgets. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -412,24 +412,19 @@ moves a **cursor** instead of the sound:
 
 | | |
 |---|---|
-| **A short press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch says its name under the label GO TO, and its LED **blinks** — chosen, not entered. |
-| **Held half a second** | goes there. The LED settles, and the popup names it. |
+| **GO TO ▷, one press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
+| **USER ▶** | goes there. The LED settles, and the popup names it. With no walk in progress it does what it always did: the next filled slot. |
 | **Four seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. |
 
-So: tap, tap, look at the switch, and stomp on the bar you meant. The two
-footswitches then say two different things — USER ▶ says where you *are*,
-GO TO ▷ says where you would *go* — which is the whole point of having
-both.
+So: tap, tap, read the switch, and go on the bar you meant. **Choose with
+one foot, leave with the other.** The two footswitches say two different
+things — USER ▶ says where you *are*, GO TO ▷ says where you would *go* —
+which is the whole point of having both.
 
-The step happens on the **release**, not on the press. Otherwise the press
-that becomes the long one would move the cursor first, and the favourite
-entered would be the one after the one aimed at. That costs a tap about a
-tenth of a second, which nobody feels, and removes the only ambiguity in
-the gesture.
-
-It must be addressed as **momentary**: the length of the press is the whole
-of the interface. Addressed as a latch, the port stays high and every press
-would go straight there — which is USER ▶ again, with extra steps.
+Nothing measures how long a switch is held. The first version of this did,
+and it did nothing at all on the machine: how mod-host drives a trigger
+port when a foot is on it was a guess, and a guess is not something to
+build a stage interface on. A press is a press.
 
 If you want a sound named everywhere and in your own words, add it to
 `PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2
@@ -538,6 +533,28 @@ COPYFILE_DISABLE=1 tar czf - --exclude='._*' voice.lv2 \
 adds are mistaken by lilv for bundle directories, and the plugin fails to
 load. Remove the block from your pedalboard before installing and add it
 back afterwards — mod-ui caches a failed load.
+
+## The screen, and what it announces
+
+An addressing arrives with `info->caps`, a set of bits saying which of
+label, value, unit, indicator and LED the plugin may write. On this machine
+**it arrives empty** — an `info` that is not null and is entirely zero — and
+a plugin that takes that at face value writes nothing at all, for ever.
+
+That is what happened: the footswitches showed the label mod-ui had put on
+them from the port name, not one word from the plugin, and the **popup** —
+the one send in `paint()` that is not gated on caps — was the only thing
+that ever appeared. It looked like a display problem in one place and was a
+closed door in front of everything.
+
+An empty announcement is therefore read as **everything permitted**. At
+worst the firmware ignores a send it cannot use; at best, which is what
+happens, the screen works.
+
+**And the name goes in the LABEL.** A footswitch shows its label — that is
+the field the host itself fills — so USER ▶ carries the name of the sound in
+force and GO TO ▷ the name of the one it has walked to. The value carries
+the same text, for the screens that show one.
 
 ## Adding a port
 

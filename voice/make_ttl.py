@@ -232,8 +232,9 @@ CONTROLS = [
   "characters of anything you like."),
  ("next_user", "NEXT USER", 0.0, 1.0, 0.0, None,
   ["lv2:toggled", "pprops:trigger"],
-  "Steps to the next USER slot that has something in it, and round again. "
-  "One footswitch to cycle your own sounds, with the name of each on the "
+  "Goes to the favourite FAV BROWSE has walked to; with no walk in "
+  "progress, steps to the next USER slot that has something in it and "
+  "round again. One footswitch to cycle your own sounds, with the name of each on the "
   "screen. Empty slots are skipped; if none is filled it does nothing."),
  ("mute", "MUTE", 0.0, 1.0, 0.0, None, ["lv2:toggled"],
   "Cuts the output over 20 ms and lets it back the same way. Not the gate "
@@ -941,11 +942,10 @@ TAIL = [
  ("in", "fav_browse", "FAV BROWSE", 0.0, 1.0, 0.0, None,
   ["lv2:toggled", "pprops:trigger"],
   "Walks the USER slots that have something in them WITHOUT changing the "
-  "sound: a short press moves to the next one and says its name, holding "
-  "it for half a second goes there. Four seconds without a press and it "
-  "forgets, so a walk left half done cannot fire later. Meant for a "
-  "footswitch, addressed as momentary - the length of the press is the "
-  "whole of it."),
+  "sound: one press, one step, and the switch says the name of the one it "
+  "has reached. NEXT USER beside it is what goes there - choose with one "
+  "foot, leave with the other. Four seconds without a press and it "
+  "forgets, so a walk left half done cannot fire later."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for

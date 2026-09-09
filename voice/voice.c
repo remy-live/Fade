@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD17_AARCH64_20260909";
+static const volatile char build_tag[] = "VOICE_BUILD18_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -1018,9 +1018,7 @@ typedef struct {
        switch is held. */
     int      browse_slot;      /* the favourite under the cursor, 0 for none */
     uint32_t browse_left;      /* samples until the cursor gives up */
-    uint32_t browse_high;      /* samples the switch has been held, 0 = up */
     int      browse_was;       /* the switch last block */
-    int      browse_done;      /* the hold has fired; swallow the release */
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
 
@@ -1892,9 +1890,7 @@ activate(LV2_Handle instance)
     self->name_dirty_left   = 0u;
     self->browse_slot       = 0;
     self->browse_left       = 0u;
-    self->browse_high       = 0u;
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
-    self->browse_done       = 0;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
     /* never zero: a window of the kind "blocks since the last detent" is
@@ -2240,30 +2236,37 @@ paint(Voice* self, int force)
             break;
 
         case SLOT_NEXT_USER:
-            /* The cycle switch. Same thing: it says where you have
-               landed, by the name you gave it. */
-            label = "NEXT";
-            value = program_label(self, self->program, vbuf, sizeof(vbuf));
+            /* The cycle switch, and the one that leaves. The name goes in
+               the LABEL, not only in the value: a footswitch shows its
+               label - that is the field the host itself fills, and on a
+               stage the name of the sound is the only thing worth the
+               space. The value says the same, for the screens that show
+               one. */
+            label = value = program_label(self, self->program,
+                                          vbuf, sizeof(vbuf));
             led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
                                                  : LV2_HMI_LED_Colour_Off;
             break;
 
         case SLOT_BROWSE:
-            /* Where the next press of THIS switch would take you, which
-               is not where you are: NEXT USER beside it says that. The
-               LED blinks while a favourite is chosen and not yet entered
-               - a blink is the one thing readable from the back of a
-               stage - and settles the moment the sound follows. */
-            label = "GO TO";
+            /* Where the next press of USER NEXT would take you, which is
+               not where you are - that switch says where you are. While a
+               favourite is chosen and not yet entered the name is in the
+               LABEL, because that is the field a footswitch shows, and
+               the LED blinks: a blink is the one thing readable from the
+               back of a stage. At rest it says what it is instead, so an
+               unused switch is not a second copy of its neighbour. */
             if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
-                value = program_label(self, N_PROGRAM + self->browse_slot - 1,
-                                      vbuf, sizeof(vbuf));
+                label = value = program_label(self,
+                                              N_PROGRAM + self->browse_slot - 1,
+                                              vbuf, sizeof(vbuf));
                 led   = LV2_HMI_LED_Colour_Green;
                 /* in milliseconds, like the tap: this field is a period,
                    not one of the LV2_HMI_LED_Blink presets, which are
                    negative and would be sent as a negative on-time */
                 blink = 500;
             } else {
+                label = "GO TO";
                 value = program_label(self, self->program, vbuf, sizeof(vbuf));
                 led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
                                                      : LV2_HMI_LED_Colour_Off;
@@ -2531,7 +2534,21 @@ addressed(LV2_Handle handle, uint32_t index,
     }
 
     self->addr[index] = addressing;
-    self->caps[index] = info ? (uint32_t)info->caps : 0u;
+    /* An info absent, OR present and entirely zero, means everything is
+       permitted. This machine sends zero, and refusing to write on zero
+       comes to never showing anything at all: the switches carried the
+       label the host had put on them and not one word from the plugin -
+       and the popup, the one send not gated here, was the only thing that
+       ever appeared. At worst the firmware ignores a send it cannot use. */
+    {
+        const uint32_t dit = info ? (uint32_t)info->caps : 0u;
+        self->caps[index] = dit ? dit
+                          : (uint32_t)(LV2_HMI_AddressingCapability_LED
+                                       | LV2_HMI_AddressingCapability_Label
+                                       | LV2_HMI_AddressingCapability_Value
+                                       | LV2_HMI_AddressingCapability_Unit
+                                       | LV2_HMI_AddressingCapability_Indicator);
+    }
 
     /* Paint AS SOON AS the control is addressed, even at zero: until the
        plugin has sent an indicator, the firmware draws its own default
@@ -2910,86 +2927,59 @@ run(LV2_Handle instance, uint32_t n_samples)
        ones that exist - stepping into an empty slot would be a silent
        press, which on stage reads as a broken pedal. */
     if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
-        const int depuis = (self->program >= N_PROGRAM)
-                         ? self->program - N_PROGRAM : -1;
-        for (int k = 1; k <= N_USER; ++k) {
-            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-            if (self->user[u].filled) {
-                program_enter(self, N_PROGRAM + u);
-                break;
+        if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
+            /* A favourite was walked to and not yet entered: THAT is the
+               next one. Choose with GO TO, leave with this. */
+            program_enter(self, N_PROGRAM + self->browse_slot - 1);
+            self->browse_slot = 0;
+            self->browse_left = 0u;
+        } else {
+            const int depuis = (self->program >= N_PROGRAM)
+                             ? self->program - N_PROGRAM : -1;
+            for (int k = 1; k <= N_USER; ++k) {
+                const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+                if (self->user[u].filled) {
+                    program_enter(self, N_PROGRAM + u);
+                    break;
+                }
             }
         }
     }
 
     /* ---------------- the browse switch ----------------
        Five favourites cycling under one foot is the ordinary case, and
-       NEXT USER is right for it. What it cannot do is reach the third of
+       USER NEXT is right for it. What it cannot do is reach the third of
        the five without playing the second on the way. So this switch
-       moves a CURSOR, silently, and the sound only follows when the
-       switch is HELD.
+       moves a CURSOR, silently, and USER NEXT beside it is what goes
+       there: choose with one foot, leave with the other.
 
-       The step happens on the RELEASE, not on the press. Otherwise the
-       press that becomes the long one would move the cursor first, and
-       the favourite entered would be the one after the one aimed at.
-       A hundred milliseconds of latency on a tap, and no ambiguity.
-
-       For this to work at all the switch must be addressed as MOMENTARY:
-       the length of the press is the whole of the interface. */
-    {
-        const int now = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
-        const uint32_t tenir = (uint32_t)(self->rate * 0.6f);   /* held */
-        const uint32_t oubli = (uint32_t)(self->rate * 4.0f);   /* forgets */
-
-        if (self->settle_left) {
-            self->browse_was = now;          /* a board being restored */
-        } else if (now && !self->browse_was) {
-            self->browse_high = 1u;          /* pressed: start counting */
-            self->browse_done = 0;
-            self->browse_was  = 1;
-        } else if (now) {
-            self->browse_high += n_samples;
-            if (!self->browse_done && self->browse_high >= tenir) {
-                /* held: go there, and the release means nothing */
-                self->browse_done = 1;
-                if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
-                    program_enter(self, N_PROGRAM + self->browse_slot - 1);
-                }
-                self->browse_slot = 0;
-                self->browse_left = 0u;
+       One press, one step. Nothing here measures how long the switch is
+       held - a press is a press whatever the host does with a trigger
+       port, and the length of one was a guess that cost a build. */
+    if (trigger_edge(self, CTL_FAV_BROWSE, &self->browse_was)) {
+        /* From the cursor if there is one, from the sound in force if
+           there is not, so the first press goes to the next favourite
+           after the one being played. */
+        const int depuis = (self->browse_slot >= 1)
+                         ? self->browse_slot - 1
+                         : ((self->program >= N_PROGRAM)
+                            ? self->program - N_PROGRAM : -1);
+        for (int k = 1; k <= N_USER; ++k) {
+            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+            if (self->user[u].filled) {
+                self->browse_slot = u + 1;
+                self->browse_left = (uint32_t)(self->rate * 4.0f);
+                break;
             }
-        } else if (self->browse_was) {
-            /* released */
-            if (!self->browse_done) {
-                /* One step, over the slots that have something in them.
-                   From the cursor if there is one, from the sound in
-                   force if there is not - so the first tap goes to the
-                   next favourite after the one being played. */
-                const int depuis = (self->browse_slot >= 1)
-                                 ? self->browse_slot - 1
-                                 : ((self->program >= N_PROGRAM)
-                                    ? self->program - N_PROGRAM : -1);
-                for (int k = 1; k <= N_USER; ++k) {
-                    const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-                    if (self->user[u].filled) {
-                        self->browse_slot = u + 1;
-                        self->browse_left = oubli;
-                        break;
-                    }
-                }
-            }
-            self->browse_high = 0u;
-            self->browse_done = 0;
-            self->browse_was  = 0;
         }
-
-        /* A walk left half done must not fire ten minutes later. */
-        if (self->browse_left) {
-            if (self->browse_left > n_samples) {
-                self->browse_left -= n_samples;
-            } else {
-                self->browse_left = 0u;
-                self->browse_slot = 0;
-            }
+    }
+    /* A walk left half done must not fire ten minutes later. */
+    if (self->browse_left) {
+        if (self->browse_left > n_samples) {
+            self->browse_left -= n_samples;
+        } else {
+            self->browse_left = 0u;
+            self->browse_slot = 0;
         }
     }
 
