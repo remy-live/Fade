@@ -250,6 +250,14 @@
     position: absolute; top: 8px; left: 12px;
     font-size: 8px; letter-spacing: 1px; color: #5d6b7c;
 }
+/* What the plugin sees, for the days a switch does nothing and there is
+   no way to ask it why. */
+.voice-diag{{{cns}}} {
+    position: absolute; top: 20px; left: 12px;
+    font-size: 8px; letter-spacing: .5px; color: #5d6b7c;
+    max-width: 300px; white-space: nowrap;
+}
+.voice-diag{{{cns}}}.alerte { color: #ffb347; }
 
 .voice-page{{{cns}}} { text-align: center; }
 .voice-page-cap{{{cns}}} {

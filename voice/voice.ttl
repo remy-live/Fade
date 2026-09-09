@@ -886,4 +886,13 @@
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
         rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: one press, one step, and the switch says the name of the one it has reached. NEXT USER beside it is what goes there - choose with one foot, leave with the other. Four seconds without a press and it forgets, so a walk left half done cannot fire later."
+    ] , [
+        a lv2:ControlPort , lv2:OutputPort ;
+        lv2:index 75 ;
+        lv2:symbol "diag" ;
+        lv2:name "DIAG" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 99999.0 ;
+        rdfs:comment "Output, for finding out why a switch is not doing what you expect. Five digits: the first is 1 once FAV BROWSE has been seen to move at all (0 means the port is not connected - remove the block from the pedalboard and add it back); the second is how many USER slots have something SAVED in them, which is what the walk steps over; the third is the favourite the cursor is on, 0 for none; the last two are the screen capabilities the host announced for that switch, 99 if it is not addressed. The web interface reads it out in words."
     ] .

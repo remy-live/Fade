@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD18_AARCH64_20260909";
+static const volatile char build_tag[] = "VOICE_BUILD19_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -400,7 +400,8 @@ typedef enum {
        instead of a whole name landing on the wrong favourite. */
     CTL_WEB_SLOT      = 71,  /* which slot the character is for */
     CTL_FAV_BROWSE    = 72,  /* trigger: walk the favourites, silently */
-    CTL_COUNT         = 73
+    CTL_DIAG          = 73,  /* output: what the plugin sees, in five digits */
+    CTL_COUNT         = 74
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -498,6 +499,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "n7",             0.0f,  255.0f,    32.0f },
     { "web_slot",       0.0f,    6.0f,     0.0f },
     { "fav_browse",     0.0f,    1.0f,     0.0f },
+    { "diag",           0.0f, 99999.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -1019,6 +1021,8 @@ typedef struct {
     int      browse_slot;      /* the favourite under the cursor, 0 for none */
     uint32_t browse_left;      /* samples until the cursor gives up */
     int      browse_was;       /* the switch last block */
+    int      browse_bouge;     /* the switch has been seen to move at all */
+    int      caps_dits;        /* what the host announced for it, 99 = none */
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
 
@@ -1891,6 +1895,8 @@ activate(LV2_Handle instance)
     self->browse_slot       = 0;
     self->browse_left       = 0u;
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
+    self->browse_bouge      = 0;
+    self->caps_dits         = 99;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
     /* never zero: a window of the kind "blocks since the last detent" is
@@ -2542,6 +2548,9 @@ addressed(LV2_Handle handle, uint32_t index,
        ever appeared. At worst the firmware ignores a send it cannot use. */
     {
         const uint32_t dit = info ? (uint32_t)info->caps : 0u;
+        if (index == self->n_audio + (uint32_t)CTL_FAV_BROWSE) {
+            self->caps_dits = (int)(dit > 98u ? 98u : dit);
+        }
         self->caps[index] = dit ? dit
                           : (uint32_t)(LV2_HMI_AddressingCapability_LED
                                        | LV2_HMI_AddressingCapability_Label
@@ -2956,6 +2965,9 @@ run(LV2_Handle instance, uint32_t n_samples)
        One press, one step. Nothing here measures how long the switch is
        held - a press is a press whatever the host does with a trigger
        port, and the length of one was a guess that cost a build. */
+    if (((ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0) != self->browse_was) {
+        self->browse_bouge = 1;
+    }
     if (trigger_edge(self, CTL_FAV_BROWSE, &self->browse_was)) {
         /* From the cursor if there is one, from the sound in force if
            there is not, so the first press goes to the next favourite
@@ -2968,7 +2980,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
             if (self->user[u].filled) {
                 self->browse_slot = u + 1;
-                self->browse_left = (uint32_t)(self->rate * 4.0f);
+                self->browse_left = (uint32_t)(self->rate * 12.0f);
                 break;
             }
         }
@@ -3860,6 +3872,16 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
     }
 
+    if (self->ctl_out[CTL_DIAG]) {
+        int rempli = 0;
+        for (int u = 0; u < N_USER; ++u) {
+            if (self->user[u].filled) { ++rempli; }
+        }
+        *self->ctl_out[CTL_DIAG] = (float)(self->browse_bouge * 10000
+                                           + rempli * 1000
+                                           + self->browse_slot * 100
+                                           + self->caps_dits);
+    }
     if (self->ctl_out[CTL_PARAM_NOW]) {
         *self->ctl_out[CTL_PARAM_NOW] = (float)self->page_param;
     }

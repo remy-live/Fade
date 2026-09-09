@@ -344,6 +344,25 @@ function (event, funcs) {
             }
         } else if (symbol === 'time_out') {
             icon.find('.voice-time-value').text(Math.round(nombre(valeur)) + ' ms');
+        } else if (symbol === 'diag') {
+            /* Five digits of what the plugin sees, read out in words: a
+               switch that does nothing has to be able to say why, and
+               from inside a plugin a footswitch is a black box. */
+            var n = Math.round(nombre(valeur));
+            var caps  = n % 100;
+            var cur   = Math.floor(n / 100) % 10;
+            var plein = Math.floor(n / 1000) % 10;
+            var bouge = Math.floor(n / 10000) % 10;
+            var dit = [];
+            dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
+            dit.push(plein + (plein === 1 ? ' favori enregistre'
+                                          : ' favoris enregistres'));
+            dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');
+            dit.push(caps === 99 ? 'switch non adresse'
+                                 : ('ecran annonce ' + caps));
+            icon.find('.voice-diag')
+                .text(dit.join('  \u00b7  '))
+                .toggleClass('alerte', !bouge || plein < 2);
         }
     }
 

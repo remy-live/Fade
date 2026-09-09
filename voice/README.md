@@ -167,7 +167,7 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; **USER ▶** is what goes there. Four seconds untouched and it forgets. |
+| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; **USER ▶** is what goes there. Twelve seconds untouched and it forgets. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -414,7 +414,7 @@ moves a **cursor** instead of the sound:
 |---|---|
 | **GO TO ▷, one press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
 | **USER ▶** | goes there. The LED settles, and the popup names it. With no walk in progress it does what it always did: the next filled slot. |
-| **Four seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. |
+| **Twelve seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. Four seconds was the first figure and it was not long enough to tap, read the switch, decide and go. |
 
 So: tap, tap, read the switch, and go on the bar you meant. **Choose with
 one foot, leave with the other.** The two footswitches say two different
@@ -533,6 +533,32 @@ COPYFILE_DISABLE=1 tar czf - --exclude='._*' voice.lv2 \
 adds are mistaken by lilv for bundle directories, and the plugin fails to
 load. Remove the block from your pedalboard before installing and add it
 back afterwards — mod-ui caches a failed load.
+
+## When a switch does nothing: DIAG
+
+From inside a plugin a footswitch is a black box. Whether its port is even
+connected, how many favourites the walk has to step over, what the screen
+announced — every one of those was answered by a supposition here, and one
+of the suppositions was wrong for three builds running. So the plugin now
+publishes what it sees, on **DIAG**, and the web interface reads it out in
+words at the top left of the pedal:
+
+```
+GO TO connecte · 5 favoris enregistres · curseur sur 3 · ecran annonce 6
+```
+
+Five digits, from the left:
+
+| Digit | Says |
+|---|---|
+| **1** | 1 once FAV BROWSE has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
+| **2** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
+| **3** | the favourite the cursor is on, 0 for none. |
+| **4-5** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
+
+The readout turns amber when the first digit is 0 or the second is under
+two, which are the two states in which the switch cannot do anything and it
+is not the switch's fault.
 
 ## The screen, and what it announces
 

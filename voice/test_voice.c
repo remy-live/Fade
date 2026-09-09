@@ -3151,9 +3151,10 @@ static void essai_parcours(void)
     verifie("a fresh walk starts from the sound in force",
             (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
 
-    /* four seconds of nothing and it forgets, so a walk left half done
-       cannot fire ten minutes later */
-    for (int k = 0; k < 1700; ++k) { silence(&b); tourner(&b); }
+    /* twelve seconds of nothing and it forgets, so a walk left half done
+       cannot fire ten minutes later - long enough to tap, read the switch,
+       decide and go, which four seconds was not */
+    for (int k = 0; k < 4900; ++k) { silence(&b); tourner(&b); }
     verifie("a walk left half done is forgotten",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
     b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
@@ -3201,6 +3202,52 @@ static void essai_parcours(void)
     for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
     verifie("a switch restored high at load walks nowhere",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    fermer(&b);
+}
+
+/* What the plugin sees, published so it can be read instead of guessed.
+   A footswitch is a black box from in here: whether the port is connected
+   at all, how many slots the walk has to step over, and what the screen
+   announced - every one of those was answered by a supposition, and one
+   of the suppositions was wrong. */
+static void essai_diag(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    silence(&b); tourner(&b);
+    verifie("nothing connected, nothing filled, nothing addressed",
+            (double)b.ctl[CTL_DIAG], 99.0, 0.5);
+
+    remplir(&b, 2, 220.0);
+    remplir(&b, 4, 440.0);
+    silence(&b); tourner(&b);
+    verifie("two slots filled says two",
+            (double)b.ctl[CTL_DIAG], 2099.0, 0.5);
+
+    adresser(&b, CTL_FAV_BROWSE, TOUTES_CAPS, (void*)0xD1);
+    silence(&b); tourner(&b);
+    verifie("and the capabilities the host announced",
+            (double)b.ctl[CTL_DIAG], 2000.0 + (double)TOUTES_CAPS, 0.5);
+
+    /* on MANUAL, the first press goes to the first filled slot: the
+       second, the first being empty */
+    pied(&b, 120.0);
+    verifie("a press says the switch moved, and where the cursor is",
+            (double)b.ctl[CTL_DIAG], 12200.0 + (double)TOUTES_CAPS, 0.5);
+    pied(&b, 120.0);
+    verifie("and the next press moves it on",
+            (double)b.ctl[CTL_DIAG], 12400.0 + (double)TOUTES_CAPS, 0.5);
+    fermer(&b);
+
+    /* a screen that announces nothing says so, rather than looking like
+       a screen that was never addressed */
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_FAV_BROWSE, 0u, (void*)0xD2);
+    silence(&b); tourner(&b);
+    verifie("a screen that announces nothing reads as zero, not as absent",
+            (double)b.ctl[CTL_DIAG], 0.0, 0.5);
     fermer(&b);
 }
 
@@ -3981,6 +4028,7 @@ int main(int argc, char** argv)
     printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
     printf("Walking the favourites without hearing them:\n"); essai_parcours();
     printf("A screen that announces nothing:\n"); essai_caps_vides();
+    printf("What the plugin sees:\n"); essai_diag();
     printf("De-esser frequency:\n");        essai_deess_freq();
     printf("Tone controls:\n");             essai_eq();
     printf("Waking up:\n");                 essai_reveil();

@@ -927,6 +927,8 @@ TAIL = [
  ("out", "n6", "NAME 6", 0.0, 255.0, 32.0, None, [], "Output. Sixth character."),
  ("out", "n7", "NAME 7", 0.0, 255.0, 32.0, None, [], "Output. Seventh character."),
 
+
+
  # The slot travels WITH each character rather than being chosen by an
  # order of its own. A code that goes missing is then one lost letter,
  # not a whole name landing on the wrong favourite - and the page holds
@@ -946,6 +948,20 @@ TAIL = [
   "has reached. NEXT USER beside it is what goes there - choose with one "
   "foot, leave with the other. Four seconds without a press and it "
   "forgets, so a walk left half done cannot fire later."),
+
+ # What the plugin SEES, published so it can be read instead of guessed.
+ # The screen of this machine announces nothing and a footswitch is a
+ # black box from in here: without this, every question about why a
+ # switch does nothing is answered by a supposition.
+ ("out", "diag", "DIAG", 0.0, 99999.0, 0.0, None, [],
+  "Output, for finding out why a switch is not doing what you expect. "
+  "Five digits: the first is 1 once FAV BROWSE has been seen to move at "
+  "all (0 means the port is not connected - remove the block from the "
+  "pedalboard and add it back); the second is how many USER slots have "
+  "something SAVED in them, which is what the walk steps over; the third "
+  "is the favourite the cursor is on, 0 for none; the last two are the "
+  "screen capabilities the host announced for that switch, 99 if it is "
+  "not addressed. The web interface reads it out in words."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for
