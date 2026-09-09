@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD22_AARCH64_20260909";
+static const volatile char build_tag[] = "VOICE_BUILD23_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -1034,6 +1034,9 @@ typedef struct {
     int      browse_bouge;     /* the switch has been seen to move at all */
     uint32_t browse_att;       /* samples left waiting for a second press */
     uint32_t browse_min;       /* the shortest gap between two, for DIAG */
+    uint32_t browse_high;      /* samples the switch has been held, 0 = up */
+    uint32_t browse_max;       /* the longest press ever seen, for DIAG */
+    int      browse_fait;      /* this press has already said go */
     int      fav_prev[N_USER]; /* the six direct switches */
     int      caps_dits;        /* what the host announced for it, 99 = none */
     int      echo_slot;        /* which name is being shown to the page */
@@ -1914,6 +1917,9 @@ activate(LV2_Handle instance)
     self->browse_bouge      = 0;
     self->browse_att        = 0u;
     self->browse_min        = 0u;
+    self->browse_high       = 0u;
+    self->browse_max        = 0u;
+    self->browse_fait       = 0;
     for (int u = 0; u < N_USER; ++u) {
         self->fav_prev[u] = (ctl_read(self, CTL_FAV_1 + u) > 0.5f) ? 1 : 0;
     }
@@ -2966,65 +2972,101 @@ run(LV2_Handle instance, uint32_t n_samples)
     /* ---------------- the browse switch ----------------
        For when the favourite wanted has no switch of its own. It moves a
        CURSOR, silently: one press steps to the next filled slot and says
-       its name, TWO presses in quick succession go there.
+       its name, and there are TWO ways to say go there - hold the switch
+       for half a second, or press it twice in quick succession.
 
-       It was a long press, and a long press cannot be seen from in here:
-       this host sends one pulse however long the foot stays down, which
-       is now a measured fact rather than a supposition - DIAG carries the
-       shortest gap between two presses so the same question about a
-       double press can be answered by looking instead of arguing.
+       Two ways because whether a held switch can be seen from in here
+       depends on how the footswitch was addressed, and that is not the
+       plugin's to choose. Addressed as momentary, the port stays high
+       while the foot is down and the hold is seen; addressed otherwise it
+       is one pulse however long the foot stays, and only the two presses
+       can be told apart. The same code covers both without knowing which:
 
-       So a press is DEFERRED by a third of a second, to see whether a
-       second one follows. Two together mean go; one alone, once the wait
-       is up, means step. That third of a second is the price of having
-       one switch do both with nothing but presses to work with. */
+         - a press starts a wait of a third of a second
+         - a second press inside that wait means GO
+         - the switch still down after half a second means GO
+         - the wait running out with the switch UP means one step
+
+       The wait only runs down while the switch is up, which is what keeps
+       a long press from stepping first and going to the wrong one. And a
+       step costs a third of a second, which is the price of one switch
+       saying two things with nothing but presses. */
     {
         const int now = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
         const uint32_t attente = (uint32_t)(self->rate * 0.35f);
+        const uint32_t tenir   = (uint32_t)(self->rate * 0.5f);
         const uint32_t oubli   = (uint32_t)(self->rate * 12.0f);
+        int aller = 0;
 
         if (now != self->browse_was) { self->browse_bouge = 1; }
 
-        if (trigger_edge(self, CTL_FAV_BROWSE, &self->browse_was)) {
-            if (self->browse_att) {
-                /* the second of two: how far apart, and then go */
-                const uint32_t ecart = attente - self->browse_att;
-                if (!self->browse_min || ecart < self->browse_min) {
-                    self->browse_min = ecart ? ecart : 1u;
+        if (self->settle_left) {
+            self->browse_was = now;              /* a board being restored */
+        } else {
+            if (now && !self->browse_was) {      /* pressed */
+                if (self->browse_att) {
+                    /* the second of two: how far apart, and then go */
+                    const uint32_t ecart = attente - self->browse_att;
+                    if (!self->browse_min || ecart < self->browse_min) {
+                        self->browse_min = ecart ? ecart : 1u;
+                    }
+                    self->browse_att  = 0u;
+                    self->browse_fait = 1;
+                    aller = 1;
+                } else {
+                    self->browse_att  = attente;
+                    self->browse_fait = 0;
                 }
-                self->browse_att = 0u;
-                if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
-                    program_enter(self, N_PROGRAM + self->browse_slot - 1);
+                self->browse_high = 1u;
+                self->browse_was  = 1;
+            } else if (now) {                    /* still down */
+                self->browse_high += n_samples;
+                if (self->browse_high > self->browse_max) {
+                    self->browse_max = self->browse_high;
                 }
-                self->browse_slot = 0;
-                self->browse_left = 0u;
-            } else {
-                self->browse_att = attente;      /* wait for a second one */
+                if (!self->browse_fait && self->browse_high >= tenir) {
+                    self->browse_att  = 0u;
+                    self->browse_fait = 1;
+                    aller = 1;
+                }
+            } else if (self->browse_was) {       /* released */
+                self->browse_high = 0u;
+                self->browse_was  = 0;
             }
-        }
 
-        /* the wait ran out: one press alone, so one step */
-        if (self->browse_att) {
-            if (self->browse_att > n_samples) {
-                self->browse_att -= n_samples;
-            } else {
-                self->browse_att = 0u;
-                /* One step, over the slots that have something in them.
-                   From the cursor if there is one, from the sound in
-                   force if there is not. */
-                const int depuis = (self->browse_slot >= 1)
-                                 ? self->browse_slot - 1
-                                 : ((self->program >= N_PROGRAM)
-                                    ? self->program - N_PROGRAM : -1);
-                for (int k = 1; k <= N_USER; ++k) {
-                    const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-                    if (self->user[u].filled) {
-                        self->browse_slot = u + 1;
-                        self->browse_left = oubli;
-                        break;
+            /* The wait, which only runs down while the switch is UP. */
+            if (self->browse_att && !now) {
+                if (self->browse_att > n_samples) {
+                    self->browse_att -= n_samples;
+                } else {
+                    self->browse_att = 0u;
+                    if (!self->browse_fait) {
+                        /* One step, over the slots that have something in
+                           them. From the cursor if there is one, from the
+                           sound in force if there is not. */
+                        const int depuis = (self->browse_slot >= 1)
+                                         ? self->browse_slot - 1
+                                         : ((self->program >= N_PROGRAM)
+                                            ? self->program - N_PROGRAM : -1);
+                        for (int k = 1; k <= N_USER; ++k) {
+                            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+                            if (self->user[u].filled) {
+                                self->browse_slot = u + 1;
+                                self->browse_left = oubli;
+                                break;
+                            }
+                        }
                     }
                 }
             }
+        }
+
+        if (aller) {
+            if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
+                program_enter(self, N_PROGRAM + self->browse_slot - 1);
+            }
+            self->browse_slot = 0;
+            self->browse_left = 0u;
         }
 
         /* A walk left half done must not fire ten minutes later. */
@@ -3035,6 +3077,37 @@ run(LV2_Handle instance, uint32_t n_samples)
                 self->browse_left = 0u;
                 self->browse_slot = 0;
             }
+        }
+    }
+
+    /* The cycle switch, and nothing else: the next filled slot, now. It
+       used to also finish a walk begun on GO TO, and a switch that does
+       two things depending on what was pressed before it is a switch
+       nobody can read on a stage. GO TO finishes its own walk. */
+    if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
+        const int depuis = (self->program >= N_PROGRAM)
+                         ? self->program - N_PROGRAM : -1;
+        for (int k = 1; k <= N_USER; ++k) {
+            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+            if (self->user[u].filled) {
+                program_enter(self, N_PROGRAM + u);
+                break;
+            }
+        }
+    }
+
+    /* ---------------- one switch per favourite ----------------
+       The plainest thing there is: a press goes to that favourite,
+       always, whatever was pressed before. Nothing to enchain, nothing to
+       remember, and the switch carries its name whether or not it is the
+       one being played. An empty slot is not refused - going to it leaves
+       the knobs in charge, which is how a sound is dialled before being
+       saved into it. */
+    for (int u = 0; u < N_USER; ++u) {
+        if (trigger_edge(self, CTL_FAV_1 + u, &self->fav_prev[u])) {
+            program_enter(self, N_PROGRAM + u);
+            self->browse_slot = 0;          /* any walk in progress is moot */
+            self->browse_left = 0u;
         }
     }
 
@@ -3920,16 +3993,24 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (int u = 0; u < N_USER; ++u) {
             if (self->user[u].filled) { ++rempli; }
         }
-        /* The shortest gap ever seen between two presses of GO TO, in
-           hundredths of a second. Whether two presses can even be told
-           apart from in here is a question about the host, and asking it
-           by looking is what the last four builds were short of. 99 means
-           no two presses have ever been close enough to count. */
-        int dixiemes = 99;
-        if (self->browse_min) {
-            dixiemes = (int)(self->browse_min / (self->rate * 0.01f) + 0.5f);
-            if (dixiemes > 99) { dixiemes = 99; }
-            if (dixiemes < 1)  { dixiemes = 1; }
+        /* GO TO says go in two ways, and which of them this machine can
+           even carry is a question about the host. So both are measured:
+           the LONGEST press ever seen, in tenths of a second - anything
+           over 5 means a hold is visible - and, when no hold has ever
+           been seen, the shortest gap between two presses instead, as a
+           negative-looking 50 plus hundredths. 99 means neither has ever
+           happened, which is what a switch nobody has pressed twice or
+           held looks like. */
+        int dixiemes = (int)(self->browse_max / (self->rate * 0.1f) + 0.5f);
+        if (dixiemes > 49) { dixiemes = 49; }
+        if (!dixiemes) {
+            dixiemes = 99;
+            if (self->browse_min) {
+                int c = (int)(self->browse_min / (self->rate * 0.01f) + 0.5f);
+                if (c > 48) { c = 48; }
+                if (c < 1)  { c = 1; }
+                dixiemes = 50 + c;
+            }
         }
         *self->ctl_out[CTL_DIAG] = (float)(dixiemes * 100000
                                            + self->browse_bouge * 10000

@@ -383,13 +383,19 @@ function (event, funcs) {
             var ecart = Math.floor(n / 100000);
             var dit = [];
             dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
-            /* Two presses together are how GO TO is told to go there: a
-               long press cannot be seen at all on this machine, the host
-               sending one pulse however long the foot stays down. This
-               says whether two presses have ever landed close enough. */
-            dit.push(ecart >= 99 ? 'jamais deux appuis rapproches'
-                                 : ('deux appuis vus a ' + (ecart / 100)
-                                    + ' s d ecart'));
+            /* GO TO says go in two ways, and which of them this machine
+               can carry is a question about the host. Under 50 is the
+               longest press seen, in tenths; over 50 is the shortest gap
+               between two presses, in hundredths, when no hold has ever
+               been seen; 99 is neither. */
+            if (ecart === 99) {
+                dit.push('jamais tenu ni tape deux fois');
+            } else if (ecart > 50) {
+                dit.push('pas de maintien vu, mais deux appuis a '
+                         + ((ecart - 50) / 100) + ' s');
+            } else {
+                dit.push('maintien vu jusqu a ' + (ecart / 10) + ' s');
+            }
             dit.push(plein + (plein === 1 ? ' favori enregistre'
                                           : ' favoris enregistres'));
             dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');

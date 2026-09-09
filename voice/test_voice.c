@@ -3072,13 +3072,25 @@ static void tape(Banc* b)
     for (int k = 0; k < 160; ++k) { silence(b); tourner(b); }   /* 0.43 s */
 }
 
-/* and two together, well inside that third of a second */
+/* two together, well inside that third of a second */
 static void double_tape(Banc* b)
 {
     appui(b);
     for (int k = 0; k < 30; ++k) { silence(b); tourner(b); }    /* 80 ms */
     appui(b);
     for (int k = 0; k < 20; ++k) { silence(b); tourner(b); }
+}
+
+/* and the other way of saying go: the switch held down. Only a footswitch
+   addressed as momentary keeps the port high while the foot is on it -
+   which is why the plugin takes either. */
+static void tenir(Banc* b, double ms)
+{
+    const int blocs = (int)(ms * 0.001 * b->sr / (double)b->bloc + 0.5);
+    b->ctl[CTL_FAV_BROWSE] = 1.0f;
+    for (int k = 0; k < blocs; ++k) { silence(b); tourner(b); }
+    b->ctl[CTL_FAV_BROWSE] = 0.0f;
+    for (int k = 0; k < 160; ++k) { silence(b); tourner(b); }
 }
 
 static void remplir(Banc* b, int slot, double temps)
@@ -3143,10 +3155,10 @@ static void essai_parcours(void)
     verifie_vrai("with an LED blinking to say chosen, not entered",
                  ecran.clignote_on != 0);
 
-    /* holding the SAME switch goes there: one switch, one gesture in two
-       lengths, and nothing that depends on another switch */
+    /* two presses together say go - the way that works whatever the
+       footswitch was addressed as */
     double_tape(&b);
-    verifie("holding it goes to the one under the cursor",
+    verifie("two presses together go to the one under the cursor",
             (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
     verifie("and the cursor lets go",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
@@ -3182,10 +3194,25 @@ static void essai_parcours(void)
     verifie("and holding it then changes nothing",
             (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
 
-    /* it skips the empty one: from the fourth, over the fifth, round */
+    /* and so does holding it, where the host lets a hold be seen: the
+       wait only runs down while the switch is UP, so a hold cannot step
+       first and then go somewhere else */
     tape(&b);
-    verifie("the walk goes to the fifth",
+    verifie("a walk is on the fifth",
             (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
+    tenir(&b, 800.0);
+    verifie("holding it goes there too, without stepping on the way",
+            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
+    verifie("and leaves no walk behind it",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+
+    /* a hold with no walk under way goes nowhere rather than somewhere
+       nobody chose */
+    tenir(&b, 800.0);
+    verifie("a hold with nothing chosen changes nothing",
+            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
+
+    /* it skips the empty one: from the fifth, over the sixth, round */
     tape(&b);
     verifie("and skips the slot with nothing in it",
             (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
@@ -3330,10 +3357,18 @@ static void essai_diag(void)
        the place of the 99, which is how one finds out whether a double
        press can be told apart from a single one on this machine at all */
     double_tape(&b);
-    const double lu = (double)b.ctl[CTL_DIAG];
-    const double ecart = (lu - (double)((int)lu % 100000)) / 100000.0;
-    verifie_vrai("two presses together are measured, in hundredths",
-                 ecart > 0.0 && ecart < 20.0);
+    double lu = (double)b.ctl[CTL_DIAG];
+    double tete = (lu - (double)((int)lu % 100000)) / 100000.0;
+    verifie_vrai("with no hold ever seen, two presses together are measured",
+                 tete > 50.0 && tete < 70.0);
+
+    /* and a hold, once seen, is what it says instead: it is the better of
+       the two ways and the one the player asked for */
+    tenir(&b, 800.0);
+    lu = (double)b.ctl[CTL_DIAG];
+    tete = (lu - (double)((int)lu % 100000)) / 100000.0;
+    verifie_vrai("a hold, once seen, is what it says instead",
+                 tete >= 5.0 && tete <= 49.0);
     fermer(&b);
 
     /* a screen that announces nothing says so, rather than looking like
