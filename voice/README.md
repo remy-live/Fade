@@ -167,7 +167,8 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; **USER ▶** is what goes there. Twelve seconds untouched and it forgets. |
+| **FAV BROWSE** | The second footswitch. A short press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second goes there. Twelve seconds untouched and it forgets. |
+| **GO 1**…**GO 6** | One switch per favourite: a press goes to that one, always, whatever was pressed before. Each carries its own favourite's name. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
@@ -412,19 +413,33 @@ moves a **cursor** instead of the sound:
 
 | | |
 |---|---|
-| **GO TO ▷, one press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
-| **USER ▶** | goes there. The LED settles, and the popup names it. With no walk in progress it does what it always did: the next filled slot. |
+| **A short press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
+| **Held half a second** | goes there. The LED settles, and the popup names it. |
 | **Twelve seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. Four seconds was the first figure and it was not long enough to tap, read the switch, decide and go. |
 
-So: tap, tap, read the switch, and go on the bar you meant. **Choose with
-one foot, leave with the other.** The two footswitches say two different
-things — USER ▶ says where you *are*, GO TO ▷ says where you would *go* —
-which is the whole point of having both.
+One switch, one gesture in two lengths, and nothing that depends on
+another switch. **USER ▶ is the cycle and nothing else** — it used to also
+finish a walk begun on GO TO, and a switch that does two things depending
+on what was pressed before it is a switch nobody can read on a stage.
 
-Nothing measures how long a switch is held. The first version of this did,
-and it did nothing at all on the machine: how mod-host drives a trigger
-port when a foot is on it was a guess, and a guess is not something to
-build a stage interface on. A press is a press.
+Whether a long press is visible from inside a plugin at all is a question
+about the host, not about the code, so the plugin does not assume: **DIAG
+publishes the longest press it has ever seen**, and the web interface reads
+it out. If it says *aucun appui tenu vu* after you have held the switch,
+the host is sending a pulse however long your foot stays down, and that is
+worth knowing rather than guessing at.
+
+## One switch per favourite
+
+Six ports, **GO 1** to **GO 6**, so six footswitches can each own one. A
+press goes to that favourite, always, whatever was pressed before — nothing
+to enchain, nothing to remember, and the switch carries that favourite's
+name whether or not it is the one being played. Three footswitches to a
+page of the Dwarf, more with the pages, and three favourites under the foot
+is already a concert.
+
+An empty slot is not refused: going there leaves the knobs in charge, which
+is how a sound is dialled before being saved into it.
 
 If you want a sound named everywhere and in your own words, add it to
 `PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2
@@ -551,14 +566,15 @@ Five digits, from the left:
 
 | Digit | Says |
 |---|---|
-| **1** | 1 once FAV BROWSE has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
-| **2** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
-| **3** | the favourite the cursor is on, 0 for none. |
-| **4-5** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
+| **1-2** | the **longest press ever seen** on FAV BROWSE, in tenths of a second. This is how you find out whether a long press reaches the plugin at all, or whether the host sends a pulse however long the foot stays down. |
+| **3** | 1 once that switch has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
+| **4** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
+| **5** | the favourite the cursor is on, 0 for none. |
+| **6-7** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
 
-The readout turns amber when the first digit is 0 or the second is under
-two, which are the two states in which the switch cannot do anything and it
-is not the switch's fault.
+The readout turns amber in the three states where the switch cannot do what
+is asked of it and it is not the switch's fault: port not connected, fewer
+than two favourites saved, or no press longer than half a second ever seen.
 
 ## The screen, and what it announces
 

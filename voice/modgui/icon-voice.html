@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 19</div>
+    <div class="voice-build{{{cns}}}">GUI 20</div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a
          plugin: whether its port is connected, how many favourites the
@@ -142,7 +142,28 @@
              a hold goes there - so the mouse only gets the tap; what it
              is really for is the pedal. -->
         <div class="voice-ab{{{cns}}} voice-browse" mod-port-symbol="fav_browse"
-             title="Walk the favourites WITHOUT hearing them: each press moves to the next and names it on the switch. USER &#9654; is what goes there.">GO TO &#9655;</div>
+             title="Walk the favourites WITHOUT hearing them: each press moves to the next and names it on the switch. On the pedal, HOLD it half a second to go there.">GO TO &#9655;</div>
+
+        <!-- One switch per favourite. Six ports so six footswitches can
+             each own one: a press goes there, always, whatever was
+             pressed before. -->
+        <div class="voice-go{{{cns}}}">
+            <div class="voice-go-cap{{{cns}}}">ONE SWITCH PER FAVOURITE</div>
+            <div class="voice-go-row{{{cns}}}">
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="1"
+                     mod-port-symbol="fav_1" title="Go to USER 1">1</div>
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="2"
+                     mod-port-symbol="fav_2" title="Go to USER 2">2</div>
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="3"
+                     mod-port-symbol="fav_3" title="Go to USER 3">3</div>
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="4"
+                     mod-port-symbol="fav_4" title="Go to USER 4">4</div>
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="5"
+                     mod-port-symbol="fav_5" title="Go to USER 5">5</div>
+                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="6"
+                     mod-port-symbol="fav_6" title="Go to USER 6">6</div>
+            </div>
+        </div>
 
         <div class="voice-bar-space{{{cns}}}"></div>
 

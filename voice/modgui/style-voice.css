@@ -270,6 +270,31 @@
     border: 1px solid #171c23;
 }
 
+/* One button per favourite, small: they are meant for feet, and are
+   here to be assignable and to be pressed with a mouse in a hurry. */
+.voice-go{{{cns}}} { text-align: center; }
+.voice-go-cap{{{cns}}} {
+    font-size: 7px; letter-spacing: 1px; color: #93a2b4; margin-bottom: 3px;
+}
+.voice-go-row{{{cns}}} { display: flex; gap: 3px; }
+.voice-go-btn{{{cns}}} {
+    width: 20px; height: 20px; line-height: 20px; text-align: center;
+    border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 700;
+    color: #d7e2ee;
+    background: linear-gradient(180deg, #5a6779 0%, #39424f 100%);
+    border: 1px solid #171c23;
+    user-select: none;
+}
+.voice-go-btn{{{cns}}}:hover { filter: brightness(1.15); }
+.voice-go-btn{{{cns}}}.flash {
+    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
+    color: #10251c;
+}
+.voice-go-btn{{{cns}}}.actif {
+    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+    color: #10251c; border-color: #12351f;
+}
+
 .voice-mute{{{cns}}} { text-align: center; }
 .voice-mute-cap{{{cns}}} {
     margin-top: 3px; font-size: 8px; letter-spacing: 1.5px; color: #93a2b4;

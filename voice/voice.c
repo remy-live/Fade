@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD19_AARCH64_20260909";
+static const volatile char build_tag[] = "VOICE_BUILD20_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -400,8 +400,16 @@ typedef enum {
        instead of a whole name landing on the wrong favourite. */
     CTL_WEB_SLOT      = 71,  /* which slot the character is for */
     CTL_FAV_BROWSE    = 72,  /* trigger: walk the favourites, silently */
-    CTL_DIAG          = 73,  /* output: what the plugin sees, in five digits */
-    CTL_COUNT         = 74
+    CTL_DIAG          = 73,  /* output: what the plugin sees, in seven digits */
+    /* One switch per favourite: a press goes there, always, whatever was
+       pressed before. Nothing to enchain and nothing to remember. */
+    CTL_FAV_1         = 74,
+    CTL_FAV_2         = 75,
+    CTL_FAV_3         = 76,
+    CTL_FAV_4         = 77,
+    CTL_FAV_5         = 78,
+    CTL_FAV_6         = 79,
+    CTL_COUNT         = 80
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -499,7 +507,13 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "n7",             0.0f,  255.0f,    32.0f },
     { "web_slot",       0.0f,    6.0f,     0.0f },
     { "fav_browse",     0.0f,    1.0f,     0.0f },
-    { "diag",           0.0f, 99999.0f,     0.0f },
+    { "diag",           0.0f, 9999999.0f,  0.0f },
+    { "fav_1",          0.0f,    1.0f,     0.0f },
+    { "fav_2",          0.0f,    1.0f,     0.0f },
+    { "fav_3",          0.0f,    1.0f,     0.0f },
+    { "fav_4",          0.0f,    1.0f,     0.0f },
+    { "fav_5",          0.0f,    1.0f,     0.0f },
+    { "fav_6",          0.0f,    1.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -808,6 +822,7 @@ typedef enum {
     SLOT_MUTE, SLOT_AB, SLOT_HARM_1, SLOT_HARM_2, SLOT_HARM_MIX,
     SLOT_DE_ESS_FREQ, SLOT_NEXT_USER, SLOT_SLOT_NAME,
     SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE, SLOT_BROWSE,
+    SLOT_FAV_1, SLOT_FAV_2, SLOT_FAV_3, SLOT_FAV_4, SLOT_FAV_5, SLOT_FAV_6,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     SLOT_COUNT = SLOT_SWITCH + SW_COUNT
 } ScreenSlot;
@@ -820,7 +835,8 @@ static uint8_t slot_ctl_of(int slot)
         CTL_PITCH, CTL_SAVE, CTL_SPREAD, CTL_FEEDBACK, CTL_USER_SLOT,
         CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
         CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME,
-        CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE, CTL_FAV_BROWSE
+        CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE, CTL_FAV_BROWSE,
+        CTL_FAV_1, CTL_FAV_2, CTL_FAV_3, CTL_FAV_4, CTL_FAV_5, CTL_FAV_6
     };
     return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
 }
@@ -1022,6 +1038,10 @@ typedef struct {
     uint32_t browse_left;      /* samples until the cursor gives up */
     int      browse_was;       /* the switch last block */
     int      browse_bouge;     /* the switch has been seen to move at all */
+    uint32_t browse_high;      /* samples the switch has been held, 0 = up */
+    uint32_t browse_max;       /* the longest press ever seen, for DIAG */
+    int      browse_done;      /* the hold has fired; swallow the release */
+    int      fav_prev[N_USER]; /* the six direct switches */
     int      caps_dits;        /* what the host announced for it, 99 = none */
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
@@ -1896,6 +1916,12 @@ activate(LV2_Handle instance)
     self->browse_left       = 0u;
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
     self->browse_bouge      = 0;
+    self->browse_high       = 0u;
+    self->browse_max        = 0u;
+    self->browse_done       = 0;
+    for (int u = 0; u < N_USER; ++u) {
+        self->fav_prev[u] = (ctl_read(self, CTL_FAV_1 + u) > 0.5f) ? 1 : 0;
+    }
     self->caps_dits         = 99;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
@@ -2253,6 +2279,20 @@ paint(Voice* self, int force)
             led   = (self->program >= N_PROGRAM) ? LV2_HMI_LED_Colour_Green
                                                  : LV2_HMI_LED_Colour_Off;
             break;
+
+        case SLOT_FAV_1: case SLOT_FAV_2: case SLOT_FAV_3:
+        case SLOT_FAV_4: case SLOT_FAV_5: case SLOT_FAV_6: {
+            /* One switch, one favourite. It carries that favourite's name
+               whether or not it is the one being played - a switch whose
+               label only appears once you are already there tells you
+               nothing you did not know. The LED says which one is on. */
+            const int u = s - (int)SLOT_FAV_1;
+            label = value = program_label(self, N_PROGRAM + u,
+                                          vbuf, sizeof(vbuf));
+            led   = (self->program == N_PROGRAM + u)
+                  ? LV2_HMI_LED_Colour_Green : LV2_HMI_LED_Colour_Off;
+            break;
+        }
 
         case SLOT_BROWSE:
             /* Where the next press of USER NEXT would take you, which is
@@ -2935,63 +2975,107 @@ run(LV2_Handle instance, uint32_t n_samples)
     /* NEXT USER: one footswitch to walk your own sounds, and only the
        ones that exist - stepping into an empty slot would be a silent
        press, which on stage reads as a broken pedal. */
+    /* The cycle switch, and nothing else: the next filled slot, now. It
+       used to also finish a walk begun on GO TO, and a switch that does
+       two things depending on what was pressed before it is a switch
+       nobody can read on a stage. GO TO finishes its own walk. */
     if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
-        if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
-            /* A favourite was walked to and not yet entered: THAT is the
-               next one. Choose with GO TO, leave with this. */
-            program_enter(self, N_PROGRAM + self->browse_slot - 1);
-            self->browse_slot = 0;
-            self->browse_left = 0u;
-        } else {
-            const int depuis = (self->program >= N_PROGRAM)
-                             ? self->program - N_PROGRAM : -1;
-            for (int k = 1; k <= N_USER; ++k) {
-                const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-                if (self->user[u].filled) {
-                    program_enter(self, N_PROGRAM + u);
-                    break;
-                }
-            }
-        }
-    }
-
-    /* ---------------- the browse switch ----------------
-       Five favourites cycling under one foot is the ordinary case, and
-       USER NEXT is right for it. What it cannot do is reach the third of
-       the five without playing the second on the way. So this switch
-       moves a CURSOR, silently, and USER NEXT beside it is what goes
-       there: choose with one foot, leave with the other.
-
-       One press, one step. Nothing here measures how long the switch is
-       held - a press is a press whatever the host does with a trigger
-       port, and the length of one was a guess that cost a build. */
-    if (((ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0) != self->browse_was) {
-        self->browse_bouge = 1;
-    }
-    if (trigger_edge(self, CTL_FAV_BROWSE, &self->browse_was)) {
-        /* From the cursor if there is one, from the sound in force if
-           there is not, so the first press goes to the next favourite
-           after the one being played. */
-        const int depuis = (self->browse_slot >= 1)
-                         ? self->browse_slot - 1
-                         : ((self->program >= N_PROGRAM)
-                            ? self->program - N_PROGRAM : -1);
+        const int depuis = (self->program >= N_PROGRAM)
+                         ? self->program - N_PROGRAM : -1;
         for (int k = 1; k <= N_USER; ++k) {
             const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
             if (self->user[u].filled) {
-                self->browse_slot = u + 1;
-                self->browse_left = (uint32_t)(self->rate * 12.0f);
+                program_enter(self, N_PROGRAM + u);
                 break;
             }
         }
     }
-    /* A walk left half done must not fire ten minutes later. */
-    if (self->browse_left) {
-        if (self->browse_left > n_samples) {
-            self->browse_left -= n_samples;
-        } else {
+
+    /* ---------------- one switch per favourite ----------------
+       The plainest thing there is: a press goes to that favourite,
+       always, whatever was pressed before. Nothing to enchain, nothing to
+       remember, and the switch carries its name whether or not it is the
+       one being played. An empty slot is not refused - going to it leaves
+       the knobs in charge, which is how a sound is dialled before being
+       saved into it. */
+    for (int u = 0; u < N_USER; ++u) {
+        if (trigger_edge(self, CTL_FAV_1 + u, &self->fav_prev[u])) {
+            program_enter(self, N_PROGRAM + u);
+            self->browse_slot = 0;          /* any walk in progress is moot */
             self->browse_left = 0u;
-            self->browse_slot = 0;
+        }
+    }
+
+    /* ---------------- the browse switch ----------------
+       For when the favourite wanted has no switch of its own. It moves a
+       CURSOR, silently: a short press steps to the next filled slot and
+       says its name, and HOLDING the switch goes there. One switch, one
+       gesture in two lengths, and nothing that depends on another switch.
+
+       The step is taken on the RELEASE. Otherwise the press that becomes
+       the long one would move the cursor first, and the favourite entered
+       would be the one after the one aimed at.
+
+       Whether a long press is visible at all from in here depends on what
+       the host does with a trigger port when a foot sits on it - so the
+       longest press ever seen is published on DIAG rather than assumed. */
+    {
+        const int now = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
+        const uint32_t tenir = (uint32_t)(self->rate * 0.6f);
+        const uint32_t oubli = (uint32_t)(self->rate * 12.0f);
+
+        if (now != self->browse_was) { self->browse_bouge = 1; }
+
+        if (self->settle_left) {
+            self->browse_was = now;          /* a board being restored */
+        } else if (now && !self->browse_was) {
+            self->browse_high = 1u;          /* pressed: start counting */
+            self->browse_done = 0;
+            self->browse_was  = 1;
+        } else if (now) {
+            self->browse_high += n_samples;
+            if (self->browse_high > self->browse_max) {
+                self->browse_max = self->browse_high;
+            }
+            if (!self->browse_done && self->browse_high >= tenir) {
+                self->browse_done = 1;
+                if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
+                    program_enter(self, N_PROGRAM + self->browse_slot - 1);
+                }
+                self->browse_slot = 0;
+                self->browse_left = 0u;
+            }
+        } else if (self->browse_was) {
+            if (!self->browse_done) {
+                /* One step, over the slots that have something in them.
+                   From the cursor if there is one, from the sound in
+                   force if there is not. */
+                const int depuis = (self->browse_slot >= 1)
+                                 ? self->browse_slot - 1
+                                 : ((self->program >= N_PROGRAM)
+                                    ? self->program - N_PROGRAM : -1);
+                for (int k = 1; k <= N_USER; ++k) {
+                    const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
+                    if (self->user[u].filled) {
+                        self->browse_slot = u + 1;
+                        self->browse_left = oubli;
+                        break;
+                    }
+                }
+            }
+            self->browse_high = 0u;
+            self->browse_done = 0;
+            self->browse_was  = 0;
+        }
+
+        /* A walk left half done must not fire ten minutes later. */
+        if (self->browse_left) {
+            if (self->browse_left > n_samples) {
+                self->browse_left -= n_samples;
+            } else {
+                self->browse_left = 0u;
+                self->browse_slot = 0;
+            }
         }
     }
 
@@ -3877,7 +3961,13 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (int u = 0; u < N_USER; ++u) {
             if (self->user[u].filled) { ++rempli; }
         }
-        *self->ctl_out[CTL_DIAG] = (float)(self->browse_bouge * 10000
+        /* the longest press ever seen, in tenths of a second: whether a
+           long press is visible from in here at all is a question about
+           the host, and this is the only way to ask it */
+        int dixiemes = (int)(self->browse_max / (self->rate * 0.1f) + 0.5f);
+        if (dixiemes > 99) { dixiemes = 99; }
+        *self->ctl_out[CTL_DIAG] = (float)(dixiemes * 100000
+                                           + self->browse_bouge * 10000
                                            + rempli * 1000
                                            + self->browse_slot * 100
                                            + self->caps_dits);

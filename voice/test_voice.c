@@ -3097,9 +3097,9 @@ static void essai_parcours(void)
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
 
     /* The cycle switch says the NAME of where you are, in its LABEL -
-         the field a footswitch shows. Checked before the browse switch is
-         addressed, since the two paint in the same pass and the second
-         one written is the one the bench remembers. */
+       the field a footswitch shows. Checked before the browse switch is
+       addressed, since the two paint in the same pass and the second one
+       written is the one the bench remembers. */
     memset(&ecran, 0, sizeof(ecran));
     adresser(&b, CTL_NEXT_USER, TOUTES_CAPS, (void*)0xB2);
     verifie_vrai("the cycle switch is labelled with the name of the sound",
@@ -3110,9 +3110,10 @@ static void essai_parcours(void)
     verifie_vrai("at rest the browse switch says what it is",
                  !strcmp(ecran.dernier_label, "GO TO"));
 
-    /* two presses: the cursor walks to the third, and NOTHING is heard */
+    /* two short presses: the cursor walks to the third, and NOTHING is
+       heard */
     pied(&b, 120.0);
-    verifie("a press does not change the sound",
+    verifie("a short press does not change the sound",
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
     pied(&b, 120.0);
     verifie("and nor does a second",
@@ -3123,15 +3124,13 @@ static void essai_parcours(void)
     verifie_vrai("and the name of where it would go is the LABEL, which is "
                  "the field a footswitch shows",
                  !strcmp(ecran.dernier_label, "TROIS"));
-    verifie_vrai("and the value says it too",
-                 !strcmp(ecran.dernier_value, "TROIS"));
     verifie_vrai("with an LED blinking to say chosen, not entered",
                  ecran.clignote_on != 0);
 
-    /* USER NEXT is what leaves: choose with one foot, go with the other */
-    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
-    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
-    verifie("USER NEXT goes to the one under the cursor",
+    /* holding the SAME switch goes there: one switch, one gesture in two
+       lengths, and nothing that depends on another switch */
+    pied(&b, 800.0);
+    verifie("holding it goes to the one under the cursor",
             (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
     verifie("and the cursor lets go",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
@@ -3140,33 +3139,40 @@ static void essai_parcours(void)
                  !strcmp(ecran.dernier_label, "GO TO"));
     verifie_vrai("and stops blinking", ecran.clignote_on == 0);
 
-    /* with no cursor armed, USER NEXT is what it always was */
+    /* the release after a hold is not another step */
+    verifie("a hold leaves no walk behind it",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+
+    /* USER NEXT is the cycle and nothing else, whatever was pressed
+       before it: a switch that does two things is a switch nobody reads */
+    pied(&b, 120.0);
+    verifie("a walk is on the fourth",
+            (double)((Voice*)b.h)->browse_slot, 4.0, 0.01);
     b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
-    verifie("with nothing walked to, USER NEXT still cycles",
+    verifie("USER NEXT still simply cycles, walk or no walk",
             (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
-
-    /* the first press goes to the one AFTER the sound in force */
-    pied(&b, 120.0);
-    verifie("a fresh walk starts from the sound in force",
-            (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
 
     /* twelve seconds of nothing and it forgets, so a walk left half done
        cannot fire ten minutes later - long enough to tap, read the switch,
        decide and go, which four seconds was not */
+    pied(&b, 120.0);
+    verifie("a fresh walk starts from the sound in force",
+            (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
     for (int k = 0; k < 4900; ++k) { silence(&b); tourner(&b); }
     verifie("a walk left half done is forgotten",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
-    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
-    verifie("and USER NEXT then simply cycles",
-            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
+    pied(&b, 800.0);
+    verifie("and holding it then changes nothing",
+            (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
 
-    /* it skips the empty one: from the fifth, round to the first */
+    /* it skips the empty one: from the fourth, over the fifth, round */
     pied(&b, 120.0);
-    verifie("the walk skips the slots with nothing in them",
+    verifie("the walk goes to the fifth",
+            (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
+    pied(&b, 120.0);
+    verifie("and skips the slot with nothing in it",
             (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
-
     fermer(&b);
 
     /* with nothing stored the switch does nothing at all, rather than
@@ -3198,14 +3204,74 @@ static void essai_parcours(void)
         b.d->connect_port(b.h, b.n_audio + (uint32_t)i, &b.ctl[i]);
     }
     b.ctl[CTL_FAV_BROWSE] = 1.0f;             /* stored high by the board */
+    b.ctl[CTL_FAV_3]      = 1.0f;             /* and so is a direct one */
     b.d->activate(b.h);
     for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
     verifie("a switch restored high at load walks nowhere",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    verifie("and a direct one restored high enters nothing",
+            (double)b.ctl[CTL_PROGRAM_NOW], 0.0, 0.01);
     fermer(&b);
 }
 
-/* What the plugin sees, published so it can be read instead of guessed.
+/* One switch per favourite: the plainest thing there is. A press goes to
+   that favourite, always, whatever was pressed before - nothing to
+   enchain, nothing to remember. */
+static void essai_favoris_directs(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    remplir(&b, 2, 220.0);
+    remplir(&b, 5, 550.0);
+    taper_nom(&b, 5, "CINQ");
+
+    b.ctl[CTL_FAV_2] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_2] = 0.0f; silence(&b); tourner(&b);
+    verifie("a press on the second goes to the second",
+            (double)b.ctl[CTL_TIME_OUT], 220.0, 0.01);
+
+    b.ctl[CTL_FAV_5] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_5] = 0.0f; silence(&b); tourner(&b);
+    verifie("and a press on the fifth goes to the fifth",
+            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
+
+    /* the same press again is the same favourite: no order, no memory */
+    b.ctl[CTL_FAV_2] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_2] = 0.0f; silence(&b); tourner(&b);
+    verifie("whatever was pressed before it",
+            (double)b.ctl[CTL_TIME_OUT], 220.0, 0.01);
+
+    /* the switch carries its OWN favourite's name, not the one playing.
+       Past the popup first: a program change owns the screen for two
+       seconds and nothing else is sent while one is showing. */
+    passer_popup(&b);
+    memset(&ecran, 0, sizeof(ecran));
+    adresser(&b, CTL_FAV_5, TOUTES_CAPS, (void*)0xE5);
+    verifie_vrai("a direct switch is labelled with its own favourite",
+                 !strcmp(ecran.dernier_label, "CINQ"));
+
+    /* and a walk in progress is moot once a direct switch is pressed */
+    pied(&b, 120.0);
+    verifie_vrai("a walk is on", ((Voice*)b.h)->browse_slot != 0);
+    b.ctl[CTL_FAV_5] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_5] = 0.0f; silence(&b); tourner(&b);
+    verifie("a direct switch drops any walk in progress",
+            (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
+    verifie("and goes where it says",
+            (double)b.ctl[CTL_TIME_OUT], 550.0, 0.01);
+
+    /* an empty slot is not refused: going there leaves the knobs in
+       charge, which is how a sound is dialled before being saved */
+    b.ctl[CTL_FAV_4] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_4] = 0.0f; silence(&b); tourner(&b);
+    verifie("an empty favourite is somewhere you may go",
+            (double)b.ctl[CTL_PROGRAM_NOW], (double)(N_PROGRAM + 3), 0.01);
+    fermer(&b);
+}
+
+/* What the plugin sees, published so it can be read instead of guessed./* What the plugin sees, published so it can be read instead of guessed.
    A footswitch is a black box from in here: whether the port is connected
    at all, how many slots the walk has to step over, and what the screen
    announced - every one of those was answered by a supposition, and one
@@ -3234,10 +3300,17 @@ static void essai_diag(void)
        second, the first being empty */
     pied(&b, 120.0);
     verifie("a press says the switch moved, and where the cursor is",
-            (double)b.ctl[CTL_DIAG], 12200.0 + (double)TOUTES_CAPS, 0.5);
+            (double)b.ctl[CTL_DIAG], 112200.0 + (double)TOUTES_CAPS, 0.5);
     pied(&b, 120.0);
     verifie("and the next press moves it on",
-            (double)b.ctl[CTL_DIAG], 12400.0 + (double)TOUTES_CAPS, 0.5);
+            (double)b.ctl[CTL_DIAG], 112400.0 + (double)TOUTES_CAPS, 0.5);
+
+    /* the longest press ever seen, which is the whole question about
+       whether a hold is visible from in here at all */
+    pied(&b, 800.0);
+    verifie("and a long press is measured and published",
+            (double)b.ctl[CTL_DIAG] - 2000.0 - (double)TOUTES_CAPS,
+            800000.0, 100000.0);
     fermer(&b);
 
     /* a screen that announces nothing says so, rather than looking like
@@ -4027,6 +4100,7 @@ int main(int argc, char** argv)
     printf("A name typed in the page:\n"); essai_nom_web();
     printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
     printf("Walking the favourites without hearing them:\n"); essai_parcours();
+    printf("One switch per favourite:\n"); essai_favoris_directs();
     printf("A screen that announces nothing:\n"); essai_caps_vides();
     printf("What the plugin sees:\n"); essai_diag();
     printf("De-esser frequency:\n");        essai_deess_freq();

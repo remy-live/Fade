@@ -332,16 +332,29 @@ if (typeof fn === 'function') {
         echo(2, 'VERSE');
 
         /* what the plugin sees, read out in words */
-        fn({ type: 'change', icon: icon, symbol: 'diag', value: 15306 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'diag', value: 815306 }, funcs);
         const lu = doc.querySelector('.voice-diag').textContent;
         say('the diagnostic reads out in words, not in digits',
             lu.indexOf('connecte') >= 0 && lu.indexOf('5 favoris') >= 0
             && lu.indexOf('curseur sur 3') >= 0 && lu.indexOf('annonce 6') >= 0, lu);
+        say('and says how long the longest press seen was',
+            lu.indexOf('0.8 s') >= 0, lu);
         fn({ type: 'change', icon: icon, symbol: 'diag', value: 99 }, funcs);
         const lu2 = doc.querySelector('.voice-diag').textContent;
         say('and says so plainly when the switch has never moved',
             lu2.indexOf('JAMAIS VU BOUGER') >= 0
-            && lu2.indexOf('non adresse') >= 0, lu2);
+            && lu2.indexOf('non adresse') >= 0
+            && lu2.indexOf('aucun appui tenu') >= 0, lu2);
+
+        /* one button per favourite, and each writes its own port */
+        for (const n of [1, 3, 6]) {
+            ecrits = [];
+            doc.querySelector('.voice-go-btn[data-slot="' + n + '"]')
+               .dispatchEvent(new dom.window.Event('click'));
+            say('the button for favourite ' + n + ' pulses its own port',
+                ecrits.length === 1 && ecrits[0][0] === 'fav_' + n
+                && ecrits[0][1] === 1, JSON.stringify(ecrits));
+        }
         say('and marks it as something to look at',
             doc.querySelector('.voice-diag').classList.contains('alerte'));
 

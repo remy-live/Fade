@@ -953,15 +953,54 @@ TAIL = [
  # The screen of this machine announces nothing and a footswitch is a
  # black box from in here: without this, every question about why a
  # switch does nothing is answered by a supposition.
- ("out", "diag", "DIAG", 0.0, 99999.0, 0.0, None, [],
+ ("out", "diag", "DIAG", 0.0, 9999999.0, 0.0, None, [],
   "Output, for finding out why a switch is not doing what you expect. "
-  "Five digits: the first is 1 once FAV BROWSE has been seen to move at "
-  "all (0 means the port is not connected - remove the block from the "
-  "pedalboard and add it back); the second is how many USER slots have "
-  "something SAVED in them, which is what the walk steps over; the third "
-  "is the favourite the cursor is on, 0 for none; the last two are the "
-  "screen capabilities the host announced for that switch, 99 if it is "
-  "not addressed. The web interface reads it out in words."),
+  "Seven digits. The first two are the LONGEST press ever seen on FAV "
+  "BROWSE, in tenths of a second - which says whether a long press is "
+  "visible to the plugin at all on this machine, or whether the host "
+  "sends a pulse however long the foot stays down. The third is 1 once "
+  "that switch has been seen to move (0 means the port is not connected "
+  "- remove the block from the pedalboard and add it back). The fourth "
+  "is how many USER slots have something SAVED in them, which is what "
+  "the walk steps over. The fifth is the favourite the cursor is on, 0 "
+  "for none. The last two are the screen capabilities the host announced "
+  "for that switch, 99 if it is not addressed. The web interface reads "
+  "it out in words."),
+
+ # One switch per favourite. The plainest thing there is: a press goes to
+ # that favourite, always, whatever was pressed before. Three footswitches
+ # to a page of the Dwarf, more with the pages - and three favourites
+ # under the foot is already a concert.
+ ("in", "fav_1", "GO 1", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 1, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
+ ("in", "fav_2", "GO 2", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 2, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
+ ("in", "fav_3", "GO 3", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 3, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
+ ("in", "fav_4", "GO 4", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 4, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
+ ("in", "fav_5", "GO 5", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 5, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
+ ("in", "fav_6", "GO 6", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "pprops:trigger"],
+  "Goes to USER 6, and nothing else ever. Meant for a footswitch, which "
+  "carries the name of that favourite whether or not it is the one being "
+  "played."),
 ]
 
 # Names for the screen, where the descriptor's own name is too long for
@@ -991,6 +1030,8 @@ STEP = {
 PANEL = [
     ("FAVORIS", ["program", "user_slot", "save", "next_user", "fav_browse",
                  "ab", "slot_name"]),
+    ("ONE SWITCH PER FAVOURITE", ["fav_1", "fav_2", "fav_3",
+                                  "fav_4", "fav_5", "fav_6"]),
     ("IN AND OUT", ["in_gain", "output", "mute", "fx", "fx_2", "tap"]),
     ("GATE",     ["gate_on", "gate"]),
     ("COMP",     ["comp_on", "comp"]),

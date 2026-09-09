@@ -253,6 +253,11 @@ function (event, funcs) {
         var courant = (p >= PREMIER_USER) ? (p - PREMIER_USER + 1) : 0;
         for (var slot = 1; slot <= N_SLOT; slot++) {
             var nom = nomDe(d, slot);
+            var bg = tourJq('.voice-go-btn[data-slot="' + slot + '"]');
+            if (bg) {
+                bg.attr('title', 'Go to ' + (nom || ('USER ' + slot)))
+                  .toggleClass('actif', slot === courant);
+            }
             var etiq = tourJq('.voice-fav-label[data-slot="' + slot + '"]');
             if (etiq) {
                 etiq.text(nom || ('USER ' + slot))
@@ -353,8 +358,14 @@ function (event, funcs) {
             var cur   = Math.floor(n / 100) % 10;
             var plein = Math.floor(n / 1000) % 10;
             var bouge = Math.floor(n / 10000) % 10;
+            var appui = Math.floor(n / 100000);
             var dit = [];
             dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
+            /* the whole question about a long press: is one visible from
+               inside the plugin at all, or does the host send a pulse
+               however long the foot stays down */
+            dit.push(appui ? ('appui le plus long vu ' + (appui / 10) + ' s')
+                           : 'aucun appui tenu vu');
             dit.push(plein + (plein === 1 ? ' favori enregistre'
                                           : ' favoris enregistres'));
             dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');
@@ -362,7 +373,7 @@ function (event, funcs) {
                                  : ('ecran annonce ' + caps));
             icon.find('.voice-diag')
                 .text(dit.join('  \u00b7  '))
-                .toggleClass('alerte', !bouge || plein < 2);
+                .toggleClass('alerte', !bouge || plein < 2 || appui < 6);
         }
     }
 
@@ -441,6 +452,19 @@ function (event, funcs) {
             if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }
             pulse(icon, 'fav_browse', 'flash', icon.find('.voice-browse'));
         });
+
+        /* One button per favourite: a press goes there, always. */
+        for (var g = 1; g <= N_SLOT; g++) {
+            (function (slot) {
+                var b = icon.find('.voice-go-btn[data-slot="' + slot + '"]');
+                b.on('click', function (e) {
+                    if (e && e.preventDefault) {
+                        e.preventDefault(); e.stopPropagation();
+                    }
+                    pulse(icon, 'fav_' + slot, 'flash', b);
+                });
+            })(g);
+        }
 
         icon.find('.voice-ab').on('click', function (e) {
             if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); }

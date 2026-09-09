@@ -253,6 +253,12 @@ static const uint8_t ctl_is_out[CTL_COUNT] = {
     0,   /* web_slot */
     0,   /* fav_browse */
     1,   /* diag */
+    0,   /* fav_1 */
+    0,   /* fav_2 */
+    0,   /* fav_3 */
+    0,   /* fav_4 */
+    0,   /* fav_5 */
+    0,   /* fav_6 */
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
@@ -332,6 +338,12 @@ static const int8_t program_col[CTL_COUNT] = {
     -1,  /* web_slot */
     -1,  /* fav_browse */
     -1,  /* diag */
+    -1,  /* fav_1 */
+    -1,  /* fav_2 */
+    -1,  /* fav_3 */
+    -1,  /* fav_4 */
+    -1,  /* fav_5 */
+    -1,  /* fav_6 */
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
