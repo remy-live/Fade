@@ -402,9 +402,16 @@ half second is up writes it anyway, on the way out.
 
 **USER ▶** — the cycle switch — steps to the next USER slot that has
 something in it, skipping the empty ones, and the screen says where you
-landed *by your name for it*, in a **popup** that holds the screen for two
-seconds so you can read it with your hands full. One footswitch, your own
-sounds, in order.
+landed *by your name for it*, on the switch itself. One footswitch, your
+own sounds, in order.
+
+There **was** a popup here, and it is gone. It existed because the labels
+were not working — every screen write was gated on capabilities this host
+announces as zero, so the popup, the one send not gated, was the only thing
+that ever appeared. Now that the switches carry the name themselves a popup
+is a second copy of what is already on them, and it costs two seconds
+during which nothing else can be written: it hid the very labels it was
+standing in for.
 
 **GO TO ▷** — the browse switch — is the second footswitch, and it is the
 one for reaching the third of five in the middle of a song. What USER ▶
@@ -413,8 +420,8 @@ moves a **cursor** instead of the sound:
 
 | | |
 |---|---|
-| **A short press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
-| **Held half a second** | goes there. The LED settles, and the popup names it. |
+| **One press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
+| **Two presses together** | goes there. The LED settles. |
 | **Twelve seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. Four seconds was the first figure and it was not long enough to tap, read the switch, decide and go. |
 
 One switch, one gesture in two lengths, and nothing that depends on
@@ -422,12 +429,16 @@ another switch. **USER ▶ is the cycle and nothing else** — it used to also
 finish a walk begun on GO TO, and a switch that does two things depending
 on what was pressed before it is a switch nobody can read on a stage.
 
-Whether a long press is visible from inside a plugin at all is a question
-about the host, not about the code, so the plugin does not assume: **DIAG
-publishes the longest press it has ever seen**, and the web interface reads
-it out. If it says *aucun appui tenu vu* after you have held the switch,
-the host is sending a pulse however long your foot stays down, and that is
-worth knowing rather than guessing at.
+It was a long press for two builds, and **a long press cannot be seen from
+inside a plugin on this machine**: mod-host sends one pulse however long
+the foot stays down. That is now measured rather than supposed — it is what
+DIAG was built to answer. A press is therefore held back a third of a
+second to see whether a second follows, which is the price of one switch
+doing both with nothing but presses to work with.
+
+DIAG carries the shortest gap ever seen between two presses, so the same
+question about a double press can be answered by looking rather than by
+arguing.
 
 ## One switch per favourite
 
@@ -566,15 +577,15 @@ Five digits, from the left:
 
 | Digit | Says |
 |---|---|
-| **1-2** | the **longest press ever seen** on FAV BROWSE, in tenths of a second. This is how you find out whether a long press reaches the plugin at all, or whether the host sends a pulse however long the foot stays down. |
+| **1-2** | the **shortest gap ever seen between two presses** of FAV BROWSE, in hundredths of a second; 99 if no two have ever landed close together. This is how you find out whether two presses can be told from one. A *long* press cannot be told from a short one at all here — measured, not supposed. |
 | **3** | 1 once that switch has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
 | **4** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
 | **5** | the favourite the cursor is on, 0 for none. |
 | **6-7** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
 
-The readout turns amber in the three states where the switch cannot do what
-is asked of it and it is not the switch's fault: port not connected, fewer
-than two favourites saved, or no press longer than half a second ever seen.
+The readout turns amber in the two states where the switch cannot do what
+is asked of it and it is not the switch's fault: port not connected, or
+fewer than two favourites saved.
 
 ## The screen, and what it announces
 

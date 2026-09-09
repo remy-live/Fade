@@ -249,9 +249,9 @@ static int garder_disque = 0;
 
 static void tourner(Banc* b);
 static void silence(Banc* b);
-/* Changing favourite opens a popup, and while one shows nothing else is
-   sent to the screen - a label written after it erases it. Anything that
-   reads a label has to let it pass first. */
+/* A program change is only seen when a block runs, and the screen speaks
+   at most twenty-five times a second: anything that reads a label after
+   changing programs has to let a pass go by. */
 static void passer_popup(Banc* b);
 
 static void ouvrir_avec(Banc* b, int stereo, double sr, uint32_t bloc,
@@ -2822,10 +2822,10 @@ static void essai_noms(void)
     memset(&ecran, 0, sizeof(ecran));
     b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);          /* USER 2 */
     for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
-    verifie_vrai("landing on a favourite says its name in a popup",
-                 ecran.n_popup > 0 && !strcmp(ecran.dernier_popup, "CHORUS"));
-    verifie_vrai("under a title that says what it is",
-                 !strcmp(ecran.dernier_popup_titre, "FAVORI"));
+    /* No popup any more: it froze the screen for two seconds and hid the
+       very labels it was standing in for, which now carry the name. */
+    verifie_vrai("landing on a favourite opens no popup over the screen",
+                 ecran.n_popup == 0);
     passer_popup(&b);
     verifie_vrai("a named slot says its name on the screen",
                  !strcmp(ecran.dernier_value, "CHORUS"));
@@ -3055,14 +3055,30 @@ static void essai_nom_web(void)
    third of the five without playing the second on the way. This one walks
    a cursor in silence and only goes there when it is held. */
 
-/* the switch, pressed for so many milliseconds and released */
-static void pied(Banc* b, double ms)
+/* one press of the switch, and nothing else */
+static void appui(Banc* b)
 {
-    const int blocs = (int)(ms * 0.001 * b->sr / (double)b->bloc + 0.5);
     b->ctl[CTL_FAV_BROWSE] = 1.0f;
-    for (int k = 0; k < blocs; ++k) { silence(b); tourner(b); }
+    silence(b); tourner(b);
     b->ctl[CTL_FAV_BROWSE] = 0.0f;
     silence(b); tourner(b);
+}
+
+/* A press is deferred by a third of a second to see whether a second one
+   follows, so a single tap is a press and then the wait running out. */
+static void tape(Banc* b)
+{
+    appui(b);
+    for (int k = 0; k < 160; ++k) { silence(b); tourner(b); }   /* 0.43 s */
+}
+
+/* and two together, well inside that third of a second */
+static void double_tape(Banc* b)
+{
+    appui(b);
+    for (int k = 0; k < 30; ++k) { silence(b); tourner(b); }    /* 80 ms */
+    appui(b);
+    for (int k = 0; k < 20; ++k) { silence(b); tourner(b); }
 }
 
 static void remplir(Banc* b, int slot, double temps)
@@ -3112,10 +3128,10 @@ static void essai_parcours(void)
 
     /* two short presses: the cursor walks to the third, and NOTHING is
        heard */
-    pied(&b, 120.0);
+    tape(&b);
     verifie("a short press does not change the sound",
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
-    pied(&b, 120.0);
+    tape(&b);
     verifie("and nor does a second",
             (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
     verifie("the cursor is on the third",
@@ -3129,7 +3145,7 @@ static void essai_parcours(void)
 
     /* holding the SAME switch goes there: one switch, one gesture in two
        lengths, and nothing that depends on another switch */
-    pied(&b, 800.0);
+    double_tape(&b);
     verifie("holding it goes to the one under the cursor",
             (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
     verifie("and the cursor lets go",
@@ -3145,7 +3161,7 @@ static void essai_parcours(void)
 
     /* USER NEXT is the cycle and nothing else, whatever was pressed
        before it: a switch that does two things is a switch nobody reads */
-    pied(&b, 120.0);
+    tape(&b);
     verifie("a walk is on the fourth",
             (double)((Voice*)b.h)->browse_slot, 4.0, 0.01);
     b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
@@ -3156,21 +3172,21 @@ static void essai_parcours(void)
     /* twelve seconds of nothing and it forgets, so a walk left half done
        cannot fire ten minutes later - long enough to tap, read the switch,
        decide and go, which four seconds was not */
-    pied(&b, 120.0);
+    tape(&b);
     verifie("a fresh walk starts from the sound in force",
             (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
     for (int k = 0; k < 4900; ++k) { silence(&b); tourner(&b); }
     verifie("a walk left half done is forgotten",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    pied(&b, 800.0);
+    double_tape(&b);
     verifie("and holding it then changes nothing",
             (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
 
     /* it skips the empty one: from the fourth, over the fifth, round */
-    pied(&b, 120.0);
+    tape(&b);
     verifie("the walk goes to the fifth",
             (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
-    pied(&b, 120.0);
+    tape(&b);
     verifie("and skips the slot with nothing in it",
             (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
     fermer(&b);
@@ -3179,7 +3195,7 @@ static void essai_parcours(void)
        landing on an empty slot - which on stage is a silent press */
     ouvrir(&b, 0, 48000.0, 128, 0);
     neutre(&b);
-    pied(&b, 120.0);
+    tape(&b);
     verifie("with nothing filled there is nowhere to walk",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
     fermer(&b);
@@ -3253,7 +3269,7 @@ static void essai_favoris_directs(void)
                  !strcmp(ecran.dernier_label, "CINQ"));
 
     /* and a walk in progress is moot once a direct switch is pressed */
-    pied(&b, 120.0);
+    tape(&b);
     verifie_vrai("a walk is on", ((Voice*)b.h)->browse_slot != 0);
     b.ctl[CTL_FAV_5] = 1.0f; silence(&b); tourner(&b);
     b.ctl[CTL_FAV_5] = 0.0f; silence(&b); tourner(&b);
@@ -3278,39 +3294,46 @@ static void essai_favoris_directs(void)
    of the suppositions was wrong. */
 static void essai_diag(void)
 {
+    /* 99 in front means no two presses have ever been close enough to be
+       told apart - which is the whole open question about this machine */
+    const double AUCUN = 9900000.0;
     Banc b;
     ouvrir(&b, 0, 48000.0, 128, 1);
     neutre(&b);
     silence(&b); tourner(&b);
     verifie("nothing connected, nothing filled, nothing addressed",
-            (double)b.ctl[CTL_DIAG], 99.0, 0.5);
+            (double)b.ctl[CTL_DIAG], AUCUN + 99.0, 0.5);
 
     remplir(&b, 2, 220.0);
     remplir(&b, 4, 440.0);
     silence(&b); tourner(&b);
     verifie("two slots filled says two",
-            (double)b.ctl[CTL_DIAG], 2099.0, 0.5);
+            (double)b.ctl[CTL_DIAG], AUCUN + 2099.0, 0.5);
 
     adresser(&b, CTL_FAV_BROWSE, TOUTES_CAPS, (void*)0xD1);
     silence(&b); tourner(&b);
     verifie("and the capabilities the host announced",
-            (double)b.ctl[CTL_DIAG], 2000.0 + (double)TOUTES_CAPS, 0.5);
+            (double)b.ctl[CTL_DIAG], AUCUN + 2000.0 + (double)TOUTES_CAPS, 0.5);
 
     /* on MANUAL, the first press goes to the first filled slot: the
        second, the first being empty */
-    pied(&b, 120.0);
+    tape(&b);
     verifie("a press says the switch moved, and where the cursor is",
-            (double)b.ctl[CTL_DIAG], 112200.0 + (double)TOUTES_CAPS, 0.5);
-    pied(&b, 120.0);
+            (double)b.ctl[CTL_DIAG],
+            AUCUN + 12200.0 + (double)TOUTES_CAPS, 0.5);
+    tape(&b);
     verifie("and the next press moves it on",
-            (double)b.ctl[CTL_DIAG], 112400.0 + (double)TOUTES_CAPS, 0.5);
+            (double)b.ctl[CTL_DIAG],
+            AUCUN + 12400.0 + (double)TOUTES_CAPS, 0.5);
 
-    /* the longest press ever seen, which is the whole question about
-       whether a hold is visible from in here at all */
-    pied(&b, 800.0);
-    verifie("and a long press is measured and published",
-            (double)b.ctl[CTL_DIAG] - 2000.0 - (double)TOUTES_CAPS,
-            800000.0, 100000.0);
+    /* two presses together: the gap between them is measured and takes
+       the place of the 99, which is how one finds out whether a double
+       press can be told apart from a single one on this machine at all */
+    double_tape(&b);
+    const double lu = (double)b.ctl[CTL_DIAG];
+    const double ecart = (lu - (double)((int)lu % 100000)) / 100000.0;
+    verifie_vrai("two presses together are measured, in hundredths",
+                 ecart > 0.0 && ecart < 20.0);
     fermer(&b);
 
     /* a screen that announces nothing says so, rather than looking like
@@ -3320,11 +3343,11 @@ static void essai_diag(void)
     adresser(&b, CTL_FAV_BROWSE, 0u, (void*)0xD2);
     silence(&b); tourner(&b);
     verifie("a screen that announces nothing reads as zero, not as absent",
-            (double)b.ctl[CTL_DIAG], 0.0, 0.5);
+            (double)b.ctl[CTL_DIAG], AUCUN, 0.5);
     fermer(&b);
 }
 
-/* The capabilities of an addressing arrive EMPTY on this machine: an info
+/* The capabilities of an addressing arrive EMPTY on this machine/* The capabilities of an addressing arrive EMPTY on this machine: an info
    that is not null but entirely zero. Refusing to write on that comes to
    never showing anything at all - the switches carried the label the host
    had put on them and not one word from the plugin, and the popup, the one
@@ -3577,15 +3600,11 @@ static void essai_hote(void)
    accident measures the wrong thing. */
 static void passer_popup(Banc* b)
 {
-    Voice* v = (Voice*)b->h;
-    /* A program written to the port is only seen when a block runs, and
-       the popup goes out a screen pass later: wait for it to appear, */
-    for (int k = 0; k < 200 && !v->popup_want && !v->popup_freeze; ++k) {
-        silence(b); tourner(b);
-    }
-    /* then for the two seconds during which it owns the screen, */
-    while (v->popup_want || v->popup_freeze) { silence(b); tourner(b); }
-    /* then long enough for the screen to be painted again. */
+    /* There was a popup, and while one showed nothing else reached the
+       screen: two seconds during which every label was frozen. There is
+       none any more - the switches carry the name themselves - so all
+       this does now is let the screen be painted again, which every test
+       that reads a label still needs after a program change. */
     for (int k = 0; k < 40; ++k) { silence(b); tourner(b); }
 }
 

@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD20_AARCH64_20260909";
+static const volatile char build_tag[] = "VOICE_BUILD21_AARCH64_20260909";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -995,12 +995,6 @@ typedef struct {
     int ab_prev;
     int next_prev;
     uint32_t save_flash;      /* samples left to say SAVED on the screen */
-    /* --- the popup: the name, big, when the favourite changes --- */
-    int      popup_want;      /* a popup is owed, on the slot that caused it */
-    int      popup_slot;      /* which screen slot to open it on */
-    char     popup_text[NAME_LEN + 1];
-    uint32_t popup_freeze;    /* samples during which nothing else is sent:
-                                 a label written after a popup erases it */
     size_t   hmi_size;        /* how much of the widget control the host has */
     int fx2_prev;
 
@@ -1038,9 +1032,8 @@ typedef struct {
     uint32_t browse_left;      /* samples until the cursor gives up */
     int      browse_was;       /* the switch last block */
     int      browse_bouge;     /* the switch has been seen to move at all */
-    uint32_t browse_high;      /* samples the switch has been held, 0 = up */
-    uint32_t browse_max;       /* the longest press ever seen, for DIAG */
-    int      browse_done;      /* the hold has fired; swallow the release */
+    uint32_t browse_att;       /* samples left waiting for a second press */
+    uint32_t browse_min;       /* the shortest gap between two, for DIAG */
     int      fav_prev[N_USER]; /* the six direct switches */
     int      caps_dits;        /* what the host announced for it, 99 = none */
     int      echo_slot;        /* which name is being shown to the page */
@@ -1482,7 +1475,6 @@ instantiate(const LV2_Descriptor*     descriptor,
         for (int i = 0; features[i]; ++i) {
             if (!strcmp(features[i]->URI, LV2_HMI__WidgetControl)) {
                 self->hmi = (const LV2_HMI_WidgetControl*)features[i]->data;
-                /* popup_message is only there on a big enough struct */
                 self->hmi_size = self->hmi ? self->hmi->size : 0u;
             } else if (!strcmp(features[i]->URI, LV2_URID__map)) {
                 self->map = (LV2_URID_Map*)features[i]->data;
@@ -1756,10 +1748,14 @@ static void program_enter(Voice* self, int prog)
 {
     if (prog != self->program) {
         self->program_ab = self->program;
-        /* Say it on the screen, big: on a stage the name of what you have
-           just landed on is the one thing worth reading, and a label in
-           the corner of a footswitch is not it. */
-        self->popup_want = 1;
+        /* No popup. There was one, and it existed because the labels were
+           not working: every screen write was gated on capabilities the
+           host announces as zero, so the popup - the one send not gated -
+           was the only thing that ever appeared. Now that the switches
+           carry the name themselves, a popup is a second copy of what is
+           already on them, and it costs two seconds during which NOTHING
+           else can be written: it hid the very labels it was standing in
+           for. */
     }
     self->program = prog;
     /* A new program starts clean: nothing is the player's yet, and the
@@ -1916,9 +1912,8 @@ activate(LV2_Handle instance)
     self->browse_left       = 0u;
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
     self->browse_bouge      = 0;
-    self->browse_high       = 0u;
-    self->browse_max        = 0u;
-    self->browse_done       = 0;
+    self->browse_att        = 0u;
+    self->browse_min        = 0u;
     for (int u = 0; u < N_USER; ++u) {
         self->fav_prev[u] = (ctl_read(self, CTL_FAV_1 + u) > 0.5f) ? 1 : 0;
     }
@@ -2002,9 +1997,6 @@ activate(LV2_Handle instance)
     self->fx2_prev        = (ctl_read(self, CTL_FX_2) > 0.5f) ? 1 : 0;
     self->save_prev       = (ctl_read(self, CTL_SAVE) > 0.5f) ? 1 : 0;
     self->save_flash      = 0u;
-    self->popup_want      = 0;
-    self->popup_slot      = (int)SLOT_NEXT_USER;
-    self->popup_freeze    = 0u;
     self->fx_gain         = self->fx_state ? 1.0f : 0.0f;
 
     self->tap_prev     = (ctl_read(self, CTL_TAP) > 0.5f) ? 1 : 0;
@@ -2090,41 +2082,6 @@ paint(Voice* self, int force)
     const LV2_HMI_WidgetControl* hmi = self->hmi;
     if (!hmi) {
         return;
-    }
-
-    /* A popup is erased by the next label written anywhere on the screen,
-       so while one is showing nothing else is sent at all. Two seconds,
-       measured on the machine by the plugin this was learnt from. */
-    if (self->popup_freeze) {
-        return;
-    }
-
-    /* One is owed: send it, and say nothing else until it has been read.
-       Never from inside addressed() - that runs on the host's thread
-       while the host may be writing to the same serial link, and two
-       writers interleaved make an invalid command. */
-    if (self->popup_want && hmi->popup_message
-        && self->hmi_size >= LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE) {
-        int s = self->popup_slot;
-        LV2_HMI_Addressing a =
-            self->addr[self->n_audio + (uint32_t)slot_ctl_of(s)];
-        if (!a) {                       /* whatever is addressed will do */
-            for (s = 0; s < (int)SLOT_COUNT; ++s) {
-                a = self->addr[self->n_audio + (uint32_t)slot_ctl_of(s)];
-                if (a) { break; }
-            }
-        }
-        self->popup_want = 0;
-        if (a) {
-            char nom[NAME_LEN + 1];
-            name_pad(nom, program_label(self, self->program, nom, sizeof(nom)));
-            name_set(nom, nom);
-            hmi->popup_message(hmi->handle, a, LV2_HMI_Popup_Style_Normal,
-                               "FAVORI", nom);
-            self->popup_freeze = (uint32_t)(self->rate * 2.0f);
-            forget_caches(self);        /* rebuild the screen afterwards */
-            return;
-        }
     }
 
     /* The time in force: the tap owns it until the knob moves. */
@@ -3008,45 +2965,50 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     /* ---------------- the browse switch ----------------
        For when the favourite wanted has no switch of its own. It moves a
-       CURSOR, silently: a short press steps to the next filled slot and
-       says its name, and HOLDING the switch goes there. One switch, one
-       gesture in two lengths, and nothing that depends on another switch.
+       CURSOR, silently: one press steps to the next filled slot and says
+       its name, TWO presses in quick succession go there.
 
-       The step is taken on the RELEASE. Otherwise the press that becomes
-       the long one would move the cursor first, and the favourite entered
-       would be the one after the one aimed at.
+       It was a long press, and a long press cannot be seen from in here:
+       this host sends one pulse however long the foot stays down, which
+       is now a measured fact rather than a supposition - DIAG carries the
+       shortest gap between two presses so the same question about a
+       double press can be answered by looking instead of arguing.
 
-       Whether a long press is visible at all from in here depends on what
-       the host does with a trigger port when a foot sits on it - so the
-       longest press ever seen is published on DIAG rather than assumed. */
+       So a press is DEFERRED by a third of a second, to see whether a
+       second one follows. Two together mean go; one alone, once the wait
+       is up, means step. That third of a second is the price of having
+       one switch do both with nothing but presses to work with. */
     {
         const int now = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
-        const uint32_t tenir = (uint32_t)(self->rate * 0.6f);
-        const uint32_t oubli = (uint32_t)(self->rate * 12.0f);
+        const uint32_t attente = (uint32_t)(self->rate * 0.35f);
+        const uint32_t oubli   = (uint32_t)(self->rate * 12.0f);
 
         if (now != self->browse_was) { self->browse_bouge = 1; }
 
-        if (self->settle_left) {
-            self->browse_was = now;          /* a board being restored */
-        } else if (now && !self->browse_was) {
-            self->browse_high = 1u;          /* pressed: start counting */
-            self->browse_done = 0;
-            self->browse_was  = 1;
-        } else if (now) {
-            self->browse_high += n_samples;
-            if (self->browse_high > self->browse_max) {
-                self->browse_max = self->browse_high;
-            }
-            if (!self->browse_done && self->browse_high >= tenir) {
-                self->browse_done = 1;
+        if (trigger_edge(self, CTL_FAV_BROWSE, &self->browse_was)) {
+            if (self->browse_att) {
+                /* the second of two: how far apart, and then go */
+                const uint32_t ecart = attente - self->browse_att;
+                if (!self->browse_min || ecart < self->browse_min) {
+                    self->browse_min = ecart ? ecart : 1u;
+                }
+                self->browse_att = 0u;
                 if (self->browse_slot >= 1 && self->browse_slot <= N_USER) {
                     program_enter(self, N_PROGRAM + self->browse_slot - 1);
                 }
                 self->browse_slot = 0;
                 self->browse_left = 0u;
+            } else {
+                self->browse_att = attente;      /* wait for a second one */
             }
-        } else if (self->browse_was) {
-            if (!self->browse_done) {
+        }
+
+        /* the wait ran out: one press alone, so one step */
+        if (self->browse_att) {
+            if (self->browse_att > n_samples) {
+                self->browse_att -= n_samples;
+            } else {
+                self->browse_att = 0u;
                 /* One step, over the slots that have something in them.
                    From the cursor if there is one, from the sound in
                    force if there is not. */
@@ -3063,9 +3025,6 @@ run(LV2_Handle instance, uint32_t n_samples)
                     }
                 }
             }
-            self->browse_high = 0u;
-            self->browse_done = 0;
-            self->browse_was  = 0;
         }
 
         /* A walk left half done must not fire ten minutes later. */
@@ -3961,11 +3920,17 @@ run(LV2_Handle instance, uint32_t n_samples)
         for (int u = 0; u < N_USER; ++u) {
             if (self->user[u].filled) { ++rempli; }
         }
-        /* the longest press ever seen, in tenths of a second: whether a
-           long press is visible from in here at all is a question about
-           the host, and this is the only way to ask it */
-        int dixiemes = (int)(self->browse_max / (self->rate * 0.1f) + 0.5f);
-        if (dixiemes > 99) { dixiemes = 99; }
+        /* The shortest gap ever seen between two presses of GO TO, in
+           hundredths of a second. Whether two presses can even be told
+           apart from in here is a question about the host, and asking it
+           by looking is what the last four builds were short of. 99 means
+           no two presses have ever been close enough to count. */
+        int dixiemes = 99;
+        if (self->browse_min) {
+            dixiemes = (int)(self->browse_min / (self->rate * 0.01f) + 0.5f);
+            if (dixiemes > 99) { dixiemes = 99; }
+            if (dixiemes < 1)  { dixiemes = 1; }
+        }
         *self->ctl_out[CTL_DIAG] = (float)(dixiemes * 100000
                                            + self->browse_bouge * 10000
                                            + rempli * 1000
@@ -3998,10 +3963,6 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->forget_left -= n_samples;
         }
 
-        if (self->popup_freeze) {
-            self->popup_freeze = (self->popup_freeze > n_samples)
-                               ? self->popup_freeze - n_samples : 0u;
-        }
         if (self->screen_left <= n_samples || force) {
             self->screen_left = self->screen_period;
             /* the cursor of the name editor: half a second lit, half

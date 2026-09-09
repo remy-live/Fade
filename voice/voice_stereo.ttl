@@ -896,7 +896,7 @@
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
-        rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: one press, one step, and the switch says the name of the one it has reached. NEXT USER beside it is what goes there - choose with one foot, leave with the other. Four seconds without a press and it forgets, so a walk left half done cannot fire later."
+        rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: one press steps to the next and the switch says its name, TWO presses together go there. A press is held back a third of a second to see whether a second follows, which is the price of one switch doing both with nothing but presses to work with - a long press cannot be seen at all on this machine. Twelve seconds without a press and it forgets, so a walk left half done cannot fire later."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
         lv2:index 77 ;
@@ -905,7 +905,7 @@
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 9999999.0 ;
-        rdfs:comment "Output, for finding out why a switch is not doing what you expect. Seven digits. The first two are the LONGEST press ever seen on FAV BROWSE, in tenths of a second - which says whether a long press is visible to the plugin at all on this machine, or whether the host sends a pulse however long the foot stays down. The third is 1 once that switch has been seen to move (0 means the port is not connected - remove the block from the pedalboard and add it back). The fourth is how many USER slots have something SAVED in them, which is what the walk steps over. The fifth is the favourite the cursor is on, 0 for none. The last two are the screen capabilities the host announced for that switch, 99 if it is not addressed. The web interface reads it out in words."
+        rdfs:comment "Output, for finding out why a switch is not doing what you expect. Seven digits. The first two are the SHORTEST gap ever seen between two presses of FAV BROWSE, in hundredths of a second, 99 if no two have ever landed close together - which says whether two presses can be told from one on this machine. A long press cannot: the host sends one pulse however long the foot stays down, which is measured, not supposed. The third is 1 once that switch has been seen to move (0 means the port is not connected - remove the block from the pedalboard and add it back). The fourth is how many USER slots have something SAVED in them, which is what the walk steps over. The fifth is the favourite the cursor is on, 0 for none. The last two are the screen capabilities the host announced for that switch, 99 if it is not addressed. The web interface reads it out in words."
     ] , [
         a lv2:ControlPort , lv2:InputPort ;
         lv2:index 78 ;

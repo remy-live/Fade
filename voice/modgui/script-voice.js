@@ -358,14 +358,16 @@ function (event, funcs) {
             var cur   = Math.floor(n / 100) % 10;
             var plein = Math.floor(n / 1000) % 10;
             var bouge = Math.floor(n / 10000) % 10;
-            var appui = Math.floor(n / 100000);
+            var ecart = Math.floor(n / 100000);
             var dit = [];
             dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
-            /* the whole question about a long press: is one visible from
-               inside the plugin at all, or does the host send a pulse
-               however long the foot stays down */
-            dit.push(appui ? ('appui le plus long vu ' + (appui / 10) + ' s')
-                           : 'aucun appui tenu vu');
+            /* Two presses together are how GO TO is told to go there: a
+               long press cannot be seen at all on this machine, the host
+               sending one pulse however long the foot stays down. This
+               says whether two presses have ever landed close enough. */
+            dit.push(ecart >= 99 ? 'jamais deux appuis rapproches'
+                                 : ('deux appuis vus a ' + (ecart / 100)
+                                    + ' s d ecart'));
             dit.push(plein + (plein === 1 ? ' favori enregistre'
                                           : ' favoris enregistres'));
             dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');
@@ -373,7 +375,7 @@ function (event, funcs) {
                                  : ('ecran annonce ' + caps));
             icon.find('.voice-diag')
                 .text(dit.join('  \u00b7  '))
-                .toggleClass('alerte', !bouge || plein < 2 || appui < 6);
+                .toggleClass('alerte', !bouge || plein < 2);
         }
     }
 
