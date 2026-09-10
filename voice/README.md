@@ -167,7 +167,7 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second goes there. Address it as **momentary**. Twelve seconds untouched and it forgets. |
+| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second goes there. A plain toggle, not a trigger, so that mod-ui offers **Momentary** under Advanced — address it that way. Twelve seconds untouched and it forgets. |
 | **GO 1**…**GO 6** | One switch per favourite: a press goes to that one, always, whatever was pressed before. Each carries its own favourite's name. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
@@ -453,11 +453,24 @@ that read two quick presses as "go there", and it made exactly that
 impossible: every fast walk was a series of go-theres. A release is
 instant, so a fast walk is one step per press with nothing to wait for.
 
-The footswitch has to be addressed as **momentary** for a hold to be seen
-at all; otherwise the host sends one pulse however long the foot stays
-down. **DIAG says which**: *maintien vu jusqu'à 0.5 s*, or *AUCUN MAINTIEN
-VU — le switch envoie des impulsions*, which is the difference between a
-hold that does not work and a hold that cannot work here.
+**FAV BROWSE is a plain `lv2:toggled` port, and NOT a `pprops:trigger`.**
+That one line of the descriptor is the whole of why a hold works, and four
+builds were spent finding it out. A trigger is, by MOD's own convention, a
+momentary *pulse*: the host writes one and then zero whatever the foot
+does, so the length of a press cannot be seen from inside the plugin — and
+mod-ui, knowing it is a trigger, offers **no Momentary option** in the
+addressing dialog, there being nothing to choose. That missing option was
+the symptom. A plain toggle does offer it, under **Advanced**, and
+addressed that way the port stays high while the foot is down.
+
+So: **address FAV BROWSE as momentary**. Every other switch here stays a
+trigger, because a pulse is exactly right for them.
+
+`check_descriptor.py` fails the build if that property ever comes back.
+
+**DIAG says whether the hold arrives**: *maintien vu jusqu'à 0.5 s*, or
+*AUCUN MAINTIEN VU — le switch envoie des impulsions*, which is the
+difference between a hold that does not work and one that cannot.
 
 ## One switch per favourite
 

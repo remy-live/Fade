@@ -892,11 +892,11 @@
         lv2:index 76 ;
         lv2:symbol "fav_browse" ;
         lv2:name "FAV BROWSE" ;
-        lv2:portProperty lv2:toggled , pprops:trigger ;
+        lv2:portProperty lv2:toggled ;
         lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
-        rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: a press steps to the next and the switch says its name, and HOLDING it half a second goes there. The step is taken on the release, so walking fast is one step per press with nothing to wait for. The footswitch must be addressed as MOMENTARY for the hold to be seen at all - DIAG says whether it is. Twelve seconds without a press and it forgets, so a walk left half done cannot fire later."
+        rdfs:comment "Walks the USER slots that have something in them WITHOUT changing the sound: a press steps to the next and the switch says its name, and HOLDING it half a second goes there. The step is taken on the release, so walking fast is one step per press with nothing to wait for. ADDRESS IT AS MOMENTARY, under Advanced in the addressing dialog: it is a plain toggle and not a trigger for exactly that reason, a trigger being a pulse whose length cannot be seen. DIAG says whether the hold arrives. Twelve seconds without a press and it forgets, so a walk left half done cannot fire later."
     ] , [
         a lv2:ControlPort , lv2:OutputPort ;
         lv2:index 77 ;

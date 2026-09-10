@@ -941,15 +941,25 @@ TAIL = [
  # go to the one you stopped on. NEXT USER enters each one it passes,
  # which is right for cycling and wrong for reaching the third of five
  # in the middle of a song.
+ # NOT a pprops:trigger, and that is the whole of why the hold works.
+ # A trigger is by MOD's own convention a momentary PULSE: the host writes
+ # one and then zero whatever the foot does, so the length of a press
+ # cannot be seen from in here - and mod-ui, knowing it is a trigger,
+ # offers no Momentary option in the addressing dialog, there being
+ # nothing to choose. A plain toggle DOES offer it, under Advanced, and
+ # addressed that way the port stays high while the foot is down. Every
+ # other switch here stays a trigger: a pulse is exactly right for them.
  ("in", "fav_browse", "FAV BROWSE", 0.0, 1.0, 0.0, None,
-  ["lv2:toggled", "pprops:trigger"],
+  ["lv2:toggled"],
   "Walks the USER slots that have something in them WITHOUT changing the "
   "sound: a press steps to the next and the switch says its name, and "
   "HOLDING it half a second goes there. The step is taken on the release, "
-  "so walking fast is one step per press with nothing to wait for. The "
-  "footswitch must be addressed as MOMENTARY for the hold to be seen at "
-  "all - DIAG says whether it is. Twelve seconds without a press and it "
-  "forgets, so a walk left half done cannot fire later."),
+  "so walking fast is one step per press with nothing to wait for. ADDRESS "
+  "IT AS MOMENTARY, under Advanced in the addressing dialog: it is a plain "
+  "toggle and not a trigger for exactly that reason, a trigger being a "
+  "pulse whose length cannot be seen. DIAG says whether the hold arrives. "
+  "Twelve seconds without a press and it forgets, so a walk left half "
+  "done cannot fire later."),
 
  # What the plugin SEES, published so it can be read instead of guessed.
  # The screen of this machine announces nothing and a footswitch is a

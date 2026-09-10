@@ -55,6 +55,18 @@ dire("hmi:WidgetControl declared as optionalFeature",
 dire("hmi: prefix is http://moddevices.com/ns/hmi#",
      '@prefix hmi:    <http://moddevices.com/ns/hmi#>' in ttl)
 
+# --- the one switch whose PRESS IS TIMED must not be a trigger ---
+# A pprops:trigger is, by MOD's own convention, a momentary pulse: the host
+# writes one and then zero whatever the foot does, so the length of a press
+# cannot be seen from inside the plugin - and mod-ui offers no Momentary
+# option for one, there being nothing to choose. FAV BROWSE goes on a HELD
+# switch, so it is a plain toggle. Four builds were spent finding that out.
+_fb = re.search(r'lv2:symbol\s+"fav_browse"\s*;.*?lv2:portProperty\s+([^;]+);',
+                ttl, re.S)
+dire("FAV BROWSE is a plain toggle, not a trigger: its press is TIMED",
+     _fb is not None and 'trigger' not in _fb.group(1),
+     _fb.group(1).strip() if _fb else "port not found")
+
 
 def ports(text):
     """Every port block, in file order."""
