@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD25_AARCH64_20260910";
+static const volatile char build_tag[] = "VOICE_BUILD26_AARCH64_20260910";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */

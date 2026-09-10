@@ -66,6 +66,13 @@ _fb = re.search(r'lv2:symbol\s+"fav_browse"\s*;.*?lv2:portProperty\s+([^;]+);',
 dire("FAV BROWSE is a plain toggle, not a trigger: its press is TIMED",
      _fb is not None and 'trigger' not in _fb.group(1),
      _fb.group(1).strip() if _fb else "port not found")
+# ...and asks the host to follow the foot rather than latch. Without this
+# the addressing defaults to a latch: the port goes high on one press and
+# stays there until the next, so a hold is a switch left on and cannot be
+# told from a foot that never lifted.
+dire("and asks for momentary-on by default, so the port follows the foot",
+     _fb is not None and 'preferMomentaryOnByDefault' in _fb.group(1),
+     _fb.group(1).strip() if _fb else "port not found")
 
 
 def ports(text):
