@@ -1007,9 +1007,14 @@ TAIL = [
  # The screen of this machine announces nothing and a footswitch is a
  # black box from in here: without this, every question about why a
  # switch does nothing is answered by a supposition.
- ("out", "diag", "DIAG", 0.0, 9999999.0, 0.0, None, [],
+ ("out", "diag", "DIAG", 0.0, 999999999.0, 0.0, None, [],
   "Output, for finding out why a switch is not doing what you expect. "
-  "Seven digits. The first two are the LONGEST press ever seen on FAV "
+  "Nine digits. The first two are how many LOCKS the plugin actually "
+  "sees on - not how many the web page is drawing as on, but how many "
+  "arrive at its ports. A page showing two padlocks beside a plugin that "
+  "says nought means the ports are not connected: remove the block from "
+  "the pedalboard and add it back. "
+  "The next two are the LONGEST press ever seen on FAV "
   "BROWSE, in tenths of a second. Going there is a held switch, and a "
   "held switch is only visible if the footswitch was addressed as "
   "momentary: zero means the host sends one pulse however long the foot "
@@ -1134,7 +1139,7 @@ PANEL = [
     ("REVERB",   ["reverb_on", "reverb", "reverb_mix"]),
     # One switch per block, and they all do the same thing: keep this
     # block where I have put it, whatever sound is picked afterwards.
-    ("LOCKED - THIS BLOCK IS MINE, NOT THE PROGRAM'S",
+    ("LOCKS - KEEP A BLOCK WHERE IT IS WHEN THE SOUND CHANGES",
      [sym for sym, _sec in LOCK_BLOCKS]),
     ("PEDAL PAGE", ["enc_slot", "enc_param", "enc_value"]),
     # Present because every control input has to be reachable, and for
@@ -1142,6 +1147,44 @@ PANEL = [
     # at a time. Turning one by hand does no harm and no good.
     ("NOT BY HAND", ["web_slot", "web_char", "web_strobe"]),
 ]
+
+# A line of explanation under a section, where the switches alone cannot
+# say what they are for. Keyed by the section title above.
+NOTES = {
+    "FAVORIS":
+        "The name goes into the slot, onto the disc and onto the footswitch "
+        "as you type. Nothing to press, and SAVE never touches it. The list "
+        "above says them too. &#10005; twice throws a favourite away - name, "
+        "sound and all - and the cycle steps over it from the next press.",
+    "LOCKS - KEEP A BLOCK WHERE IT IS WHEN THE SOUND CHANGES":
+        "ON means <b>this block stops following the favourites</b>. Set the "
+        "reverb for the room, lock it, and no favourite and no factory sound "
+        "moves it again - which is what a lock is for: the room decides the "
+        "reverb, the set list decides the rest. "
+        "<br><br>"
+        "Three things worth knowing. The block's own <b>ON/OFF still follows "
+        "the program</b> - what is locked is the setting, not whether the "
+        "block is in the sound, or a locked reverb would turn itself on in "
+        "the sounds built without one. <b>SAVE leaves a locked block alone</b> "
+        "in a slot that already has something in it, so the room does not get "
+        "baked into six favourites; an empty slot still takes everything. And "
+        "turning a lock off <b>hands the block straight back</b> to the sound "
+        "in force, knobs and all. "
+        "<br><br>"
+        "They are global - one set for the plugin, not one per favourite. "
+        "There is a padlock in the head of each section of the pedal too, and "
+        "the twelve sit at the end of ENC 2's walk on the device. "
+        "<br><br>"
+        "<b>Nothing happening?</b> These ports are new. A block that was "
+        "already in the pedalboard before this build has to be <b>removed and "
+        "added again</b>, or they are never connected and the switch here "
+        "reaches nothing. The readout at the top of the pedal says which: it "
+        "compares the padlocks lit here with the number the plugin actually "
+        "sees.",
+    "NOT BY HAND":
+        "Written by the interface, one character at a time. Here because "
+        "every control has to be reachable, and for nothing else.",
+}
 
 # Scale points: the lists a knob walks through on the device.
 SCALE = {
@@ -1673,18 +1716,11 @@ def write_settings(path):
                          'THE SIX NAMES &mdash; seven letters each</div>')
             corps += boites
             corps.append('                <div class="voice-set-names-note{{{cns}}}">'
-                         'The name goes into the slot, onto the disc and onto the '
-                         'footswitch as you type. Nothing to press, and SAVE never '
-                         'touches it. The list above says them too. '
-                         '&#10005; twice throws a favourite away - name, sound and '
-                         'all - and the cycle steps over it from the next press.'
-                         '</div>')
+                         + NOTES[titre] + '</div>')
             corps.append('                </div>')
-        if titre == "NOT BY HAND":
-            corps.append('                <div class="voice-set-names-note{{{cns}}}">'
-                         'Written by the interface, one character at a time. '
-                         'Here because every control has to be reachable, and for '
-                         'nothing else.</div>')
+        elif titre in NOTES:
+            corps.append('                <div class="voice-set-note{{{cns}}}">'
+                         + NOTES[titre] + '</div>')
         corps.append('            </div>')
 
     html = """<!-- GENERATED by make_ttl.py from CONTROLS and PANEL - do not edit.

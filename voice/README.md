@@ -350,6 +350,21 @@ They are global — one set for the plugin, not one per favourite — they
 apply to the factory presets too, and they are saved with the pedalboard
 because they are ordinary ports.
 
+**Nothing happening?** Three things look exactly like a broken lock and are
+not:
+
+* **The block predates the ports.** A VOICE block that was already in the
+  pedalboard before this build never had these ports connected, so the
+  switch reaches nothing. Remove the block and add it back. DIAG says
+  whether this is it: the readout compares the padlocks lit in the page
+  with the number the plugin is actually receiving.
+* **The octave is in HARMONY, not in PITCH.** VOICE 1 at −12 is the harmony
+  block; PITCH is the SEMI knob beside it. Each is held by its own lock.
+* **The block's switch turned off.** LOCK PITCH holds the *semitones*. If
+  the favourite you go to was saved with PITCH off, the block goes off and
+  you hear no shift — the locked value is still there, under a switch that
+  is following the program, exactly as it is meant to.
+
 **Where to find them.** A **padlock** in the head of each section of the
 web UI, beside the switch that turns the block on: amber when it is on,
 where the on/off is green, because it is not another thing switched on. A
@@ -707,21 +722,24 @@ words at the top left of the pedal:
 
 ```
 GO TO connecte · 5 favoris enregistres · curseur sur 3 · ecran annonce 6
+  · 2 verrou(s), vu(s) par le plugin
 ```
 
-Five digits, from the left:
+Nine digits, from the left:
 
 | Digit | Says |
 |---|---|
-| **1-2** | the **longest press ever seen** on FAV BROWSE, in tenths of a second. Going there is a held switch, and a held switch is only visible if the footswitch was addressed as momentary. **Zero** means the host sends one pulse however long the foot stays down — a hold that *cannot* work here, rather than one that does not. |
-| **3** | 1 once that switch has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
-| **4** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
-| **5** | the favourite the cursor is on, 0 for none. |
-| **6-7** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
+| **1-2** | how many **locks the plugin actually sees** — not how many the page is drawing, but how many arrive at its ports. The page compares the two and says so when they disagree: `VERROUS: 2 allume(s) ici, 0 vu(s) par le plugin — ENLEVER LE BLOC DU PEDALBOARD ET LE REMETTRE`. Nothing else can tell a lock that is not working from a lock whose port was never connected. |
+| **3-4** | the **longest press ever seen** on FAV BROWSE, in tenths of a second. Going there is a held switch, and a held switch is only visible if the footswitch was addressed as momentary. **Zero** means the host sends one pulse however long the foot stays down — a hold that *cannot* work here, rather than one that does not. |
+| **5** | 1 once that switch has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
+| **6** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
+| **7** | the favourite the cursor is on, 0 for none. |
+| **8-9** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
 
-The readout turns amber in the two states where the switch cannot do what
-is asked of it and it is not the switch's fault: port not connected, or
-fewer than two favourites saved.
+The readout turns amber in the three states where a control cannot do what
+is asked of it and it is not the control's fault: port not connected,
+fewer than two favourites saved, or padlocks lit in the page that the
+plugin is not receiving.
 
 ## The screen, and what it announces
 

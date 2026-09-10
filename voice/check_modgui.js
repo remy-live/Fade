@@ -354,6 +354,32 @@ if (typeof fn === 'function') {
             && lu2.indexOf('non adresse') >= 0
             && lu2.indexOf('AUCUN MAINTIEN VU') >= 0, lu2);
 
+        /* The one thing that cannot be seen from the outside: a padlock
+           lit in the page beside a port the plugin never receives,
+           because the block predates the build that added it. The page
+           compares the two rather than leaving it to be worked out. */
+        fn({ type: 'change', icon: icon, symbol: 'lock_pitch', value: 1 },
+           funcs);
+        fn({ type: 'change', icon: icon, symbol: 'lock_reverb', value: 1 },
+           funcs);
+        fn({ type: 'change', icon: icon, symbol: 'diag', value: 515306 },
+           funcs);
+        const lu3 = doc.querySelector('.voice-diag').textContent;
+        say('two padlocks lit and none seen is called out, with the remedy',
+            lu3.indexOf('2 allume(s) ici, 0 vu(s)') >= 0
+            && lu3.indexOf('REMETTRE') >= 0, lu3);
+        fn({ type: 'change', icon: icon, symbol: 'diag',
+             value: 20515306 }, funcs);
+        const lu4 = doc.querySelector('.voice-diag').textContent;
+        say('and when the plugin sees them, it simply says how many',
+            lu4.indexOf('2 verrou(s)') >= 0
+            && lu4.indexOf('REMETTRE') < 0, lu4);
+        fn({ type: 'change', icon: icon, symbol: 'lock_pitch', value: 0 },
+           funcs);
+        fn({ type: 'change', icon: icon, symbol: 'lock_reverb', value: 0 },
+           funcs);
+        fn({ type: 'change', icon: icon, symbol: 'diag', value: 99 }, funcs);
+
         /* Throwing a favourite away: two clicks on the cross, and the
            second within three seconds. A hidden checkbox is what is
            really clicked - a form control keeps its own state where a

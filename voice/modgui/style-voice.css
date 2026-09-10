@@ -598,3 +598,12 @@
     margin-top: 6px; max-width: 230px;
     font-size: 9px; line-height: 1.5; color: #7c8b9b;
 }
+/* A line of explanation under a whole section. Twelve switches called
+   LOCK GATE to LOCK REVERB say what they are, and nothing at all about
+   what happens when you throw one - which is the only thing worth
+   knowing about them. */
+.voice-set-note{{{cns}}} {
+    margin-top: 8px; max-width: 760px;
+    font-size: 10px; line-height: 1.6; color: #8b9bab;
+}
+.voice-set-note{{{cns}}} b { color: #cfe0ee; font-weight: 600; }

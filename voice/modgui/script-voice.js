@@ -437,15 +437,16 @@ function (event, funcs) {
         } else if (symbol === 'time_out') {
             icon.find('.voice-time-value').text(Math.round(nombre(valeur)) + ' ms');
         } else if (symbol === 'diag') {
-            /* Five digits of what the plugin sees, read out in words: a
-               switch that does nothing has to be able to say why, and
-               from inside a plugin a footswitch is a black box. */
+            /* What the plugin sees, read out in words: a switch that does
+               nothing has to be able to say why, and from inside a plugin
+               a footswitch is a black box. */
             var n = Math.round(nombre(valeur));
             var caps  = n % 100;
             var cur   = Math.floor(n / 100) % 10;
             var plein = Math.floor(n / 1000) % 10;
             var bouge = Math.floor(n / 10000) % 10;
-            var tenu = Math.floor(n / 100000);
+            var tenu  = Math.floor(n / 100000) % 100;
+            var verr  = Math.floor(n / 10000000);
             var dit = [];
             dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
             /* Going there is a HELD switch, and a held switch is only
@@ -459,9 +460,27 @@ function (event, funcs) {
             dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');
             dit.push(caps === 99 ? 'switch non adresse'
                                  : ('ecran annonce ' + caps));
+            /* How many locks ARRIVE, which is not the same as how many
+               the page is drawing. Two padlocks lit here and nought seen
+               there means the ports were never connected: the block has
+               to be taken out of the pedalboard and put back. Compared
+               against the padlocks actually on, so the page says which
+               of the two it is rather than leaving it to be worked out. */
+            var lus = 0;
+            for (var vi = 0; vi < VERROUS.length; vi++) {
+                if (nombre(etat(icon).ports[VERROUS[vi]]) > 0.5) { lus++; }
+            }
+            if (verr !== lus) {
+                dit.push('VERROUS: ' + lus + ' allume(s) ici, ' + verr
+                         + ' vu(s) par le plugin - ENLEVER LE BLOC DU '
+                         + 'PEDALBOARD ET LE REMETTRE');
+            } else {
+                dit.push(verr ? (verr + ' verrou(s), vu(s) par le plugin')
+                              : 'aucun verrou');
+            }
             icon.find('.voice-diag')
                 .text(dit.join('  \u00b7  '))
-                .toggleClass('alerte', !bouge || plein < 2);
+                .toggleClass('alerte', !bouge || plein < 2 || verr !== lus);
         }
     }
 

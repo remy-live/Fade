@@ -3452,6 +3452,71 @@ static void essai_verrous(void)
     fermer(&b);
 }
 
+/* The plainest thing anyone would try first, and the thing the player
+   did try: two favourites that differ by an octave, and a lock on PITCH.
+   Written out as they would do it - dial, save, dial, save, select -
+   rather than through the bench's shortcut, because the question was
+   whether it works on the machine and a test that takes a different road
+   to the same place answers a different question. */
+static void essai_verrou_octave(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    Voice* v = (Voice*)b.h;
+
+    /* favourite 1: PITCH on, an octave down */
+    b.ctl[CTL_PITCH_ON]  = 1.0f;
+    b.ctl[CTL_PITCH]     = -12.0f;
+    b.ctl[CTL_PITCH_MIX] = 100.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    /* favourite 2: PITCH on, no shift */
+    b.ctl[CTL_PITCH] = 0.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 2.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("the first favourite is an octave down",
+            (double)param_read(v, CTL_PITCH), -12.0, 0.01);
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("and the second is not - with no lock on, they differ",
+            (double)param_read(v, CTL_PITCH), 0.0, 0.01);
+
+    /* back to the octave, lock it, and go to the other one */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_LOCK_PITCH] = 1.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("with LOCK PITCH on, the octave survives the other favourite",
+            (double)param_read(v, CTL_PITCH), -12.0, 0.01);
+    verifie("and so does the knob that shows it",
+            (double)b.ctl[CTL_PITCH], -12.0, 0.01);
+
+    /* HARMONY is a different block and a different lock: an octave dialled
+       on VOICE 1 is not held by LOCK PITCH, which is the likeliest way to
+       think a lock is broken when it is doing exactly what it says */
+    verifie_vrai("PITCH and HARMONY are locked separately",
+                 lock_of[CTL_PITCH] != lock_of[CTL_HARM_1]);
+
+    /* and the lock holds the SETTING, never the block's own switch */
+    b.ctl[CTL_LOCK_PITCH] = 0.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    verifie("unlocking gives the octave back to the favourite in force",
+            (double)param_read(v, CTL_PITCH), 0.0, 0.01);
+
+    fermer(&b);
+}
+
 /* The locks on the pedal page: encoder 2 walks to them past the
    parameters, encoder 3 flips them, and a locked parameter says so where
    its unit would go. A lock nothing announces is a favourite that sounds
@@ -3699,9 +3764,25 @@ static void essai_diag(void)
        question being whether the footswitch can send one at all */
     tenir(&b, 800.0);
     const double lu = (double)b.ctl[CTL_DIAG];
-    const double tete = (lu - (double)((int)lu % 100000)) / 100000.0;
+    const double tete = (double)(((int)lu / 100000) % 100);
     verifie_vrai("the longest hold ever seen is measured, in tenths",
                  tete >= 7.0 && tete <= 9.0);
+
+    /* And how many locks ARRIVE. Not how many the web page is drawing:
+       what reaches the ports. A page showing two padlocks on beside a
+       plugin that says nought is a block that was never taken out of the
+       pedalboard and put back after a build that added ports - and
+       without this digit the two are indistinguishable from the outside,
+       which is exactly the guessing DIAG exists to end. */
+    verifie("no lock on, and the plugin says so",
+            (double)((int)b.ctl[CTL_DIAG] / 10000000), 0.0, 0.5);
+    b.ctl[CTL_LOCK_PITCH]  = 1.0f;
+    b.ctl[CTL_LOCK_REVERB] = 1.0f;
+    silence(&b); tourner(&b);
+    verifie("two locks on, and the plugin says two",
+            (double)((int)b.ctl[CTL_DIAG] / 10000000), 2.0, 0.5);
+    verifie_vrai("without disturbing anything else it says",
+                 ((int)b.ctl[CTL_DIAG] % 10000000) / 100000 == (int)tete);
     fermer(&b);
 
     /* a screen that announces nothing says so, rather than looking like
@@ -4490,6 +4571,7 @@ int main(int argc, char** argv)
     printf("One switch per favourite:\n"); essai_favoris_directs();
     printf("How far the cycle goes:\n"); essai_cycle();
     printf("The twelve locks:\n"); essai_verrous();
+                                           essai_verrou_octave();
                                            essai_verrous_page();
     printf("Throwing a favourite away:\n"); essai_supprimer();
     printf("A screen that announces nothing:\n"); essai_caps_vides();

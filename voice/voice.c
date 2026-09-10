@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD27_AARCH64_20260910";
+static const volatile char build_tag[] = "VOICE_BUILD28_AARCH64_20260910";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -525,7 +525,7 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "n7",             0.0f,  255.0f,    32.0f },
     { "web_slot",       0.0f,    6.0f,     0.0f },
     { "fav_browse",     0.0f,    1.0f,     0.0f },
-    { "diag",           0.0f, 9999999.0f,  0.0f },
+    { "diag",           0.0f, 999999999.0f, 0.0f },
     { "fav_1",          0.0f,    1.0f,     0.0f },
     { "fav_2",          0.0f,    1.0f,     0.0f },
     { "fav_3",          0.0f,    1.0f,     0.0f },
@@ -4183,7 +4183,15 @@ run(LV2_Handle instance, uint32_t n_samples)
            does not work" and "the hold cannot work here". */
         int dixiemes = (int)(self->browse_max / (self->rate * 0.1f) + 0.5f);
         if (dixiemes > 99) { dixiemes = 99; }
-        *self->ctl_out[CTL_DIAG] = (float)(dixiemes * 100000
+        /* How many locks the plugin ACTUALLY SEES. Not how many the web
+           page is drawing as on: what arrives at the port. A new port is
+           not connected until the block is removed from the pedalboard
+           and put back, and until it is, the plugin reads its default -
+           so a page showing two padlocks on beside a plugin that says
+           nought is the whole diagnosis, and the only way to tell that
+           from a lock that is not working. */
+        *self->ctl_out[CTL_DIAG] = (float)(locks_on(self) * 10000000
+                                           + dixiemes * 100000
                                            + self->browse_bouge * 10000
                                            + rempli * 1000
                                            + self->browse_slot * 100
