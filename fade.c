@@ -57,7 +57,7 @@
    same stamp for 32- and 64-bit binaries, so the check happily passed on
    a binary the device could not load. */
 __attribute__((used))
-static const volatile char build_tag[] = "FADE_BUILD4_AARCH64_20260901";
+static const volatile char build_tag[] = "FADE_BUILD6_AARCH64_20260901";
 
 #define TIME_MIN    0.0f
 #define TIME_MAX 10000.0f
@@ -146,7 +146,10 @@ typedef enum {
     CTL_GAIN_2    = 6,   /* gain of input 2, in dB */
     CTL_TRIGGER   = 7,   /* input: every rising edge starts the fade */
     CTL_STATE     = 8,   /* output: the state actually in force */
-    CTL_COUNT     = 9
+    CTL_SLEW      = 9,   /* input: how long MANUAL takes to reach a new
+                            position, in ms. 0 jumps, which clicks when
+                            MANUAL is driven from a stepped source. */
+    CTL_COUNT     = 10
 } ControlIndex;
 
 /* Widest port count of the two variants: 6 audio + 9 controls. */
@@ -167,6 +170,7 @@ typedef struct {
     const float* gain_1;
     const float* gain_2;
     const float* trigger;
+    const float* slew;
     float*       state_out;
 
     double sample_rate;
@@ -186,7 +190,9 @@ typedef struct {
        ramp would drag the position straight back to the current state,
        and turning the control would appear to do nothing at all. */
     int    manual;
+    int    primed;          /* has the host finished setting up the ports? */
     float  progress_prev;
+    double manual_target;   /* where the hand asked to go; pos slides to it */
     double pos;          /* 0 = input 1, 1 = input 2.
                             Kept in double: accumulating a 1e-6 step in
                             float drifted by more than 1 % over a ten
@@ -302,6 +308,7 @@ instantiate(const LV2_Descriptor*     descriptor,
     self->gain_1     = &self->neutral;
     self->gain_2     = &self->neutral;
     self->trigger  = &self->neutral;
+    self->slew     = &self->neutral;
     self->state_out = NULL;
 
     self->screen_period = (uint32_t)(self->sample_rate / SCREEN_HZ);
@@ -359,6 +366,7 @@ connect_port(LV2_Handle instance, uint32_t port, void* data)
     case CTL_GAIN_1:   self->gain_1   = data ? (const float*)data : neutral; break;
     case CTL_GAIN_2:   self->gain_2   = data ? (const float*)data : neutral; break;
     case CTL_TRIGGER:  self->trigger  = data ? (const float*)data : neutral; break;
+    case CTL_SLEW:     self->slew     = data ? (const float*)data : neutral; break;
     case CTL_POSITION: self->position_out = (float*)data;                    break;
     case CTL_STATE:    self->state_out    = (float*)data;                    break;
     default: break;
@@ -391,7 +399,9 @@ activate(LV2_Handle instance)
     self->trigger_prev = (*self->trigger > 0.5f) ? 1 : 0;
     self->pos = self->state ? 1.0 : 0.0;
     self->manual        = 0;
+    self->primed        = 0;
     self->progress_prev = *self->progress;
+    self->manual_target = self->pos;
     /* On start we take the gains as they are, with no ramp. */
     self->g1_smooth = gain_linear(*self->gain_1);
     self->g2_smooth = gain_linear(*self->gain_2);
@@ -567,22 +577,39 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (!(progress_now >= 0.0f)) { progress_now = 0.0f; }   /* also NaN */
     if (progress_now > 100.0f)   { progress_now = 100.0f; }
 
+    /* On the first block we only take note of MANUAL, we never act on it.
+       activate() runs before the host has written the saved port values,
+       so restoring a pedalboard looks exactly like someone moving the
+       control: without this, loading threw the plugin into manual mode at
+       whatever MANUAL happened to hold, ignoring the saved toggle. */
+    if (!self->primed) {
+        self->primed = 1;
+        self->progress_prev = progress_now;
+    }
+
     if (progress_now > self->progress_prev + 0.01f ||
         progress_now < self->progress_prev - 0.01f) {
-        self->manual = 1;
-        self->pos    = (double)progress_now * 0.01;
+        self->manual        = 1;
+        self->manual_target = (double)progress_now * 0.01;
         /* Keep the state consistent, so the next press goes the way the
            player expects rather than back where they just came from. */
-        self->state  = (self->pos >= 0.5) ? 1 : 0;
+        self->state = (self->manual_target >= 0.5) ? 1 : 0;
     }
     self->progress_prev = progress_now;
 
-    /* In manual mode the target is wherever the hand left it: no ramp. */
-    const double target = self->manual ? self->pos
+    /* In manual mode we head for wherever the hand asked, and we SLIDE
+       there rather than jump. Jumping is what clicks when MANUAL is fed
+       from a stepped source such as a random CV: every new value is a
+       discontinuity in the output. */
+    const double target = self->manual ? self->manual_target
                                        : (self->state ? 1.0 : 0.0);
 
     /* Two times: the way out and the way back are set separately. */
-    float ms = self->state ? *self->time_1_2 : *self->time_2_1;
+    /* Manual moves have their own time, so a long crossfade does not make
+       the control sluggish and a snappy control does not force a short
+       crossfade. */
+    float ms = self->manual ? *self->slew
+                            : (self->state ? *self->time_1_2 : *self->time_2_1);
     if (!(ms >= TIME_MIN)) {   /* also catches NaN */
         ms = TIME_MIN;
     }

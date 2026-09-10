@@ -148,4 +148,14 @@
         lv2:minimum 0 ;
         lv2:maximum 1 ;
         rdfs:comment "Input currently targeted: 0 for input 1, 1 for input 2. An output, because a plugin must not write back into an input port."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 15 ;
+        lv2:symbol "slew" ;
+        lv2:name "MANUAL SLEW" ;
+        lv2:default 30.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 10000.0 ;
+        units:unit units:ms ;
+        rdfs:comment "How long MANUAL takes to reach a new position. At 0 it jumps, which clicks when MANUAL is driven from a stepped source such as a random CV. It is separate from the crossfade times on purpose: a long crossfade would otherwise make the control sluggish."
     ] .
