@@ -380,22 +380,15 @@ function (event, funcs) {
             var cur   = Math.floor(n / 100) % 10;
             var plein = Math.floor(n / 1000) % 10;
             var bouge = Math.floor(n / 10000) % 10;
-            var ecart = Math.floor(n / 100000);
+            var tenu = Math.floor(n / 100000);
             var dit = [];
             dit.push(bouge ? 'GO TO connecte' : 'GO TO JAMAIS VU BOUGER');
-            /* GO TO says go in two ways, and which of them this machine
-               can carry is a question about the host. Under 50 is the
-               longest press seen, in tenths; over 50 is the shortest gap
-               between two presses, in hundredths, when no hold has ever
-               been seen; 99 is neither. */
-            if (ecart === 99) {
-                dit.push('jamais tenu ni tape deux fois');
-            } else if (ecart > 50) {
-                dit.push('pas de maintien vu, mais deux appuis a '
-                         + ((ecart - 50) / 100) + ' s');
-            } else {
-                dit.push('maintien vu jusqu a ' + (ecart / 10) + ' s');
-            }
+            /* Going there is a HELD switch, and a held switch is only
+               visible if the footswitch was addressed as momentary. Zero
+               says the host sends pulses: the difference between "the
+               hold does not work" and "the hold cannot work here". */
+            dit.push(tenu ? ('maintien vu jusqu a ' + (tenu / 10) + ' s')
+                           : 'AUCUN MAINTIEN VU - le switch envoie des impulsions');
             dit.push(plein + (plein === 1 ? ' favori enregistre'
                                           : ' favoris enregistres'));
             dit.push(cur ? ('curseur sur ' + cur) : 'pas de parcours');

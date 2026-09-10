@@ -340,19 +340,19 @@ if (typeof fn === 'function') {
         echo(2, 'VERSE');
 
         /* what the plugin sees, read out in words */
-        fn({ type: 'change', icon: icon, symbol: 'diag', value: 815306 }, funcs);
+        fn({ type: 'change', icon: icon, symbol: 'diag', value: 515306 }, funcs);
         const lu = doc.querySelector('.voice-diag').textContent;
         say('the diagnostic reads out in words, not in digits',
             lu.indexOf('connecte') >= 0 && lu.indexOf('5 favoris') >= 0
             && lu.indexOf('curseur sur 3') >= 0 && lu.indexOf('annonce 6') >= 0, lu);
         say('and how long a hold the plugin has ever been shown',
-            lu.indexOf('maintien vu jusqu a 0.8 s') >= 0, lu);
-        fn({ type: 'change', icon: icon, symbol: 'diag', value: 9900099 }, funcs);
+            lu.indexOf('maintien vu jusqu a 0.5 s') >= 0, lu);
+        fn({ type: 'change', icon: icon, symbol: 'diag', value: 99 }, funcs);
         const lu2 = doc.querySelector('.voice-diag').textContent;
         say('and says so plainly when the switch has never moved',
             lu2.indexOf('JAMAIS VU BOUGER') >= 0
             && lu2.indexOf('non adresse') >= 0
-            && lu2.indexOf('jamais tenu ni tape') >= 0, lu2);
+            && lu2.indexOf('AUCUN MAINTIEN VU') >= 0, lu2);
 
         /* one button per favourite, and each writes its own port */
         for (const n of [1, 3, 6]) {

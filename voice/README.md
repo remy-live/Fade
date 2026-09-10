@@ -167,7 +167,7 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second — or pressing it twice quickly — goes there. Twelve seconds untouched and it forgets. |
+| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second goes there. Address it as **momentary**. Twelve seconds untouched and it forgets. |
 | **GO 1**…**GO 6** | One switch per favourite: a press goes to that one, always, whatever was pressed before. Each carries its own favourite's name. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
@@ -436,7 +436,6 @@ moves a **cursor** instead of the sound:
 |---|---|
 | **One press** | walks to the next favourite that has something in it. **Nothing is heard.** The switch shows its name and its LED **blinks** — chosen, not entered. |
 | **Held half a second** | goes there. |
-| **or two presses together** | goes there too. |
 | **Twelve seconds untouched** | the cursor gives up and returns to the sound in force, so a walk left half done cannot fire ten minutes later. Four seconds was the first figure and it was not long enough to tap, read the switch, decide and go. |
 
 One switch, one gesture in two lengths, and nothing that depends on
@@ -444,25 +443,21 @@ another switch. **USER ▶ is the cycle and nothing else** — it used to also
 finish a walk begun on GO TO, and a switch that does two things depending
 on what was pressed before it is a switch nobody can read on a stage.
 
-**Two ways, because which one works is not the plugin's to choose.**
-Addressed as momentary, a footswitch keeps its port high while the foot is
-on it and the hold is seen. Addressed otherwise it sends one pulse however
-long the foot stays down, and only the two presses can be told apart. The
-same code covers both without knowing which:
+The step happens on the **release**, not on the press. Otherwise the press
+that becomes the hold would step first, and the favourite entered would be
+the one after the one aimed at.
 
-- a press starts a wait of a third of a second
-- a second press inside that wait means **go**
-- the switch still down after half a second means **go**
-- the wait running out with the switch **up** means one step
+**Walking fast is the whole reason this switch exists** — three quick
+presses to get from the first favourite to the fourth. There was a version
+that read two quick presses as "go there", and it made exactly that
+impossible: every fast walk was a series of go-theres. A release is
+instant, so a fast walk is one step per press with nothing to wait for.
 
-The wait only runs down while the switch is up, which is what keeps a hold
-from stepping first and then going somewhere else. A step therefore costs a
-third of a second — the price of one switch saying two things with nothing
-but presses to work with.
-
-DIAG says which of the two this machine can carry: *maintien vu jusqu'à
-0.5 s* means a hold is visible, *pas de maintien vu, mais deux appuis…*
-means only the double press is.
+The footswitch has to be addressed as **momentary** for a hold to be seen
+at all; otherwise the host sends one pulse however long the foot stays
+down. **DIAG says which**: *maintien vu jusqu'à 0.5 s*, or *AUCUN MAINTIEN
+VU — le switch envoie des impulsions*, which is the difference between a
+hold that does not work and a hold that cannot work here.
 
 ## One switch per favourite
 
@@ -601,7 +596,7 @@ Five digits, from the left:
 
 | Digit | Says |
 |---|---|
-| **1-2** | which of the two ways of going there this machine can carry. **Under 50**: the longest press ever seen on FAV BROWSE, in tenths of a second — over 5 means a hold is visible. **Over 50**: 50 plus the shortest gap between two presses, in hundredths, shown when no hold has ever been seen. **99**: neither, which is what a switch nobody has held or double-pressed looks like. |
+| **1-2** | the **longest press ever seen** on FAV BROWSE, in tenths of a second. Going there is a held switch, and a held switch is only visible if the footswitch was addressed as momentary. **Zero** means the host sends one pulse however long the foot stays down — a hold that *cannot* work here, rather than one that does not. |
 | **3** | 1 once that switch has been seen to move at all. **0 means the port is not connected** — remove the block from the pedalboard and add it back. |
 | **4** | how many USER slots have something **SAVED** in them. This is what the walk steps over, and a slot that was *named* but never saved does not count. With fewer than two, walking has nowhere to go. |
 | **5** | the favourite the cursor is on, 0 for none. |

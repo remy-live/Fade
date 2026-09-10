@@ -944,13 +944,12 @@ TAIL = [
  ("in", "fav_browse", "FAV BROWSE", 0.0, 1.0, 0.0, None,
   ["lv2:toggled", "pprops:trigger"],
   "Walks the USER slots that have something in them WITHOUT changing the "
-  "sound: one press steps to the next and the switch says its name. To go "
-  "there, HOLD it half a second or press it TWICE quickly - either will "
-  "do, because whether a held switch can be seen at all depends on how "
-  "the footswitch was addressed and that is not the plugin's to choose. A "
-  "press is held back a third of a second to tell the two apart, which is "
-  "the price of one switch saying two things. Twelve seconds without a "
-  "press and it forgets, so a walk left half done cannot fire later."),
+  "sound: a press steps to the next and the switch says its name, and "
+  "HOLDING it half a second goes there. The step is taken on the release, "
+  "so walking fast is one step per press with nothing to wait for. The "
+  "footswitch must be addressed as MOMENTARY for the hold to be seen at "
+  "all - DIAG says whether it is. Twelve seconds without a press and it "
+  "forgets, so a walk left half done cannot fire later."),
 
  # What the plugin SEES, published so it can be read instead of guessed.
  # The screen of this machine announces nothing and a footswitch is a
@@ -958,13 +957,12 @@ TAIL = [
  # switch does nothing is answered by a supposition.
  ("out", "diag", "DIAG", 0.0, 9999999.0, 0.0, None, [],
   "Output, for finding out why a switch is not doing what you expect. "
-  "Seven digits. The first two say which of the two ways of going there "
-  "this machine can carry: under 50 is the LONGEST press ever seen on FAV "
-  "BROWSE in tenths of a second, so anything over 5 means a hold is "
-  "visible; over 50 is 50 plus the shortest gap between two presses in "
-  "hundredths, shown when no hold has ever been seen; 99 is neither, "
-  "which is what a switch nobody has held or double-pressed looks like. "
-  "The third is 1 once "
+  "Seven digits. The first two are the LONGEST press ever seen on FAV "
+  "BROWSE, in tenths of a second. Going there is a held switch, and a "
+  "held switch is only visible if the footswitch was addressed as "
+  "momentary: zero means the host sends one pulse however long the foot "
+  "stays down, which is the difference between a hold that does not work "
+  "and a hold that cannot work here. The third is 1 once "
   "that switch has been seen to move (0 means the port is not connected "
   "- remove the block from the pedalboard and add it back). The fourth "
   "is how many USER slots have something SAVED in them, which is what "

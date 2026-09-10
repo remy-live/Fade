@@ -3064,26 +3064,16 @@ static void appui(Banc* b)
     silence(b); tourner(b);
 }
 
-/* A press is deferred by a third of a second to see whether a second one
-   follows, so a single tap is a press and then the wait running out. */
+/* A short press steps on the RELEASE, so a tap is a press and no more:
+   walking fast is one step per press, with nothing to wait for. */
 static void tape(Banc* b)
 {
     appui(b);
-    for (int k = 0; k < 160; ++k) { silence(b); tourner(b); }   /* 0.43 s */
+    for (int k = 0; k < 4; ++k) { silence(b); tourner(b); }
 }
 
-/* two together, well inside that third of a second */
-static void double_tape(Banc* b)
-{
-    appui(b);
-    for (int k = 0; k < 30; ++k) { silence(b); tourner(b); }    /* 80 ms */
-    appui(b);
-    for (int k = 0; k < 20; ++k) { silence(b); tourner(b); }
-}
-
-/* and the other way of saying go: the switch held down. Only a footswitch
-   addressed as momentary keeps the port high while the foot is on it -
-   which is why the plugin takes either. */
+/* And going there is the switch HELD. Only a footswitch addressed as
+   momentary keeps the port high while the foot is on it. */
 static void tenir(Banc* b, double ms)
 {
     const int blocs = (int)(ms * 0.001 * b->sr / (double)b->bloc + 0.5);
@@ -3155,10 +3145,9 @@ static void essai_parcours(void)
     verifie_vrai("with an LED blinking to say chosen, not entered",
                  ecran.clignote_on != 0);
 
-    /* two presses together say go - the way that works whatever the
-       footswitch was addressed as */
-    double_tape(&b);
-    verifie("two presses together go to the one under the cursor",
+    /* holding it says go */
+    tenir(&b, 800.0);
+    verifie("holding it goes to the one under the cursor",
             (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
     verifie("and the cursor lets go",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
@@ -3190,13 +3179,31 @@ static void essai_parcours(void)
     for (int k = 0; k < 4900; ++k) { silence(&b); tourner(&b); }
     verifie("a walk left half done is forgotten",
             (double)((Voice*)b.h)->browse_slot, 0.0, 0.01);
-    double_tape(&b);
+    tenir(&b, 800.0);
     verifie("and holding it then changes nothing",
             (double)b.ctl[CTL_TIME_OUT], 440.0, 0.01);
 
-    /* and so does holding it, where the host lets a hold be seen: the
-       wait only runs down while the switch is UP, so a hold cannot step
-       first and then go somewhere else */
+    /* Walking FAST is the whole reason this switch exists: three quick
+       presses to get from the first favourite to the fourth. There was a
+       version that read two quick presses as "go there", and it made
+       exactly that impossible. */
+    {
+        const int avant = ((Voice*)b.h)->browse_slot;
+        const double son = (double)b.ctl[CTL_TIME_OUT];
+        /* playing the fourth, and the fifth is filled: three steps go
+           5, then round to 1, then 2 */
+        appui(&b); silence(&b); tourner(&b);
+        appui(&b); silence(&b); tourner(&b);
+        appui(&b); silence(&b); tourner(&b);
+        verifie("three quick presses are three steps, not a go-there",
+                (double)((Voice*)b.h)->browse_slot, 2.0, 0.01);
+        verifie("and nothing has been heard",
+                (double)b.ctl[CTL_TIME_OUT], son, 0.01);
+        ((Voice*)b.h)->browse_slot = avant;      /* put the walk back */
+    }
+
+    /* and so does holding it: the step is taken on the RELEASE, so a hold
+       cannot step first and then go somewhere else */
     tape(&b);
     verifie("a walk is on the fifth",
             (double)((Voice*)b.h)->browse_slot, 5.0, 0.01);
@@ -3321,9 +3328,9 @@ static void essai_favoris_directs(void)
    of the suppositions was wrong. */
 static void essai_diag(void)
 {
-    /* 99 in front means no two presses have ever been close enough to be
-       told apart - which is the whole open question about this machine */
-    const double AUCUN = 9900000.0;
+    /* zero in front means no held press has ever been seen: the switch
+       sends pulses, and a hold cannot work here rather than not working */
+    const double AUCUN = 0.0;
     Banc b;
     ouvrir(&b, 0, 48000.0, 128, 1);
     neutre(&b);
@@ -3356,19 +3363,13 @@ static void essai_diag(void)
     /* two presses together: the gap between them is measured and takes
        the place of the 99, which is how one finds out whether a double
        press can be told apart from a single one on this machine at all */
-    double_tape(&b);
-    double lu = (double)b.ctl[CTL_DIAG];
-    double tete = (lu - (double)((int)lu % 100000)) / 100000.0;
-    verifie_vrai("with no hold ever seen, two presses together are measured",
-                 tete > 50.0 && tete < 70.0);
-
-    /* and a hold, once seen, is what it says instead: it is the better of
-       the two ways and the one the player asked for */
+    /* a hold, once seen, is what the two leading digits say: the whole
+       question being whether the footswitch can send one at all */
     tenir(&b, 800.0);
-    lu = (double)b.ctl[CTL_DIAG];
-    tete = (lu - (double)((int)lu % 100000)) / 100000.0;
-    verifie_vrai("a hold, once seen, is what it says instead",
-                 tete >= 5.0 && tete <= 49.0);
+    const double lu = (double)b.ctl[CTL_DIAG];
+    const double tete = (lu - (double)((int)lu % 100000)) / 100000.0;
+    verifie_vrai("the longest hold ever seen is measured, in tenths",
+                 tete >= 7.0 && tete <= 9.0);
     fermer(&b);
 
     /* a screen that announces nothing says so, rather than looking like
