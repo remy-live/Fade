@@ -583,6 +583,10 @@ typedef struct {
     float*   buf;
     uint32_t len;
     uint32_t w;
+    /* len - 2 as a float: the furthest back a read may reach. Worked out
+       once at setup rather than converted from an integer on every read,
+       and there are fifteen reads a sample. */
+    float    dmax;
 } Ring;
 
 static void ring_write(Ring* r, float x)
@@ -596,15 +600,19 @@ static void ring_write(Ring* r, float x)
    depth can walk off the end of it. */
 static float ring_read(const Ring* r, float d)
 {
-    const float dmax = (float)(r->len - 2u);
-    if (!(d >= 1.0f)) { d = 1.0f; }      /* also NaN */
-    if (d > dmax)     { d = dmax; }
+    if (!(d >= 1.0f))  { d = 1.0f; }     /* also NaN */
+    if (d > r->dmax)   { d = r->dmax; }
 
     const uint32_t di = (uint32_t)d;
     const float    f  = d - (float)di;
 
+    /* The write point is inside the line and the delay is at most its
+       length less two, so this sum overshoots by one length at most:
+       ONE subtraction, never a loop. Written as a loop it was read as a
+       loop - which a compiler must keep, and which a branch predictor
+       has to guess at fifteen times a sample. */
     uint32_t i0 = r->w + r->len - di;
-    while (i0 >= r->len) { i0 -= r->len; }
+    if (i0 >= r->len) { i0 -= r->len; }
     uint32_t i1 = (i0 == 0u) ? r->len - 1u : i0 - 1u;
 
     return r->buf[i0] + (r->buf[i1] - r->buf[i0]) * f;
@@ -1007,8 +1015,18 @@ typedef struct {
     /* --- the anti-Larsen hunter. It listens to the mono sum, once, and
            the notches it places are applied to every channel: a howl is a
            property of the room, not of a channel. --- */
-    SVF      band[N_BAND];
-    SVFCoef  band_coef[N_BAND];
+    /* The listening bank, laid out coefficient by coefficient rather
+       than filter by filter. Sixteen state-variable filters fed the same
+       sample, none of them looking at any other: the only thing standing
+       between that and four of them per instruction was the layout, and
+       an array of little structs is a layout no vector unit can use.
+       The arithmetic is unchanged, lane for lane - which matters more
+       here than anywhere else in the plugin, because the hunter compares
+       these peaks against EACH OTHER, and a change that lands on one
+       band and not its neighbours is precisely the thing that broke when
+       the bank was decimated. */
+    float    band_a1[N_BAND], band_a2[N_BAND], band_a3[N_BAND];
+    float    band_ic1[N_BAND], band_ic2[N_BAND];
     float    band_peak[N_BAND];   /* accumulated between decisions */
     float    band_env[N_BAND];    /* smoothed */
     float    band_slow[N_BAND];   /* what it has been sitting at */
@@ -1526,6 +1544,10 @@ instantiate(const LV2_Descriptor*     descriptor,
         ch->shortline.buf = p; ch->shortline.len = n_short; p += n_short;
         ch->pitchline.buf = p; ch->pitchline.len = n_pitch; p += n_pitch;
         ch->delay.buf     = p; ch->delay.len     = n_delay; p += n_delay;
+        /* how far back a read may reach, as a float, once */
+        ch->shortline.dmax = (float)(ch->shortline.len - 2u);
+        ch->pitchline.dmax = (float)(ch->pitchline.len - 2u);
+        ch->delay.dmax     = (float)(ch->delay.len     - 2u);
 
         for (int i = 0; i < N_COMB; ++i) {
             const uint32_t n = scaled_len(comb_base[i], self->rate) + (c ? REV_SPREAD : 0u);
@@ -1540,7 +1562,13 @@ instantiate(const LV2_Descriptor*     descriptor,
     for (int b = 0; b < N_BAND; ++b) {
         /* Q of 4 is a third of an octave: the same width as the spacing,
            so nothing between two bands can hide from both. */
-        svf_set(&self->band_coef[b], band_hz[b], 4.0f, self->rate);
+        {
+            SVFCoef c;
+            svf_set(&c, band_hz[b], 4.0f, self->rate);
+            self->band_a1[b] = c.a1;
+            self->band_a2[b] = c.a2;
+            self->band_a3[b] = c.a3;
+        }
     }
 
     self->screen_period = (uint32_t)(self->rate / SCREEN_HZ);
@@ -2127,7 +2155,7 @@ activate(LV2_Handle instance)
     }
 
     for (int b = 0; b < N_BAND; ++b) {
-        self->band[b].ic1 = self->band[b].ic2 = 0.0f;
+        self->band_ic1[b] = self->band_ic2[b] = 0.0f;
         self->band_peak[b] = self->band_env[b] = self->band_slow[b] = 0.0f;
         self->band_steady[b] = 0u;
         self->band_strikes[b] = 0u;
@@ -3776,10 +3804,22 @@ run(LV2_Handle instance, uint32_t n_samples)
 
             const float a = absf(mono);
             if (a > self->total_peak) { self->total_peak = a; }
+            /* svf_bp, sixteen times, written out so it vectorises: no
+               call, no pointers into an array of structs, and a maximum
+               instead of a branch. Same five multiplies and same two
+               flushes per band as the scalar one. */
             for (int b = 0; b < N_BAND; ++b) {
-                const float bp = absf(svf_bp(&self->band[b], &self->band_coef[b],
-                                             mono));
-                if (bp > self->band_peak[b]) { self->band_peak[b] = bp; }
+                const float ic1 = self->band_ic1[b];
+                const float ic2 = self->band_ic2[b];
+                const float v3  = mono - ic2;
+                const float v1  = self->band_a1[b] * ic1 + self->band_a2[b] * v3;
+                const float v2  = ic2 + self->band_a2[b] * ic1
+                                      + self->band_a3[b] * v3;
+                self->band_ic1[b] = flush(2.0f * v1 - ic1);
+                self->band_ic2[b] = flush(2.0f * v2 - ic2);
+                const float bp = absf(v1);
+                self->band_peak[b] = (bp > self->band_peak[b])
+                                   ? bp : self->band_peak[b];
             }
 
             for (int i = 0; i < N_NOTCH; ++i) {

@@ -1060,13 +1060,51 @@ Twenty-three per cent off the worst case, thirty-one per cent off a dry
 favourite, 550 checks still passing, the sanitizer clean, and the
 spectrum flat to 0.005 dB in every octave.
 
-### What is still on the table
+### And two that change nothing at all — bit for bit
 
-The anti-Larsen bank is sixteen state-variable filters per sample and the
-biggest single item left, around fifteen per cent. Decimating it is *not*
-obviously safe: at eight kilohertz, taking one sample in two can under-read
-a peak by six decibels, and the hunter decides on thresholds. It wants a
-measurement, not an opinion.
+The two above are inaudible; these two are *identical*, checked by
+subtracting 921 600 samples of the worst case and finding zero
+differences.
+
+* **The listening bank, laid out for the vector unit.** Sixteen
+  state-variable filters, all fed the same sample, none looking at any
+  other — and an array of little structs is a layout no vector unit can
+  use. Split into one array per coefficient and per state, with the
+  filter written out in place of the call, and the compiler does four
+  bands per instruction. Same five multiplies and same two flushes per
+  band. **Five per cent of the whole plugin.**
+* **`ring_read`, which runs fifteen times a sample.** Its index wrap was
+  a `while` — read as a loop, kept as a loop, guessed at by the branch
+  predictor — where the arithmetic can only ever overshoot by one length:
+  an `if`. And `len - 2` was being converted from an integer to a float
+  on every call; it is a field now. **Another five per cent.**
+
+Thirty-one per cent off the worst case in total, and the only part of it
+that is not bit-identical is the two decimations above.
+
+### What was tried and rejected
+
+**Decimating the anti-Larsen listener** — the obvious way to attack the
+biggest organ. Prototyped and measured before anything was written
+properly: **1.3 %**, and the hunter stops catching feedback at all. Three
+of its tests fail, and not only at the top of the bank.
+
+The reason is worth keeping. A recursive filter does not pause when you
+skip a sample: it runs at whatever rate you feed it. The sixteen sets of
+coefficients are computed for the sample rate, so feeding them every
+other sample moves **the whole bank down an octave** — the band labelled
+1200 Hz listens at 600, `hunt_place` puts its notch in the wrong place,
+and the harmonic test compares two bands that no longer mean anything.
+Doing it properly would need a steep anti-aliasing filter plus sixteen
+recomputed coefficient sets, and would still lose the top of the bank:
+more than the 1.3 % it buys.
+
+The bank was vectorised instead, which costs nothing and changes nothing.
+
+**Untried, and free if it works:** `-mtune=cortex-a53` in the build
+flags. The A53 is in-order and dual-issue, so it is unusually sensitive
+to instruction scheduling, and tuning changes no arithmetic whatsoever.
+It cannot be measured here — only on the device.
 
 ## What it does not do
 
