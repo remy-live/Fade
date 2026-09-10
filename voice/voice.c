@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD28_AARCH64_20260910";
+static const volatile char build_tag[] = "VOICE_BUILD29_AARCH64_20260910";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -918,24 +918,6 @@ static const char alpha[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.";
 /* How often the doubled voices work out their detune again. Two thirds
    of a millisecond at 48 kHz, against LFOs that take between a sixth of
    a second and ten seconds to come round. */
-/* Eight, not thirty-two, and the reason is measured: past eight the
-   arithmetic saved is lost in the noise of the measurement, while the
-   phase quantisation goes on growing. Four, eight, sixteen and
-   thirty-two were all rendered and compared - see the note above. */
-#ifndef CHOIR_SLOW
-#define CHOIR_SLOW 8u
-#endif
-
-/* And how often the compressor and the de-esser turn their envelope into
-   decibels and back. Both envelopes take MILLISECONDS to move; the
-   logarithm and the exponential that convert them were being worked out
-   forty-eight thousand times a second to follow something that cannot
-   change faster than a few hundred. One sample in four, and the gain
-   glides across the other three, so nothing steps. */
-#ifndef GAIN_SLOW
-#define GAIN_SLOW 4u
-#endif
-
 #define PITCH_MS      180.0f
 #define PITCH_WIN_MS   55.0f
 #define DELAY_MAX_MS 2000.0f
@@ -1132,18 +1114,6 @@ typedef struct {
     LV2_URID_Map* map;
     LV2_URID      urid_slots;
     LV2_URID      urid_chunk;
-
-    /* The gain of the compressor and of the de-esser, worked out one
-       sample in GAIN_SLOW and glided across the others. */
-    float    comp_g, comp_step, comp_red;
-    uint32_t comp_left;
-    float    de_g, de_step;
-    uint32_t de_left;
-
-    /* The detune of the doubled voices, worked out CHOIR_SLOW samples at
-       a time: see the note in run(). */
-    float    choir_rate[MAX_VOICES];
-    uint32_t choir_left;
 
     /* --- LFOs --- */
     float ph_choir[MAX_VOICES];        /* grain phase, one per voice */
@@ -2092,15 +2062,6 @@ activate(LV2_Handle instance)
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
     self->browse_bouge      = 0;
     self->browse_high       = 0u;
-    self->comp_g            = 1.0f;
-    self->comp_step         = 0.0f;
-    self->comp_red          = 0.0f;
-    self->comp_left         = 0u;
-    self->de_g              = 1.0f;
-    self->de_step           = 0.0f;
-    self->de_left           = 0u;
-    self->choir_left        = 0u;
-    for (int k = 0; k < MAX_VOICES; ++k) { self->choir_rate[k] = 0.0f; }
     self->browse_max        = 0u;
     self->browse_fait       = 0;
     for (int u = 0; u < N_USER; ++u) {
@@ -3666,23 +3627,21 @@ run(LV2_Handle instance, uint32_t n_samples)
        arriving at full level, and one it has dropped fades out - so the
        loop below still has to run every voice that is not yet silent. */
     float vg_step[MAX_VOICES];
-    /* Every division the doubled voices do is by something that does not
-       change across a block: the sample rate, and the grain length. Four
-       phases and one grain per voice, four voices - twenty divisions per
-       sample, and a division is the slowest thing a core does. Turned
-       into their reciprocals here, once, and multiplied inside. Exact
-       arithmetic apart from one rounding of the reciprocal itself. */
+    /* The four LFO phases of each doubled voice advanced by dividing a
+       constant frequency by the constant sample rate, per voice, per
+       sample: sixteen divisions a sample, and a division is the slowest
+       thing a core does. Hoisted here - and hoisted as DIVISIONS, not
+       turned into reciprocals and multiplied. The same division done
+       once gives the same number; a reciprocal multiplied gives one that
+       rounds differently, and the whole point of this pass is that not
+       one bit moves. */
     float inc_drift[MAX_VOICES], inc_vib[MAX_VOICES];
-    float inc_swell[MAX_VOICES], inc_amp[MAX_VOICES], inv_win[MAX_VOICES];
-    {
-        const float inv_rate = 1.0f / rate;
-        for (int k = 0; k < MAX_VOICES; ++k) {
-            inc_drift[k] = choir_drift_hz[k] * inv_rate;
-            inc_vib[k]   = choir_vib_hz[k]   * inv_rate;
-            inc_swell[k] = choir_swell_hz[k] * inv_rate;
-            inc_amp[k]   = choir_amp_hz[k]   * inv_rate;
-            inv_win[k]   = 1.0f / choir_win[k];
-        }
+    float inc_swell[MAX_VOICES], inc_amp[MAX_VOICES];
+    for (int k = 0; k < MAX_VOICES; ++k) {
+        inc_drift[k] = choir_drift_hz[k] / rate;
+        inc_vib[k]   = choir_vib_hz[k]   / rate;
+        inc_swell[k] = choir_swell_hz[k] / rate;
+        inc_amp[k]   = choir_amp_hz[k]   / rate;
     }
 
     int   n_run = n_voices;
@@ -3908,34 +3867,18 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->comp_env = flush(self->comp_env + ce * (det - self->comp_env));
         }
         if (comp_on) {
-            /* The DETECTOR runs every sample above; only the conversion
-               to decibels and back is done one sample in four. Sixty
-               microseconds of lag on an attack, against four times fewer
-               logarithms - and the gain glides between two of them, so
-               there is no staircase on the signal. */
-            if (self->comp_left == 0u) {
-                self->comp_left = GAIN_SLOW;
-                const float over = lin_to_db(self->comp_env) - sm[SM_COMP_THR];
-                /* The switch scales what the compressor does rather than
-                   branching around it, so a foot on it fades instead of
-                   stepping, and the detector stays warm either way. */
-                const float red = comp_reduction(over, sm[SM_COMP_SLOPE], knee)
-                                * self->sw[SW_COMP];
-                self->comp_red = red;
-                const float g = db_to_lin(sm[SM_MAKEUP] * self->sw[SW_COMP]
-                                          - red);
-                self->comp_step = (g - self->comp_g) * (1.0f / (float)GAIN_SLOW);
-            }
-            --self->comp_left;
-            self->comp_g += self->comp_step;
-            if (self->comp_red > gr_worst) { gr_worst = self->comp_red; }
+            const float over = lin_to_db(self->comp_env) - sm[SM_COMP_THR];
+            /* The switch scales what the compressor does rather than
+               branching around it, so a foot on it fades instead of
+               stepping, and the detector stays warm either way. */
+            const float red = comp_reduction(over, sm[SM_COMP_SLOPE], knee)
+                            * self->sw[SW_COMP];
+            if (red > gr_worst) { gr_worst = red; }
+
+            const float g = db_to_lin(sm[SM_MAKEUP] * self->sw[SW_COMP] - red);
             for (uint32_t c = 0; c < n_ch; ++c) {
-                x[c] *= self->comp_g;
+                x[c] *= g;
             }
-        } else {
-            self->comp_left = 0u;
-            self->comp_g    = 1.0f;
-            self->comp_step = 0.0f;
         }
 
         /* --- de-esser --- */
@@ -3953,22 +3896,11 @@ run(LV2_Handle instance, uint32_t n_samples)
             const float ce = (hdet > self->de_env) ? de_att : de_rel;
             self->de_env = flush(self->de_env + ce * (hdet - self->de_env));
 
-            /* Same again: the sibilance detector is per-sample, its
-               conversion to decibels is not. */
-            if (self->de_left == 0u) {
-                self->de_left = GAIN_SLOW;
-                const float over = lin_to_db(self->de_env) - deess_thr;
-                const float g = (over > 0.0f)
-                    ? db_to_lin(-deess_slope * over * self->sw[SW_DE_ESS])
-                    : 1.0f;
-                self->de_step = (g - self->de_g) * (1.0f / (float)GAIN_SLOW);
-            }
-            --self->de_left;
-            self->de_g += self->de_step;
-            if (self->de_g < 1.0f) {
-                const float cut = 1.0f - self->de_g;
+            const float over = lin_to_db(self->de_env) - deess_thr;
+            if (over > 0.0f) {
+                const float g = db_to_lin(-deess_slope * over * self->sw[SW_DE_ESS]);
                 for (uint32_t c = 0; c < n_ch; ++c) {
-                    x[c] -= cut * hf[c];               /* the band, quieter */
+                    x[c] -= (1.0f - g) * hf[c];        /* the band, quieter */
                 }
             }
         }
@@ -4118,43 +4050,29 @@ run(LV2_Handle instance, uint32_t n_samples)
         /* Each voice: where its grain is reading from, how the two halves
            of the crossfade are weighted, and how far its own detune has
            moved the grain on since the last sample. */
-        /* The detune of each voice: three sines and a power of two, per
-           voice, per sample, for something that moves between a tenth of
-           a hertz and six. It is refreshed once every CHOIR_SLOW samples
-           - two thirds of a millisecond - and held in between.
-
-           Held rather than glided, and that is the reason it is safe: the
-           number is a RATE, and the grain phase integrates it. A step in
-           a rate is a kink in a phase, not a jump in one; at this size it
-           is a few millionths of a cycle. The window and the leaning-in,
-           which multiply the signal itself, stay per-sample - a staircase
-           there WOULD be a buzz. */
         float d_a[MAX_VOICES], d_b[MAX_VOICES], w_a[MAX_VOICES];
         /* How far this voice leans in, which is the same in both ears -
            it was worked out again for each of them, and in stereo that
            is four sines a sample computed twice for one answer. */
         float lean[MAX_VOICES];
-        if (self->choir_left == 0u) {
-            self->choir_left = CHOIR_SLOW;
-            const float detune_scale = 0.45f + 1.10f * sm[SM_SPREAD];
-            for (int k = 0; k < n_run; ++k) {
-                /* 0.55 to 1.00 of the nominal depth: the vibrato breathes */
-                const float swell = 0.775f
-                                  + 0.225f * lfo_sin(self->ph_choir_swell[k]);
-                const float cents = (choir_cents[k]
-                                   + choir_drift[k]
-                                     * lfo_sin(self->ph_choir_drift[k])
-                                   + choir_vib[k] * swell
-                                     * lfo_sin(self->ph_choir_vib[k]))
-                                  * detune_scale;
-                self->choir_rate[k] =
-                    (1.0f - exp2_approx(cents * (1.0f / 1200.0f))) * inv_win[k];
-            }
-        }
-        --self->choir_left;
         for (int k = 0; k < n_run; ++k) {
-            const float entry_scale = 0.70f + 0.30f * self->spread_entry;
-            float p = self->ph_choir[k] + self->choir_rate[k];
+            /* 0.55 to 1.00 of the nominal depth, so the vibrato breathes */
+            const float swell = 0.775f
+                              + 0.225f * lfo_sin(self->ph_choir_swell[k]);
+            const float detune_scale = 0.45f + 1.10f * sm[SM_SPREAD];
+            const float entry_scale  = 0.70f + 0.30f * self->spread_entry;
+            const float cents = (choir_cents[k]
+                               + choir_drift[k] * lfo_sin(self->ph_choir_drift[k])
+                               + choir_vib[k]   * swell
+                                                * lfo_sin(self->ph_choir_vib[k]))
+                              * detune_scale;
+            const float ratio = exp2_approx(cents * (1.0f / 1200.0f));
+            /* Divided, not multiplied by a reciprocal: the numerator
+               changes every sample, so the two are not the same number.
+               The four phase increments below CAN be hoisted, because
+               there both sides are constant and hoisting a division is
+               the same division done once. */
+            float p = self->ph_choir[k] + (1.0f - ratio) / choir_win[k];
             if (p >= 1.0f) { p -= 1.0f; }
             if (p < 0.0f)  { p += 1.0f; }
             self->ph_choir[k] = p;

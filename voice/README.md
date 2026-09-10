@@ -1036,58 +1036,45 @@ below matches to five thousandths of a decibel.
 
 ### What was done
 
-* **Twenty divisions per sample removed from the doubler.** Four LFO
-  phase increments per voice were each dividing by the sample rate, and
-  the grain rate was dividing by the grain length — all constant across a
-  block. Reciprocals, hoisted. Exact arithmetic.
-* **One LFO computed once instead of twice.** How far a doubled voice
-  leans in does not depend on which ear it is heading for, and was being
-  worked out inside the channel loop.
-* **The detune of the doubled voices, one sample in eight.** Three sines
-  and a power of two, per voice, per sample, to follow LFOs that run
-  between a tenth of a hertz and six. Held rather than glided, and that
-  is what makes it safe: the number is a *rate*, and the grain phase
-  integrates it, so a step in it is a kink in a phase and not a jump in
-  one. Four, eight, sixteen and thirty-two were rendered and compared;
-  past eight the arithmetic saved disappears into the measurement noise
-  while the quantisation goes on growing.
-* **The compressor and the de-esser convert to decibels one sample in
-  four**, gliding across the other three. Both detectors still run every
-  sample — it is only the logarithm and the exponential that are slowed,
-  and they were following envelopes that take milliseconds to move.
-
-Twenty-three per cent off the worst case, thirty-one per cent off a dry
-favourite, 550 checks still passing, the sanitizer clean, and the
-spectrum flat to 0.005 dB in every octave.
-
-### And two that change nothing at all — bit for bit
-
-The two above are inaudible; these two are *identical*, checked by
-subtracting 921 600 samples of the worst case and finding zero
-differences.
+Every one of these is **bit-identical**: 921 600 samples of the worst
+case rendered before and after and subtracted, zero differences. Not
+"inaudible" — the same numbers.
 
 * **The listening bank, laid out for the vector unit.** Sixteen
   state-variable filters, all fed the same sample, none looking at any
   other — and an array of little structs is a layout no vector unit can
   use. Split into one array per coefficient and per state, with the
-  filter written out in place of the call, and the compiler does four
-  bands per instruction. Same five multiplies and same two flushes per
-  band. **Five per cent of the whole plugin.**
+  filter written out in place of the call and a maximum in place of a
+  branch, the compiler does four bands per instruction. Same five
+  multiplies and same two flushes per band. **Five per cent.**
 * **`ring_read`, which runs fifteen times a sample.** Its index wrap was
   a `while` — read as a loop, kept as a loop, guessed at by the branch
-  predictor — where the arithmetic can only ever overshoot by one length:
-  an `if`. And `len - 2` was being converted from an integer to a float
-  on every call; it is a field now. **Another five per cent.**
+  predictor — where the arithmetic can only ever overshoot by one
+  length: an `if`. And `len - 2` was converted from an integer to a float
+  on every call; it is a field now. **Four per cent.**
+* **Sixteen divisions a sample out of the doubler.** Each voice advanced
+  four LFO phases by dividing a constant frequency by the constant sample
+  rate. Hoisted — and hoisted **as divisions**, not turned into
+  reciprocals and multiplied: the same division done once gives the same
+  number, a reciprocal multiplied gives one that rounds differently, and
+  the whole point of this pass was that not one bit moves. **Two per
+  cent.**
+* **One LFO computed once instead of twice.** How far a doubled voice
+  leans in does not depend on which ear it is heading for, and was being
+  worked out inside the channel loop.
 
-Thirty-one per cent off the worst case in total, and the only part of it
-that is not bit-identical is the two decimations above.
+Nine per cent off the worst case, and the plugin computes exactly what it
+computed before.
 
 ### What was tried and rejected
 
-**Decimating the anti-Larsen listener** — the obvious way to attack the
-biggest organ. Prototyped and measured before anything was written
-properly: **1.3 %**, and the hunter stops catching feedback at all. Three
-of its tests fail, and not only at the top of the bank.
+Three things, all measured rather than argued about, and the measurement
+took less time than the argument would have.
+
+**Decimating the anti-Larsen listener** — the obvious attack on what was
+then the biggest organ. Prototyped before anything was written properly:
+**1.3 %**, and the hunter stops catching feedback at all. Three of its
+tests fail, and not only at the top of the bank.
 
 The reason is worth keeping. A recursive filter does not pause when you
 skip a sample: it runs at whatever rate you feed it. The sixteen sets of
@@ -1096,15 +1083,28 @@ other sample moves **the whole bank down an octave** — the band labelled
 1200 Hz listens at 600, `hunt_place` puts its notch in the wrong place,
 and the harmonic test compares two bands that no longer mean anything.
 Doing it properly would need a steep anti-aliasing filter plus sixteen
-recomputed coefficient sets, and would still lose the top of the bank:
-more than the 1.3 % it buys.
+recomputed coefficient sets and would still lose the top of the bank:
+more than the 1.3 % it buys. The bank was vectorised instead, which costs
+nothing and changes nothing.
 
-The bank was vectorised instead, which costs nothing and changes nothing.
+**Slowing the doubler's detune and the compressor's decibels.** Both were
+written, both worked, and together they were worth another fourteen per
+cent: three sines and a power of two per voice per sample to follow LFOs
+that run at a few hertz, and a logarithm and an exponential per sample to
+follow envelopes that take milliseconds to move. Spectrum-flat to five
+thousandths of a decibel in every octave — and *not the same numbers*.
+Removed, because a plugin that computes something else is a plugin whose
+sound has to be argued about, and the player would rather not.
+
+**Vectorising the doubler's voice loop** and hoisting the two scale
+factors out of it. Written, measured, no gain at all: gcc does not
+vectorise around the two approximations, and it had already hoisted what
+could be hoisted. Reverted — a change that buys nothing does not stay.
 
 **Untried, and free if it works:** `-mtune=cortex-a53` in the build
 flags. The A53 is in-order and dual-issue, so it is unusually sensitive
 to instruction scheduling, and tuning changes no arithmetic whatsoever.
-It cannot be measured here — only on the device.
+It cannot be measured here, only on the device.
 
 ## What it does not do
 
