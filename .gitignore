@@ -11,6 +11,9 @@ voice/install-voice.html
 voice/test_voice
 voice/test_voice.log
 voice/voice-demo.wav
+# The singer's manual: 12 kB of PDF regenerated in one command from
+# make_manual.py, which IS in git. Same rule as the rest.
+voice/VOICE-manuel.pdf
 *.o
 *.so
 

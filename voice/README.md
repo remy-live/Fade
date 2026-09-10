@@ -800,6 +800,21 @@ The descriptors are generated:
 python3 make_ttl.py     # voice.ttl, voice_stereo.ttl, presets.ttl, manifest.ttl
 ```
 
+And so is the singer's manual, which is a different document from this one
+and deliberately so:
+
+```sh
+python3 make_manual.py  # VOICE-manuel.pdf
+```
+
+Four pages in French, no vocabulary, for somebody holding a microphone.
+This README says *why* every choice was made and runs to forty pages; that
+one says what to do, in order, and nothing else. Written by hand — nothing
+about it is generated from the descriptor. It needs `reportlab` and the
+DejaVu fonts: the built-in Type 1 fonts stop at Latin-1 and draw every
+arrow in the interface as a solid black box, which is worse than not
+drawing it at all.
+
 The two variants differ only in their audio ports and share all twenty-six
 controls, so the list lives in one place. `check_descriptor.py` then reads
 the generated files back and compares them, entry by entry, against the
