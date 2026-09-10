@@ -1002,6 +1002,72 @@ ringing into the gap that follows it.
 - Cost: about 1.5 % of one core of an x86-64 build machine for the stereo
   variant with every effect on. Not measured on the device.
 
+## Where the time goes
+
+`bench_voice.c` times `run()` on the same source that is cross-compiled,
+and attributes the cost by subtraction — the full load, then the same
+thing with one organ switched off:
+
+```sh
+gcc -std=c99 -O3 -ffp-contract=fast -DNDEBUG -Wno-unused-function \
+    -I.. -I. -o bench_voice bench_voice.c -lm && ./bench_voice
+```
+
+Absolute microseconds are x86 microseconds and mean nothing for the
+Dwarf. The **share** transfers, which is all that is asked of it.
+
+Two things that reading the numbers taught, and that guessing did not:
+
+**Switching an effect off does not always stop it.** The reverb, the
+delay, the chorus and the drive have their switch on the *send*, so their
+tails ring out — and so they cost the same either way, and cannot be
+attributed by this method at all. The doubled voices are worse: their
+grains are computed at full price whatever the DOUBLE switch says, which
+is why `VOICES` 4 → 2 shows up at eleven per cent while `DOUBLE` off
+shows up at nothing.
+
+**A subtraction is the wrong instrument for a chorus.** Two renders of
+four detuned voices decorrelate from any perturbation at all: rounding
+one reciprocal differently already puts −81 dB between them, and that
+number says nothing about whether anything is audible. Level and spectrum
+do: `render_voice.c` writes ten seconds of the worst case to a file, and
+what has to match is the octave-band spectrum — which after the work
+below matches to five thousandths of a decibel.
+
+### What was done
+
+* **Twenty divisions per sample removed from the doubler.** Four LFO
+  phase increments per voice were each dividing by the sample rate, and
+  the grain rate was dividing by the grain length — all constant across a
+  block. Reciprocals, hoisted. Exact arithmetic.
+* **One LFO computed once instead of twice.** How far a doubled voice
+  leans in does not depend on which ear it is heading for, and was being
+  worked out inside the channel loop.
+* **The detune of the doubled voices, one sample in eight.** Three sines
+  and a power of two, per voice, per sample, to follow LFOs that run
+  between a tenth of a hertz and six. Held rather than glided, and that
+  is what makes it safe: the number is a *rate*, and the grain phase
+  integrates it, so a step in it is a kink in a phase and not a jump in
+  one. Four, eight, sixteen and thirty-two were rendered and compared;
+  past eight the arithmetic saved disappears into the measurement noise
+  while the quantisation goes on growing.
+* **The compressor and the de-esser convert to decibels one sample in
+  four**, gliding across the other three. Both detectors still run every
+  sample — it is only the logarithm and the exponential that are slowed,
+  and they were following envelopes that take milliseconds to move.
+
+Twenty-three per cent off the worst case, thirty-one per cent off a dry
+favourite, 550 checks still passing, the sanitizer clean, and the
+spectrum flat to 0.005 dB in every octave.
+
+### What is still on the table
+
+The anti-Larsen bank is sixteen state-variable filters per sample and the
+biggest single item left, around fifteen per cent. Decimating it is *not*
+obviously safe: at eight kilohertz, taking one sample in two can under-read
+a peak by six decibels, and the hunter decides on thresholds. It wants a
+measurement, not an opinion.
+
 ## What it does not do
 
 - No pitch *detection*, and therefore no harmony in a key and no

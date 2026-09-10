@@ -9,6 +9,8 @@ voice/voice-aarch64.tar.gz
 voice/voice-sources.tar.gz
 voice/install-voice.html
 voice/test_voice
+voice/bench_voice
+voice/render_voice
 voice/test_voice.log
 voice/voice-demo.wav
 # The singer's manual: 12 kB of PDF regenerated in one command from
