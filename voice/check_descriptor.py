@@ -74,6 +74,37 @@ dire("and asks for momentary-on by default, so the port follows the foot",
      _fb is not None and 'preferMomentaryOnByDefault' in _fb.group(1),
      _fb.group(1).strip() if _fb else "port not found")
 
+# --- the twelve locks -------------------------------------------------
+# A lock is a STATE, not a press: it holds a block against the programs
+# for as long as it is on, and it is saved with the pedalboard because
+# the port is. Declared as a trigger it would be a pulse - on and off
+# again in the same block - and nothing would ever stay locked.
+_locks = ("lock_gate", "lock_comp", "lock_de_ess", "lock_eq", "lock_drive",
+          "lock_pitch", "lock_harm", "lock_doubler", "lock_mod",
+          "lock_feedback", "lock_delay", "lock_reverb")
+_mauvais = []
+for _l in _locks:
+    _m = re.search(r'lv2:symbol\s+"%s"\s*;.*?lv2:portProperty\s+([^;]+);' % _l,
+                   ttl, re.S)
+    if _m is None or 'toggled' not in _m.group(1) or 'trigger' in _m.group(1):
+        _mauvais.append(_l)
+dire("the twelve locks are toggles, not triggers: a lock is a STATE",
+     not _mauvais, " ".join(_mauvais))
+
+# And every control a program writes belongs to one of them. A control a
+# program owns and no lock covers is the one thing a locked rig would
+# still lose when the sound changes, and nothing would say so.
+_ph = open('programs.h').read()
+_col = re.findall(r'^\s*(-?\d+),\s*/\* (\w+) \*/', 
+                  _ph[_ph.index('program_col[CTL_COUNT]'):
+                      _ph.index('program_value[N_PROGRAM]')], re.M)
+_lk = dict((n, int(v)) for v, n in
+           re.findall(r'^\s*(-?\d+),\s*/\* (\w+) \*/',
+                      _ph[_ph.index('lock_of[CTL_COUNT]'):], re.M))
+_nus = [n for v, n in _col if int(v) >= 0 and _lk.get(n, -1) < 0]
+dire("every control a program writes is covered by a lock",
+     not _nus, " ".join(_nus))
+
 
 def ports(text):
     """Every port block, in file order."""

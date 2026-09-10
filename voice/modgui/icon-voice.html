@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 26</div>
+    <div class="voice-build{{{cns}}}">GUI 27</div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a
          plugin: whether its port is connected, how many favourites the
@@ -55,6 +55,12 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="1"
                        for="voice-fav-1{{{cns}}}">USER 1</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="1"
+                       id="voice-fav-del-1{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="1"
+                       for="voice-fav-del-1{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="2"
@@ -62,6 +68,12 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="2"
                        for="voice-fav-2{{{cns}}}">USER 2</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="2"
+                       id="voice-fav-del-2{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="2"
+                       for="voice-fav-del-2{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="3"
@@ -69,6 +81,12 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="3"
                        for="voice-fav-3{{{cns}}}">USER 3</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="3"
+                       id="voice-fav-del-3{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="3"
+                       for="voice-fav-del-3{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="4"
@@ -76,6 +94,12 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="4"
                        for="voice-fav-4{{{cns}}}">USER 4</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="4"
+                       id="voice-fav-del-4{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="4"
+                       for="voice-fav-del-4{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="5"
@@ -83,6 +107,12 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="5"
                        for="voice-fav-5{{{cns}}}">USER 5</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="5"
+                       id="voice-fav-del-5{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="5"
+                       for="voice-fav-del-5{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="6"
@@ -90,10 +120,17 @@
                        class="voice-fav-pick{{{cns}}} voice-fav-pick">
                 <label class="voice-fav-label{{{cns}}} voice-fav-label" data-slot="6"
                        for="voice-fav-6{{{cns}}}">USER 6</label>
+                <input type="checkbox" name="voice-fav-del{{{cns}}}" data-slot="6"
+                       id="voice-fav-del-6{{{cns}}}"
+                       class="voice-fav-del{{{cns}}} voice-fav-del">
+                <label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="6"
+                       for="voice-fav-del-6{{{cns}}}"
+                       title="Throw this favourite away. Click once to arm it, again within three seconds to confirm.">&#10005;</label>
             </div>
-            <div class="voice-fav-note{{{cns}}}">Click one to go to it. To
-                RENAME them, open the plugin's settings: six boxes, seven
-                letters each, and the name is in the slot as you type.</div>
+            <div class="voice-fav-note{{{cns}}}">Click one to go to it, or
+                &#10005; twice to throw it away. To RENAME them, open the
+                plugin's settings: six boxes, seven letters each, and the
+                name is in the slot as you type.</div>
         </div>
 
         <!-- The two ports a name travels on: one character per change of
@@ -135,8 +172,24 @@
         <div class="voice-ab{{{cns}}} voice-ab" mod-port-symbol="ab"
              title="Back to the program you were on before this one">A/B</div>
 
+        <!-- How far the two walking switches go. Six favourites is what
+             the plugin holds; three is what a song needs, and a cycle
+             that steps over three empty slots to come back to the first
+             is three presses of nothing in front of an audience. -->
+        <div class="voice-slot{{{cns}}}"
+             title="How far USER &#9654; and GO TO walk: from the first favourite to this one and no further, still skipping the ones with nothing in them. The six GO switches ignore it and always reach their own.">
+            <div class="voice-slot-dial{{{cns}}}"
+                 mod-role="input-control-port"
+                 mod-port-symbol="cycle"
+                 mod-widget-rotation="270"></div>
+            <div class="voice-slot-value{{{cns}}}"
+                 mod-role="input-control-value"
+                 mod-port-symbol="cycle"></div>
+            <div class="voice-slot-cap{{{cns}}}">CYCLE</div>
+        </div>
+
         <div class="voice-ab{{{cns}}} voice-cycle" mod-port-symbol="next_user"
-             title="Go to the favourite GO TO has walked to, or if none, to the next USER slot that has something in it">USER &#9654;</div>
+             title="Go to the next favourite that has something in it, inside the CYCLE beside this button">USER &#9654;</div>
 
         <!-- The second footswitch. It is a foot's control - a tap walks,
              a hold goes there - so the mouse only gets the tap; what it
@@ -203,6 +256,10 @@
         <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">GATE</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_gate" mod-widget="switch"
+                     title="Lock GATE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="gate_on" mod-widget="switch"></div>
             </div>
@@ -218,6 +275,10 @@
         <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">COMP</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_comp" mod-widget="switch"
+                     title="Lock COMP to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="comp_on" mod-widget="switch"></div>
             </div>
@@ -237,6 +298,10 @@
         <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DE-ESS</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_de_ess" mod-widget="switch"
+                     title="Lock DE-ESS to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="de_ess_on" mod-widget="switch"></div>
             </div>
@@ -259,6 +324,10 @@
         <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">EQ</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_eq" mod-widget="switch"
+                     title="Lock EQ to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="eq_on" mod-widget="switch"></div>
             </div>
@@ -298,6 +367,10 @@
         <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DRIVE</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_drive" mod-widget="switch"
+                     title="Lock DRIVE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="drive_on" mod-widget="switch"></div>
             </div>
@@ -313,6 +386,10 @@
         <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">PITCH</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_pitch" mod-widget="switch"
+                     title="Lock PITCH to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="pitch_on" mod-widget="switch"></div>
             </div>
@@ -335,6 +412,10 @@
         <div class="voice-section{{{cns}}} voice-w3{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">HARMONY</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_harm" mod-widget="switch"
+                     title="Lock HARMONY to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="harm_on" mod-widget="switch"></div>
             </div>
@@ -367,6 +448,10 @@
         <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DOUBLE</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_doubler" mod-widget="switch"
+                     title="Lock DOUBLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="doubler_on" mod-widget="switch"></div>
             </div>
@@ -396,6 +481,10 @@
         <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">MOD</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_mod" mod-widget="switch"
+                     title="Lock MOD to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="mod_on" mod-widget="switch"></div>
             </div>
@@ -421,6 +510,10 @@
         <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">DELAY</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_delay" mod-widget="switch"
+                     title="Lock DELAY to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="delay_on" mod-widget="switch"></div>
             </div>
@@ -452,6 +545,10 @@
         <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">REVERB</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_reverb" mod-widget="switch"
+                     title="Lock REVERB to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="reverb_on" mod-widget="switch"></div>
             </div>
@@ -508,6 +605,10 @@
         <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">NO HOWL</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_feedback" mod-widget="switch"
+                     title="Lock NO HOWL to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="feedback_on" mod-widget="switch"></div>
             </div>

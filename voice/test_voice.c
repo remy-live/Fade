@@ -253,6 +253,8 @@ static void silence(Banc* b);
    at most twenty-five times a second: anything that reads a label after
    changing programs has to let a pass go by. */
 static void passer_popup(Banc* b);
+/* one detent of an encoder, either way - defined with the pedal page */
+static void cran(Banc* b, int ctl, int sens);
 
 static void ouvrir_avec(Banc* b, int stereo, double sr, uint32_t bloc,
                         const LV2_Feature* const* feats)
@@ -3267,6 +3269,336 @@ static void essai_parcours(void)
 /* One switch per favourite: the plainest thing there is. A press goes to
    that favourite, always, whatever was pressed before - nothing to
    enchain, nothing to remember. */
+
+/* ------------------------------------------------------------------ */
+/* How far the cycle goes                                              */
+/*                                                                     */
+/* Six favourites is what the plugin holds; three is what a song needs, */
+/* and a cycle that steps over three empty slots to come back to the   */
+/* first is three presses of nothing in front of an audience.          */
+/* ------------------------------------------------------------------ */
+static void essai_cycle(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+
+    for (int u = 1; u <= N_USER; ++u) { remplir(&b, u, 100.0 * u); }
+    b.ctl[CTL_CYCLE] = 3.0f;
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("on the first favourite",
+            (double)b.ctl[CTL_TIME_OUT], 100.0, 0.01);
+
+    /* NEXT USER walks 1, 2, 3 and comes back to 1 */
+    for (int k = 0; k < 2; ++k) {
+        b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+        b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    }
+    verifie("two presses reach the third",
+            (double)b.ctl[CTL_TIME_OUT], 300.0, 0.01);
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("and the third comes back round to the first, not to the fourth",
+            (double)b.ctl[CTL_TIME_OUT], 100.0, 0.01);
+
+    /* the six direct switches ignore it completely: a switch that
+       carries the name of a favourite must always reach it */
+    b.ctl[CTL_FAV_5] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_FAV_5] = 0.0f; silence(&b); tourner(&b);
+    verifie("a GO switch reaches a favourite outside the cycle",
+            (double)b.ctl[CTL_TIME_OUT], 500.0, 0.01);
+
+    /* and from out there the walk comes back IN, at the first filled
+       slot inside the cycle rather than at whatever follows */
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("stepping from outside the cycle comes back in at its first",
+            (double)b.ctl[CTL_TIME_OUT], 100.0, 0.01);
+
+    /* GO TO walks inside the cycle too, cursor and all */
+    memset(&ecran, 0, sizeof(ecran));
+    adresser(&b, CTL_FAV_BROWSE, TOUTES_CAPS, (void*)0xC1);
+    tape(&b); tape(&b);
+    verifie("the browse cursor reaches the third",
+            (double)((Voice*)b.h)->browse_slot, 3.0, 0.01);
+    tape(&b);
+    verifie("and wraps inside the cycle rather than going to the fourth",
+            (double)((Voice*)b.h)->browse_slot, 1.0, 0.01);
+
+    /* a cycle of one is a cycle: the same favourite every time */
+    b.ctl[CTL_CYCLE] = 1.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("a cycle of one always lands on the first",
+            (double)b.ctl[CTL_TIME_OUT], 100.0, 0.01);
+
+    fermer(&b);
+}
+
+/* ------------------------------------------------------------------ */
+/* The twelve locks                                                    */
+/*                                                                     */
+/* The room decides the reverb and the set list decides the rest. A     */
+/* locked block stops following the programs - not recalled, and not    */
+/* written by SAVE - while its ON/OFF goes on following them, because   */
+/* whether a block is in the sound is a different question from what    */
+/* its settings are.                                                   */
+/* ------------------------------------------------------------------ */
+static void essai_verrous(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+
+    /* Two favourites that differ in TWO blocks, so a lock on one of them
+       can be told apart from a lock on everything. */
+    b.ctl[CTL_REVERB_MIX] = 10.0f;
+    remplir(&b, 1, 110.0);
+    b.ctl[CTL_REVERB_MIX] = 40.0f;
+    remplir(&b, 2, 220.0);
+
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("the first favourite is heard",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+    verifie("with its own reverb",
+            (double)b.ctl[CTL_REVERB_MIX], 10.0, 0.01);
+
+    /* lock the delay, then go somewhere else */
+    b.ctl[CTL_LOCK_DELAY] = 1.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("a locked block does not follow the favourite",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+    verifie("and its own port is left where it was, not moved by the recall",
+            (double)b.ctl[CTL_DELAY_TIME], 110.0, 0.01);
+
+    /* a factory sound is a program like any other: without this, a visit
+       to a preset would wipe the value the room was dialled for */
+    b.ctl[CTL_PROGRAM] = 1.0f;
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("nor a factory preset",
+            (double)b.ctl[CTL_TIME_OUT], 110.0, 0.01);
+
+    /* everything else still follows: a lock is one block, not a mode */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("an unlocked block follows the favourite as it always did",
+            (double)b.ctl[CTL_REVERB_MIX], 40.0, 0.01);
+    verifie("while the locked one beside it does not",
+            (double)b.ctl[CTL_DELAY_TIME], 110.0, 0.01);
+
+    /* SAVE leaves a locked block alone in a slot that has something in
+       it: the reverb dialled for tonight is not something to bake into
+       six favourites by pressing SAVE six times */
+    b.ctl[CTL_DELAY_TIME] = 777.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 2.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_LOCK_DELAY] = 0.0f;
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("SAVE did not write the locked block into a slot that had one",
+            (double)b.ctl[CTL_TIME_OUT], 220.0, 0.01);
+
+    /* and taking the lock off hands the block back to the program at
+       once, KNOBS included - a port still showing a value the sound no
+       longer has is worse than no display at all */
+    verifie("unlocking puts the port back where the program says",
+            (double)b.ctl[CTL_DELAY_TIME], 220.0, 0.01);
+
+    /* an EMPTY slot takes everything: a first save that stored eleven
+       blocks of twelve would be a favourite with a hole in it */
+    b.ctl[CTL_LOCK_DELAY] = 1.0f;
+    b.ctl[CTL_DELAY_TIME] = 640.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 4.0f;
+    silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_LOCK_DELAY] = 0.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 3);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("a first save into an empty slot stores the locked block too",
+            (double)b.ctl[CTL_TIME_OUT], 640.0, 0.01);
+
+    /* the ON/OFF of a locked block still follows the program: a locked
+       reverb must not turn itself on in the sounds built without one */
+    b.ctl[CTL_LOCK_REVERB] = 1.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    {
+        const int avant = ((Voice*)b.h)->sw_state[SW_REVERB];
+        int trouve = 0;
+        for (int p = 1; p < N_PROGRAM && !trouve; ++p) {
+            if (program_switch[p][SW_REVERB] != avant) {
+                b.ctl[CTL_PROGRAM] = (float)p;
+                for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+                verifie("a locked block still takes its ON/OFF from the program",
+                        (double)((Voice*)b.h)->sw_state[SW_REVERB],
+                        (double)program_switch[p][SW_REVERB], 0.01);
+                trouve = 1;
+            }
+        }
+        verifie_vrai("a program that disagrees about REVERB was found", trouve);
+    }
+
+    fermer(&b);
+}
+
+/* The locks on the pedal page: encoder 2 walks to them past the
+   parameters, encoder 3 flips them, and a locked parameter says so where
+   its unit would go. A lock nothing announces is a favourite that sounds
+   wrong for a reason nothing on the machine explains. */
+static void essai_verrous_page(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    adresser(&b, CTL_ENC_VALUE, TOUTES_CAPS, (void*)0xD1);
+
+    /* the twelve locks sit after the parameters, in the order of the
+       switches, so the reverb lock is the last entry of all */
+    const int p_verrou = PAGE_LOCK + SW_REVERB;
+    for (int k = 0; k < 200 && (int)(b.ctl[CTL_PARAM_NOW] + 0.5f) != p_verrou; ++k) {
+        cran(&b, CTL_ENC_PARAM, +1);
+    }
+    verifie("encoder 2 walks as far as the reverb lock",
+            (double)b.ctl[CTL_PARAM_NOW], (double)p_verrou, 0.01);
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("which is named after the block it holds",
+                 !strcmp(ecran.dernier_label, "REVERB"));
+    verifie_vrai("and says whose the settings are, not on or off",
+                 !strcmp(ecran.dernier_value, "PROGRAM"));
+
+    cran(&b, CTL_ENC_VALUE, +1);
+    verifie("turning encoder 3 right locks it",
+            (double)b.ctl[CTL_LOCK_REVERB], 1.0, 0.01);
+    for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+    verifie_vrai("and the page says so", !strcmp(ecran.dernier_value, "MINE"));
+    cran(&b, CTL_ENC_VALUE, +1);
+    verifie("turning it right again does not undo it - there is nothing "
+            "to remember the state of",
+            (double)b.ctl[CTL_LOCK_REVERB], 1.0, 0.01);
+    cran(&b, CTL_ENC_VALUE, -1);
+    verifie("and left gives it back",
+            (double)b.ctl[CTL_LOCK_REVERB], 0.0, 0.01);
+
+    /* a locked PARAMETER says MINE where its unit would go. The screen
+       only sends what CHANGED, so the lock is turned on with the page
+       already standing on the parameter: that is a change of the unit,
+       and the bench does not have to wait a whole second for the
+       once-a-second repaint to come round. */
+    {
+        int p_mix = -1;
+        for (int i = 0; i < N_PROGRAM_COL; ++i) {
+            if (param_spec[i].ctl == CTL_REVERB_MIX) { p_mix = i + 1; }
+        }
+        verifie_vrai("REVERB MIX is on the list", p_mix > 0);
+        for (int k = 0; k < 200
+                        && (int)(b.ctl[CTL_PARAM_NOW] + 0.5f) != p_mix; ++k) {
+            cran(&b, CTL_ENC_PARAM, +1);
+        }
+        b.ctl[CTL_LOCK_REVERB] = 1.0f;
+        memset(&ecran, 0, sizeof(ecran));
+        for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+        verifie_vrai("a locked parameter says MINE where its unit goes",
+                     !strcmp(ecran.dernier_unit, "MINE"));
+        b.ctl[CTL_LOCK_REVERB] = 0.0f;
+        memset(&ecran, 0, sizeof(ecran));
+        for (int k = 0; k < 40; ++k) { silence(&b); tourner(&b); }
+        verifie_vrai("and an unlocked one says its unit again",
+                     !strcmp(ecran.dernier_unit, "%"));
+    }
+
+    fermer(&b);
+
+    /* And the favourite encoder counts the locks that are on, standing,
+       not flashing: the moment it matters is the moment you land on the
+       favourite, which is exactly when that line is being read.
+       On a bench of its own, with only that encoder addressed: the three
+       paint in one pass and the bench remembers whichever wrote last. */
+    {
+        Banc c;
+        memset(&ecran, 0, sizeof(ecran));
+        ouvrir(&c, 0, 48000.0, 128, 1);
+        neutre(&c);
+        adresser(&c, CTL_ENC_SLOT, TOUTES_CAPS, (void*)0xD2);
+        for (int k = 0; k < 40; ++k) { silence(&c); tourner(&c); }
+        verifie_vrai("with no lock on, FAVORI says nothing about locks",
+                     ecran.dernier_unit[0] == '\0');
+        c.ctl[CTL_LOCK_REVERB] = 1.0f;
+        c.ctl[CTL_LOCK_DELAY]  = 1.0f;
+        for (int k = 0; k < 40; ++k) { silence(&c); tourner(&c); }
+        verifie_vrai("and with two, how many blocks are not following it",
+                     !strcmp(ecran.dernier_unit, "LOCK 2"));
+        fermer(&c);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Throwing a favourite away                                           */
+/*                                                                     */
+/* Code 2 on the wire the letters go down. It needed no port of its     */
+/* own, which matters: a port added here would have cost a block        */
+/* removed and put back on every pedalboard that already has one.       */
+/* ------------------------------------------------------------------ */
+static void essai_supprimer(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+
+    remplir(&b, 1, 110.0);
+    remplir(&b, 2, 220.0);
+    remplir(&b, 3, 330.0);
+    taper_nom(&b, 2, "DEUX");
+    verifie_vrai("the second favourite has a name",
+                 !strcmp(((Voice*)b.h)->user[1].name, "DEUX"));
+    verifie("and something in it",
+            (double)((Voice*)b.h)->user[1].filled, 1.0, 0.01);
+
+    taper(&b, 2, 2);
+    verifie("code 2 empties the slot",
+            (double)((Voice*)b.h)->user[1].filled, 0.0, 0.01);
+    verifie_vrai("name and all", ((Voice*)b.h)->user[1].name[0] == '\0');
+
+    /* the cycle steps over it from the next press, like any empty slot */
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_NEXT_USER] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_NEXT_USER] = 0.0f; silence(&b); tourner(&b);
+    verifie("and the cycle steps straight over it",
+            (double)b.ctl[CTL_TIME_OUT], 330.0, 0.01);
+
+    /* going to a slot with nothing in it leaves the knobs in charge,
+       which is the state a new sound is dialled in */
+    b.ctl[CTL_DELAY_TIME] = 480.0f;
+    for (int k = 0; k < 4; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("an emptied slot leaves the knobs in charge",
+            (double)b.ctl[CTL_TIME_OUT], 480.0, 0.01);
+
+    /* and it can be filled again, from nothing, the ordinary way */
+    remplir(&b, 2, 250.0);
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 0);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 1);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("and an emptied slot can be filled again",
+            (double)b.ctl[CTL_TIME_OUT], 250.0, 0.01);
+
+    fermer(&b);
+}
+
 static void essai_favoris_directs(void)
 {
     Banc b;
@@ -4156,6 +4488,10 @@ int main(int argc, char** argv)
     printf("A name nothing else may overwrite:\n"); essai_nom_pas_ecrase();
     printf("Walking the favourites without hearing them:\n"); essai_parcours();
     printf("One switch per favourite:\n"); essai_favoris_directs();
+    printf("How far the cycle goes:\n"); essai_cycle();
+    printf("The twelve locks:\n"); essai_verrous();
+                                           essai_verrous_page();
+    printf("Throwing a favourite away:\n"); essai_supprimer();
     printf("A screen that announces nothing:\n"); essai_caps_vides();
     printf("What the plugin sees:\n"); essai_diag();
     printf("De-esser frequency:\n");        essai_deess_freq();

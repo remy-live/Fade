@@ -81,7 +81,11 @@
    share the program bar, and with a name box in there too everything was
    squeezed until the box disappeared. */
 .voice-bar{{{cns}}} {
-    display: flex; align-items: center; gap: 10px;
+    /* The gap was 10px until CYCLE joined the row and the bar ran six
+       pixels past the pedal. make_screenshot.js refuses to write an
+       image that overflows, which is why that is a number and not an
+       opinion. */
+    display: flex; align-items: center; gap: 8px;
     height: 46px; margin-bottom: 8px; padding: 0 12px;
     border-radius: 9px;
     background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
@@ -174,6 +178,26 @@
 .voice-fav-label{{{cns}}}.vide { color: #6b7c8d; }
 .voice-fav-label{{{cns}}}.actif {
     color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+}
+/* Throwing a favourite away. The checkbox is hidden and is the thing
+   actually clicked - a form control keeps its own state where a handler
+   would be lost with the copy mod-ui makes of the interface - and the
+   cross beside it is what the eye sees. Ticked means ARMED: it goes red
+   and says SUR ?, and the click that unticks it is the confirmation.
+   Three seconds and the clock puts it back. */
+.voice-fav-del{{{cns}}} { position: absolute; opacity: 0; pointer-events: none; }
+.voice-fav-x{{{cns}}} {
+    flex: 0 0 auto; min-width: 18px; text-align: center;
+    padding: 3px 5px; border-radius: 4px; cursor: pointer;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #8d99a6; background: #1d232c;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.7);
+    user-select: none;
+}
+.voice-fav-x{{{cns}}}:hover { color: #fff; background: #b8434a; }
+.voice-fav-x{{{cns}}}.arme {
+    color: #fff; background: linear-gradient(180deg, #e2626a 0%, #a32b33 100%);
+    box-shadow: 0 0 0 1px rgba(255,120,130,.6);
 }
 /* The boxes a name is typed into. One per slot and no more: two boxes for
    the same name would each read the other as a change and fight over it,
@@ -353,6 +377,29 @@
     white-space: nowrap;
 }
 .voice-section{{{cns}}}.actif .voice-section-name{{{cns}}} { color: #8df3bd; }
+
+/* ---------- the padlocks ----------
+   One per block, beside the switch that turns the block on. Small and
+   square where the on/off is a wide pill, and amber where ON is green:
+   they are not another thing switched on, they answer a different
+   question - whose the settings are, mine or the program's. */
+.voice-lock{{{cns}}} {
+    position: relative; width: 19px; height: 19px; border-radius: 5px;
+    cursor: pointer; margin-left: auto; margin-right: 5px;
+    background: #232a33;
+    border: 1px solid #10151b;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.8);
+    font-size: 10px; line-height: 17px; text-align: center;
+    color: #61707e;
+    transition: background .12s ease, color .12s ease, box-shadow .12s ease;
+}
+.voice-lock{{{cns}}}::after { content: "\1F512"; }
+.voice-lock{{{cns}}}:hover { color: #c9d8e6; }
+.voice-lock{{{cns}}}.on {
+    background: linear-gradient(180deg, #f2c94c 0%, #b07d0a 100%);
+    color: #241a00;
+    box-shadow: 0 0 9px rgba(242,201,76,.55), inset 0 1px 0 rgba(255,255,255,.3);
+}
 
 /* ---------- switches: the point of this whole stylesheet ---------- */
 

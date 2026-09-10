@@ -259,6 +259,19 @@ static const uint8_t ctl_is_out[CTL_COUNT] = {
     0,   /* fav_4 */
     0,   /* fav_5 */
     0,   /* fav_6 */
+    0,   /* cycle */
+    0,   /* lock_gate */
+    0,   /* lock_comp */
+    0,   /* lock_de_ess */
+    0,   /* lock_eq */
+    0,   /* lock_drive */
+    0,   /* lock_pitch */
+    0,   /* lock_harm */
+    0,   /* lock_doubler */
+    0,   /* lock_mod */
+    0,   /* lock_feedback */
+    0,   /* lock_delay */
+    0,   /* lock_reverb */
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
@@ -344,6 +357,19 @@ static const int8_t program_col[CTL_COUNT] = {
     -1,  /* fav_4 */
     -1,  /* fav_5 */
     -1,  /* fav_6 */
+    -1,  /* cycle */
+    -1,  /* lock_gate */
+    -1,  /* lock_comp */
+    -1,  /* lock_de_ess */
+    -1,  /* lock_eq */
+    -1,  /* lock_drive */
+    -1,  /* lock_pitch */
+    -1,  /* lock_harm */
+    -1,  /* lock_doubler */
+    -1,  /* lock_mod */
+    -1,  /* lock_feedback */
+    -1,  /* lock_delay */
+    -1,  /* lock_reverb */
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
@@ -420,6 +446,112 @@ static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
     { 160.0f, -34.0f, 34.0f, 30.0f, 5500.0f, -4.0f, 1600.0f, 4.0f, -5.0f, 50.0f, 0.0f, 100.0f, 4.0f, -5.0f, 0.0f, 20.0f, 30.0f, 2.0f, 25.0f, 0.5f, 75.0f, 110.0f, 18.0f, 15.0f, 30.0f, 10.0f },
     { 80.0f, -46.0f, 28.0f, 35.0f, 5500.0f, 2.0f, 2600.0f, -2.0f, 2.0f, 18.0f, 0.0f, 100.0f, 4.0f, -5.0f, 0.0f, 25.0f, 40.0f, 2.0f, 25.0f, 0.5f, 35.0f, 380.0f, 25.0f, 12.0f, 60.0f, 20.0f },
     { 70.0f, -50.0f, 28.0f, 20.0f, 5500.0f, 0.0f, 1200.0f, 1.0f, 2.0f, 20.0f, 0.0f, 100.0f, 4.0f, -5.0f, 0.0f, 30.0f, 60.0f, 3.0f, 58.0f, 5.5f, 20.0f, 350.0f, 20.0f, 8.0f, 40.0f, 14.0f },
+};
+
+/* Which LOCK owns each control, -1 for the ones no lock covers. The
+   locks are numbered like SwitchIndex and carry the same names, so
+   switch_label[] does for both: a lock is one block of the sound, and a
+   block of the sound is what its switch turns on and off.
+
+   Written from the settings panel's own layout, so a knob put into the
+   REVERB section is locked by the reverb lock with nothing to keep in
+   step by hand - and a control a program owns that no lock covers stops
+   the build rather than quietly escaping every lock. */
+#define N_LOCK 12
+static const int8_t lock_of[CTL_COUNT] = {
+    -1,   /* program */
+    -1,   /* user_slot */
+    -1,   /* save */
+    -1,   /* in_gain */
+    3,   /* low_cut */
+    -1,   /* gate_on */
+    0,   /* gate */
+    -1,   /* comp_on */
+    1,   /* comp */
+    -1,   /* de_ess_on */
+    2,   /* de_ess */
+    2,   /* de_ess_freq */
+    -1,   /* eq_on */
+    3,   /* body */
+    3,   /* mid_freq */
+    3,   /* presence */
+    3,   /* air */
+    -1,   /* drive_on */
+    4,   /* drive */
+    -1,   /* pitch_on */
+    5,   /* pitch */
+    5,   /* pitch_mix */
+    -1,   /* harm_on */
+    6,   /* harm_1 */
+    6,   /* harm_2 */
+    6,   /* harm_mix */
+    -1,   /* doubler_on */
+    7,   /* doubler */
+    7,   /* spread */
+    7,   /* voices */
+    -1,   /* mod_on */
+    8,   /* modulation */
+    8,   /* mod_speed */
+    -1,   /* feedback_on */
+    9,   /* feedback */
+    -1,   /* delay_on */
+    10,   /* delay_time */
+    10,   /* delay_repeats */
+    10,   /* delay_mix */
+    -1,   /* reverb_on */
+    11,   /* reverb */
+    11,   /* reverb_mix */
+    -1,   /* fx */
+    -1,   /* fx_2 */
+    -1,   /* slot_name */
+    -1,   /* next_user */
+    -1,   /* mute */
+    -1,   /* ab */
+    -1,   /* tap */
+    -1,   /* output */
+    -1,  /* gr */
+    -1,  /* level */
+    -1,  /* gate_open */
+    -1,  /* fx_state */
+    -1,  /* program_now */
+    -1,  /* notches */
+    -1,  /* time_out */
+    -1,  /* enc_slot */
+    -1,  /* enc_param */
+    -1,  /* enc_value */
+    -1,  /* param_now */
+    -1,  /* web_char */
+    -1,  /* web_strobe */
+    -1,  /* name_slot */
+    -1,  /* n1 */
+    -1,  /* n2 */
+    -1,  /* n3 */
+    -1,  /* n4 */
+    -1,  /* n5 */
+    -1,  /* n6 */
+    -1,  /* n7 */
+    -1,  /* web_slot */
+    -1,  /* fav_browse */
+    -1,  /* diag */
+    -1,  /* fav_1 */
+    -1,  /* fav_2 */
+    -1,  /* fav_3 */
+    -1,  /* fav_4 */
+    -1,  /* fav_5 */
+    -1,  /* fav_6 */
+    -1,  /* cycle */
+    -1,  /* lock_gate */
+    -1,  /* lock_comp */
+    -1,  /* lock_de_ess */
+    -1,  /* lock_eq */
+    -1,  /* lock_drive */
+    -1,  /* lock_pitch */
+    -1,  /* lock_harm */
+    -1,  /* lock_doubler */
+    -1,  /* lock_mod */
+    -1,  /* lock_feedback */
+    -1,  /* lock_delay */
+    -1,  /* lock_reverb */
 };
 
 /* Switch positions, in the order of SwitchIndex. A program ADOPTS these

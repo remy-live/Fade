@@ -354,6 +354,27 @@ if (typeof fn === 'function') {
             && lu2.indexOf('non adresse') >= 0
             && lu2.indexOf('AUCUN MAINTIEN VU') >= 0, lu2);
 
+        /* Throwing a favourite away: two clicks on the cross, and the
+           second within three seconds. A hidden checkbox is what is
+           really clicked - a form control keeps its own state where a
+           handler would be lost with the copy mod-ui makes of the
+           interface - and the click that unticks it is the confirmation.
+           Late enough that the name on its way down has finished: the
+           two share one queue, one code per tick. */
+        setTimeout(() => {
+            doc.querySelector('.voice-fav-del[data-slot="3"]').checked = true;
+            /* and one that is armed and never confirmed, which must send
+               nothing at all */
+            doc.querySelector('.voice-fav-del[data-slot="5"]').checked = true;
+        }, 1500);
+        setTimeout(() => {
+            say('an armed cross says so, rather than looking like the other five',
+                doc.querySelector('.voice-fav-x[data-slot="3"]')
+                   .textContent.indexOf('R ?') >= 0,
+                doc.querySelector('.voice-fav-x[data-slot="3"]').textContent);
+            doc.querySelector('.voice-fav-del[data-slot="3"]').checked = false;
+        }, 1700);
+
         /* one button per favourite, and each writes its own port */
         for (const n of [1, 3, 6]) {
             ecrits = [];
@@ -382,13 +403,32 @@ if (typeof fn === 'function') {
             const slots   = ecrits.filter(e => e[0] === 'web_slot').map(e => e[1]);
             const lettres = ecrits.filter(e => e[0] === 'web_char').map(e => e[1]);
             const tops    = ecrits.filter(e => e[0] === 'web_strobe').map(e => e[1]);
+            /* The wire carries triples: which slot, which character, then
+               the strobe that makes the plugin look at them. Paired back
+               up here so a name and an order can be told apart - they go
+               down the same three ports. */
+            const paires = [];
+            for (let i = 0; i + 1 < ecrits.length; i++) {
+                if (ecrits[i][0] === 'web_slot'
+                    && ecrits[i + 1][0] === 'web_char') {
+                    paires.push({ slot: ecrits[i][1], code: ecrits[i + 1][1] });
+                }
+            }
+            const pour = n => paires.filter(p => p.slot === n).map(p => p.code);
             say('a name typed one key at a time goes down ONCE, whole',
-                JSON.stringify(lettres) ===
+                JSON.stringify(pour(2)) ===
                 JSON.stringify([1, 67, 72, 79, 82, 85, 83]),
-                JSON.stringify(lettres));
+                JSON.stringify(pour(2)));
             say('with the slot beside every character of it',
-                slots.length === lettres.length && slots.every(v => v === 2),
+                paires.length === lettres.length
+                && slots.length === lettres.length,
                 JSON.stringify(slots));
+            say('two clicks on the cross throw that favourite away',
+                JSON.stringify(pour(3)) === JSON.stringify([2]),
+                JSON.stringify(pour(3)));
+            say('and one click on its own throws nothing away',
+                JSON.stringify(pour(5)) === JSON.stringify([]),
+                JSON.stringify(pour(5)));
             say('and a strobe that changes for every one of them',
                 tops.length === lettres.length
                 && tops.every((v, i) => i === 0 || v !== tops[i - 1]),

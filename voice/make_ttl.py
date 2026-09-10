@@ -276,6 +276,38 @@ SLOT_WORDS = (
 SWITCHES = ("gate_on", "comp_on", "de_ess_on", "eq_on", "drive_on", "pitch_on",
             "harm_on", "doubler_on", "mod_on", "feedback_on", "delay_on",
             "reverb_on")
+
+# One LOCK per block of the sound, in the order of SWITCHES and named
+# after the PANEL section it covers.
+#
+# What it is for: a room decides the reverb, and a set list decides the
+# rest. Without this, going to another favourite brings that favourite's
+# reverb with it and the room has to be dialled again, sound by sound. A
+# locked block stops following the programs - the knobs stay where they
+# are, whatever is picked - and SAVE stops writing it into a slot that
+# already has something in it, so a locked block cannot be baked into a
+# favourite by accident. What is locked is the SETTING; whether the block
+# is in the sound at all still follows the program, or a locked reverb
+# would turn itself on in the sounds that were built without one.
+#
+# The second element is the title of the PANEL section it locks: the
+# controls of a lock ARE the controls of that section, so a knob added to
+# the panel is locked by the same switch as its neighbours, with nothing
+# to keep in step by hand.
+LOCK_BLOCKS = (
+    ("lock_gate",     "GATE"),
+    ("lock_comp",     "COMP"),
+    ("lock_de_ess",   "DE-ESS"),
+    ("lock_eq",       "EQ"),
+    ("lock_drive",    "DRIVE"),
+    ("lock_pitch",    "PITCH"),
+    ("lock_harm",     "HARMONY"),
+    ("lock_doubler",  "DOUBLE"),
+    ("lock_mod",      "MOD"),
+    ("lock_feedback", "NO HOWL"),
+    ("lock_delay",    "DELAY"),
+    ("lock_reverb",   "REVERB"),
+)
 N_USER = 6
 
 OUTPUTS = [
@@ -1025,6 +1057,37 @@ TAIL = [
   "Goes to USER 6, and nothing else ever. Meant for a footswitch, which "
   "carries the name of that favourite whether or not it is the one being "
   "played."),
+
+ # ---------------- how far the cycle goes ----------------
+ # Six favourites is what the plugin holds; three is what a song needs,
+ # and a cycle that steps over three empty slots to get back to the first
+ # is three presses of nothing in front of an audience.
+ ("in", "cycle", "CYCLE", 1.0, 6.0, 6.0, None,
+  ["lv2:integer", "lv2:enumeration"],
+  "How far the cycle goes: NEXT USER and GO TO walk the favourites from 1 "
+  "to this one and no further, still skipping the ones with nothing in "
+  "them. The six GO switches ignore it completely - a switch that carries "
+  "the name of a favourite must always reach it. Landing outside the "
+  "cycle, from a factory sound or from a GO switch, the next step comes "
+  "back in at the first filled slot inside it. Worth an encoder: it is "
+  "the set list that decides this, not the rig."),
+]
+
+# The twelve locks. Written from the table above rather than typed out,
+# so the ports, the panel section they cover and the screen label can
+# never say three different things.
+TAIL += [
+    ("in", sym, "LOCK " + sec, 0.0, 1.0, 0.0, None, ["lv2:toggled"],
+     "Locks %s to what it is set to NOW. The block stops following the "
+     "programs: picking another favourite, or a factory sound, leaves its "
+     "knobs exactly where they are - which is how the reverb a room needs "
+     "survives a set list. SAVE stops writing it too, except into a slot "
+     "with nothing in it yet, where everything is stored. Its ON/OFF still "
+     "follows the program: what is locked is the setting, not whether the "
+     "block is in the sound. Turn the lock off and the program's own value "
+     "comes back at once. The pedal page says MINE beside a locked "
+     "parameter, and FAVORI counts the locks that are on." % sec)
+    for sym, sec in LOCK_BLOCKS
 ]
 
 # Names for the screen, where the descriptor's own name is too long for
@@ -1053,7 +1116,7 @@ STEP = {
 # stops the build rather than quietly vanishing from the interface.
 PANEL = [
     ("FAVORIS", ["program", "user_slot", "save", "next_user", "fav_browse",
-                 "ab", "slot_name"]),
+                 "ab", "slot_name", "cycle"]),
     ("ONE SWITCH PER FAVOURITE", ["fav_1", "fav_2", "fav_3",
                                   "fav_4", "fav_5", "fav_6"]),
     ("IN AND OUT", ["in_gain", "output", "mute", "fx", "fx_2", "tap"]),
@@ -1069,6 +1132,10 @@ PANEL = [
     ("NO HOWL",  ["feedback_on", "feedback"]),
     ("DELAY",    ["delay_on", "delay_time", "delay_repeats", "delay_mix"]),
     ("REVERB",   ["reverb_on", "reverb", "reverb_mix"]),
+    # One switch per block, and they all do the same thing: keep this
+    # block where I have put it, whatever sound is picked afterwards.
+    ("LOCKED - THIS BLOCK IS MINE, NOT THE PROGRAM'S",
+     [sym for sym, _sec in LOCK_BLOCKS]),
     ("PEDAL PAGE", ["enc_slot", "enc_param", "enc_value"]),
     # Present because every control input has to be reachable, and for
     # nothing else: these three are written by the interface a character
@@ -1080,6 +1147,8 @@ PANEL = [
 SCALE = {
     "voices": [("2 voices", 2.0), ("3 voices", 3.0), ("4 voices", 4.0)],
     "user_slot": [("User %d" % (i + 1), float(i + 1)) for i in range(N_USER)],
+    "cycle": ([("1 only", 1.0)]
+              + [("1 to %d" % i, float(i)) for i in range(2, N_USER + 1)]),
     "program": ([("Manual", 0.0)]
                 + [(p[1], float(i + 1)) for i, p in enumerate(PRESETS)]
                 + [("User %d" % (i + 1), float(len(PRESETS) + 1 + i))
@@ -1324,6 +1393,19 @@ static const int8_t program_col[CTL_COUNT] = {
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
 %(values)s};
 
+/* Which LOCK owns each control, -1 for the ones no lock covers. The
+   locks are numbered like SwitchIndex and carry the same names, so
+   switch_label[] does for both: a lock is one block of the sound, and a
+   block of the sound is what its switch turns on and off.
+
+   Written from the settings panel's own layout, so a knob put into the
+   REVERB section is locked by the reverb lock with nothing to keep in
+   step by hand - and a control a program owns that no lock covers stops
+   the build rather than quietly escaping every lock. */
+#define N_LOCK %(n_lock)d
+static const int8_t lock_of[CTL_COUNT] = {
+%(locks)s};
+
 /* Switch positions, in the order of SwitchIndex. A program ADOPTS these
    when it is selected and then lets go: a foot on a switch must always
    win, or a footswitch stops working the moment a program is chosen. */
@@ -1384,6 +1466,26 @@ def write_programs(path):
     for way, symbol, _n, _mn, _mx, _d, _u, _p, _c in TAIL:
         sens += "    %d,   /* %s */\n" % (1 if way == "out" else 0, symbol)
 
+    # Which lock owns each control: the PANEL section a lock is named
+    # after IS its list of controls, minus the block's own on/off switch
+    # (a lock holds the setting, never whether the block is in the sound)
+    # and minus anything a program does not own in the first place.
+    bloc = {}
+    sections = dict(PANEL)
+    for k, (_sym, sec) in enumerate(LOCK_BLOCKS):
+        if sec not in sections:
+            raise SystemExit("LOCK_BLOCKS names no such PANEL section: " + sec)
+        for s in sections[sec]:
+            if s in SWITCHES or s in LIVE:
+                continue
+            bloc[s] = k
+    # And every column of a program must belong to one: a control a
+    # program writes and no lock covers would be the one thing a locked
+    # rig still loses when the sound changes, and nothing would say so.
+    orphelins = [c[0] for c in cont if c[0] not in bloc]
+    if orphelins:
+        raise SystemExit("no lock covers: " + " ".join(orphelins))
+
     cols = ""
     for symbol, _n, _mn, _mx, _d, _u, _p, _c in CONTROLS:
         cols += "    %d,   /* %s */\n" % (col.get(symbol, -1), symbol)
@@ -1391,6 +1493,14 @@ def write_programs(path):
         cols += "    -1,  /* %s */\n" % symbol
     for _w, symbol, _n, _mn, _mx, _d, _u, _p, _c in TAIL:
         cols += "    -1,  /* %s */\n" % symbol
+
+    verrous = ""
+    for symbol, _n, _mn, _mx, _d, _u, _p, _c in CONTROLS:
+        verrous += "    %d,   /* %s */\n" % (bloc.get(symbol, -1), symbol)
+    for symbol, _n, _mn, _mx, _d, _u, _p, _c in OUTPUTS:
+        verrous += "    -1,  /* %s */\n" % symbol
+    for _w, symbol, _n, _mn, _mx, _d, _u, _p, _c in TAIL:
+        verrous += "    -1,  /* %s */\n" % symbol
 
     def row(values):
         out = []
@@ -1445,7 +1555,7 @@ def write_programs(path):
         "n_switch": len(SWITCHES), "names": names, "cols": cols,
         "values": values, "switches": switches,
         "n_word": len(SLOT_WORDS), "words": mots, "spec": spec,
-        "sens": sens})
+        "sens": sens, "locks": verrous, "n_lock": len(LOCK_BLOCKS)})
     return len(cont)
 
 
@@ -1533,8 +1643,20 @@ def write_settings(path):
             '                <div class="voice-set-name{{{cns}}}">'
             '<span class="voice-set-name-cap{{{cns}}}">USER %d</span>'
             '<input type="text" class="voice-fav-name{{{cns}}} voice-fav-name"'
-            ' data-slot="%d" maxlength="7" placeholder="type a name"></div>'
-            % (i + 1, i + 1))
+            ' data-slot="%d" maxlength="7" placeholder="type a name">'
+            # Two clicks to throw a favourite away: the checkbox arms it
+            # and the click that unticks it confirms, which is a
+            # confirmation built out of one form control and nothing
+            # bound to anything. Three seconds and it disarms itself.
+            '<input type="checkbox" name="voice-fav-del{{{cns}}}"'
+            ' data-slot="%d" id="voice-set-del-%d{{{cns}}}"'
+            ' class="voice-fav-del{{{cns}}} voice-fav-del">'
+            '<label class="voice-fav-x{{{cns}}} voice-fav-x" data-slot="%d"'
+            ' for="voice-set-del-%d{{{cns}}}"'
+            ' title="Throw this favourite away: name, sound and all.'
+            ' Click once to arm it, again within three seconds to'
+            ' confirm.">&#10005;</label></div>'
+            % (i + 1, i + 1, i + 1, i + 1, i + 1, i + 1))
 
     corps = []
     for titre, syms in PANEL:
@@ -1553,7 +1675,10 @@ def write_settings(path):
             corps.append('                <div class="voice-set-names-note{{{cns}}}">'
                          'The name goes into the slot, onto the disc and onto the '
                          'footswitch as you type. Nothing to press, and SAVE never '
-                         'touches it. The list above says them too.</div>')
+                         'touches it. The list above says them too. '
+                         '&#10005; twice throws a favourite away - name, sound and '
+                         'all - and the cycle steps over it from the next press.'
+                         '</div>')
             corps.append('                </div>')
         if titre == "NOT BY HAND":
             corps.append('                <div class="voice-set-names-note{{{cns}}}">'

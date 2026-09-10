@@ -966,4 +966,141 @@
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
         rdfs:comment "Goes to USER 6, and nothing else ever. Meant for a footswitch, which carries the name of that favourite whether or not it is the one being played."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 84 ;
+        lv2:symbol "cycle" ;
+        lv2:name "CYCLE" ;
+        lv2:portProperty lv2:integer , lv2:enumeration ;
+        lv2:default 6.0 ;
+        lv2:minimum 1.0 ;
+        lv2:maximum 6.0 ;
+        lv2:scalePoint
+            [ rdfs:label "1 only" ; rdf:value 1.0 ] ,
+            [ rdfs:label "1 to 2" ; rdf:value 2.0 ] ,
+            [ rdfs:label "1 to 3" ; rdf:value 3.0 ] ,
+            [ rdfs:label "1 to 4" ; rdf:value 4.0 ] ,
+            [ rdfs:label "1 to 5" ; rdf:value 5.0 ] ,
+            [ rdfs:label "1 to 6" ; rdf:value 6.0 ] ;
+        rdfs:comment "How far the cycle goes: NEXT USER and GO TO walk the favourites from 1 to this one and no further, still skipping the ones with nothing in them. The six GO switches ignore it completely - a switch that carries the name of a favourite must always reach it. Landing outside the cycle, from a factory sound or from a GO switch, the next step comes back in at the first filled slot inside it. Worth an encoder: it is the set list that decides this, not the rig."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 85 ;
+        lv2:symbol "lock_gate" ;
+        lv2:name "LOCK GATE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks GATE to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 86 ;
+        lv2:symbol "lock_comp" ;
+        lv2:name "LOCK COMP" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks COMP to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 87 ;
+        lv2:symbol "lock_de_ess" ;
+        lv2:name "LOCK DE-ESS" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks DE-ESS to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 88 ;
+        lv2:symbol "lock_eq" ;
+        lv2:name "LOCK EQ" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks EQ to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 89 ;
+        lv2:symbol "lock_drive" ;
+        lv2:name "LOCK DRIVE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks DRIVE to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 90 ;
+        lv2:symbol "lock_pitch" ;
+        lv2:name "LOCK PITCH" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks PITCH to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 91 ;
+        lv2:symbol "lock_harm" ;
+        lv2:name "LOCK HARMONY" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks HARMONY to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 92 ;
+        lv2:symbol "lock_doubler" ;
+        lv2:name "LOCK DOUBLE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks DOUBLE to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 93 ;
+        lv2:symbol "lock_mod" ;
+        lv2:name "LOCK MOD" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks MOD to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 94 ;
+        lv2:symbol "lock_feedback" ;
+        lv2:name "LOCK NO HOWL" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks NO HOWL to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 95 ;
+        lv2:symbol "lock_delay" ;
+        lv2:name "LOCK DELAY" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks DELAY to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 96 ;
+        lv2:symbol "lock_reverb" ;
+        lv2:name "LOCK REVERB" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Locks REVERB to what it is set to NOW. The block stops following the programs: picking another favourite, or a factory sound, leaves its knobs exactly where they are - which is how the reverb a room needs survives a set list. SAVE stops writing it too, except into a slot with nothing in it yet, where everything is stored. Its ON/OFF still follows the program: what is locked is the setting, not whether the block is in the sound. Turn the lock off and the program's own value comes back at once. The pedal page says MINE beside a locked parameter, and FAVORI counts the locks that are on."
     ] .

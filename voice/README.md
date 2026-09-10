@@ -99,9 +99,9 @@ exactly what this needs:
 | | |
 |---|---|
 | **ENC 1 · FAVOURITE** | Walks the six USER slots, by name. The sound follows as you turn. |
-| **ENC 2 · PARAMETER** | Walks the sound's parameters — **NAME** first, then everything a program owns — showing the one it points at with its value. |
-| **ENC 3 · VALUE** | Changes it. On NAME it opens the name editor. |
-| **USER ▶** (footswitch) | The next slot with something in it. |
+| **ENC 2 · PARAMETER** | Walks the sound's parameters — **NAME** first, then everything a program owns, then the twelve **locks** — showing the one it points at with its value. |
+| **ENC 3 · VALUE** | Changes it. On NAME it opens the name editor; on a lock, right locks and left gives it back. |
+| **USER ▶** (footswitch) | The next slot with something in it, inside the CYCLE. |
 | **SAVE** (footswitch) | Store what you are hearing into the slot. |
 
 In a hall that turns out deader than the soundcheck: turn ENC 2 to
@@ -166,8 +166,10 @@ that means "yes" becomes impossible to say.
 | **WORD** | A word from a list of thirty-two. Turning it names the slot USER SLOT points at, there and then, and puts it on the disc — it does not wait for a SAVE, and SAVE does not read it. The name itself is seven characters of free text — the width of a footswitch label — and it travels with the slot. Nothing is named during the settle window, or opening a pedalboard would rename a slot every time. |
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
-| **USER ▶** | Steps to the next USER slot with something in it, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
-| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots **without changing the sound** and names the one it reaches; holding it half a second goes there. A plain toggle asking for **momentary-on by default**, so the port follows the foot. Twelve seconds untouched and it forgets. |
+| **CYCLE** | How far USER ▶ and FAV BROWSE walk: 1 to 6 favourites, six by default. The GO switches ignore it. Worth an encoder. See *How far the cycle goes*. |
+| **LOCK …** | Twelve switches, one per block of the sound. A locked block stops following the programs and SAVE stops writing it; its ON/OFF still follows them. See *Locking a block to the room*. |
+| **USER ▶** | Steps to the next USER slot with something in it inside the CYCLE, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
+| **FAV BROWSE** | The second footswitch. One press walks the filled USER slots inside the CYCLE **without changing the sound** and names the one it reaches; holding it half a second goes there. A plain toggle asking for **momentary-on by default**, so the port follows the foot. Twelve seconds untouched and it forgets. |
 | **GO 1**…**GO 6** | One switch per favourite: a press goes to that one, always, whatever was pressed before. Each carries its own favourite's name. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
@@ -198,6 +200,8 @@ the readout:
 | **DELAY** | The time in force, in ms — and the label reads `TAP` instead of `DELAY` when the tap owns it, rather than showing a knob position that is no longer true. |
 | **TAP** | The tempo in BPM, and the LED blinks it back at you. |
 | **FX** / **FX TRIGGER** | `ON` or `OFF`, green or dark. |
+| **CYCLE** | `1-3 FAV`, with a bar: how far the two walking switches go. |
+| **LOCK …** | `MINE` or `PROGRAM`, amber or dark — never `ON` or `OFF`: what it decides is *whose* the settings are, and the block's own switch is what answers whether the block is in the sound. |
 | any effect switch | Its own name — `DELAY`, `REVERB`, `DOUBLE`… — with `ON` or `OFF` and the LED to match. It shows what is actually in force, which after a program change is not always what the knob says. |
 | **PROGRAM** | The name of the sound in force: `MANUAL`, `BALLAD`, `CATHEDRL`… |
 | **VOICES** | How many voices the doubler is running. |
@@ -286,6 +290,78 @@ screen says `SAVED 3` for a second. That feedback exists because the honest
 answer to "did it save?" used to be "yes, but nothing on the screen said
 so". Walk away to another sound and come back to the slot: the knobs move
 to what you stored.
+
+**Throwing one away.** Click the **✕** beside a favourite — in the FAVORIS
+list, or beside its name box in the settings — and it goes red and says
+`SÛR ?`. Click it again within three seconds and the slot is emptied: name,
+sound and all, on the disc as well. Leave it and it disarms itself; a red
+cross waiting on a page nobody is looking at is an accident. There is no
+undo, which is why it takes two clicks.
+
+An emptied slot behaves exactly like one that was never filled: the walks
+step straight over it, and going to it deliberately leaves the knobs in
+charge — which is the state a new sound is dialled in, so emptying and
+refilling is one continuous action.
+
+It travels down the same three ports a name does, as code 2. That is worth
+saying because the alternative was a port of its own, and **a new port
+costs every pedalboard that already has this plugin a block removed and put
+back**: port indices are what a pedalboard remembers.
+
+### How far the cycle goes
+
+**CYCLE** says how far **USER ▶** and **GO TO** walk: from the first
+favourite to that one and no further, still skipping the ones with nothing
+in them. Six favourites is what the plugin holds; three is what a song
+needs, and a cycle that steps over three empty slots to come back to the
+first is three presses of nothing in front of an audience.
+
+The six **GO n** switches ignore it completely — a switch that carries the
+name of a favourite must always reach it. Land outside the cycle, from a GO
+switch or from a factory sound, and the next step comes back **in** at the
+first filled slot inside it rather than at whatever happens to follow.
+
+Worth an encoder: it is the set list that decides this, not the rig.
+
+### Locking a block to the room
+
+The room decides the reverb. The set list decides the rest. Without a way
+to say so, going to another favourite brings that favourite's reverb with
+it and the hall has to be dialled again, sound by sound.
+
+Twelve switches — **LOCK GATE**, **LOCK COMP**, **LOCK DE-ESS**, **LOCK
+EQ**, **LOCK DRIVE**, **LOCK PITCH**, **LOCK HARMONY**, **LOCK DOUBLE**,
+**LOCK MOD**, **LOCK NO HOWL**, **LOCK DELAY**, **LOCK REVERB** — one per
+block of the sound. A locked block:
+
+* **is not recalled.** Pick another favourite, or a factory sound, and its
+  knobs stay exactly where you put them.
+* **is not written by SAVE** — except into a slot with nothing in it yet,
+  which stores everything. Otherwise the reverb dialled for tonight's room
+  would be baked into six favourites by pressing SAVE six times, and
+  undialling it afterwards is a job nobody can do.
+* **still takes its ON/OFF from the program.** What is locked is the
+  *setting*, not whether the block is in the sound at all — or a locked
+  reverb would turn itself on in the sounds that were built without one.
+* **hands the block straight back** the moment you unlock it, knobs and
+  all.
+
+They are global — one set for the plugin, not one per favourite — they
+apply to the factory presets too, and they are saved with the pedalboard
+because they are ordinary ports.
+
+**Where to find them.** A **padlock** in the head of each section of the
+web UI, beside the switch that turns the block on: amber when it is on,
+where the on/off is green, because it is not another thing switched on. A
+section of their own in the settings panel. And on the pedal, at the end of
+**ENC 2**'s walk, past the parameters — set once for a room and never in a
+song, so they are not in the way of the knobs that are.
+
+**And it says so.** A locked parameter says `MINE` on the pedal page where
+its unit would go, and **ENC 1** carries a standing `LOCK 2` beside the
+name of the favourite for as long as any lock is on. A lock left on from
+last week is a favourite that sounds wrong for a reason nothing else on the
+machine would ever explain.
 
 **One bug worth knowing about, now fixed.** Pressing SAVE in the web UI
 also selects the slot it wrote to — and both port writes could land
@@ -497,6 +573,9 @@ is already a concert.
 An empty slot is not refused: going there leaves the knobs in charge, which
 is how a sound is dialled before being saved into it.
 
+And **CYCLE does not apply to them**: a switch that carries the name of a
+favourite must always reach it, whatever the cycle is set to.
+
 If you want a sound named everywhere and in your own words, add it to
 `PRESETS` in `make_ttl.py` and rebuild — it becomes a program *and* an LV2
 preset, with its name on the screen and in the list.
@@ -514,13 +593,16 @@ Every effect is a box with its switch in the corner, and **ON is a lit
 green track with a white knob and a glow**, next to a plain grey OFF — the
 first version of this plugin shipped without a custom interface at all, and
 mod-ui's default one drew switch states in a violet you could not see. The
-section a switch belongs to lights its border too.
+section a switch belongs to lights its border too. Beside each switch is a
+small **padlock**, amber when it is on: that block's settings stop
+following the favourites. See *Locking a block to the room*.
 
 The bar across the top is the program list: arrows to walk it, the name of
 what is selected, and **FAVORIS**, which drops the six USER slots by name —
-click one to go to it, type in the box beside it to rename it. The second bar
+click one to go to it, ✕ twice to throw it away, type in the box beside it
+to rename it. The second bar
 is where a sound is stored, compared and cut: SAVE TO, WORD, SAVE, A/B,
-USER ▶, the three encoder dials of the pedal page, and MUTE. The
+CYCLE, USER ▶, the three encoder dials of the pedal page, and MUTE. The
 compressor box carries a gain-reduction meter and the levels box an output
 meter, both fed by the plugin's own outputs. TAP is a button as well as a
 port.
@@ -530,8 +612,9 @@ otherwise build from the descriptor — and a panel built from the descriptor
 is every port in index order: a wall of sixty knobs with no shape, and
 nowhere at all to type a name, since a control port carries a number. Ours
 is the same panel **in sections** — FAVORIS, IN AND OUT, then the strip in
-the order of the pedal, then PEDAL PAGE and the three ports that are not
-for hands — with the six name boxes under the first one.
+the order of the pedal, then the twelve locks, PEDAL PAGE and the three
+ports that are not for hands — with the six name boxes under the first one,
+each with a ✕ of its own.
 
 It is **generated by `make_ttl.py`** from the port list and a `PANEL` table
 that says which section each control belongs to. A port added to the
@@ -544,6 +627,14 @@ was named and can only say USER 1 to USER 6; the script gives those six
 entries their real names on every tick, which also puts them back whenever
 mod-ui rebuilds the list. So the sound you saved as CULCUL is in the list as
 CULCUL.
+
+**Nothing here is bound to an event**, including the ✕. mod-ui *copies* the
+interface after building it, and every binding the script made goes with
+the copy. So the cross is a hidden **checkbox** with a label beside it:
+ticking it arms the deletion, and the same click that unticks it is the
+confirmation — a two-step confirmation built out of one form control and
+nothing else. The clock reads it ten times a second, and puts it back after
+three.
 
 **One editor per name, and no more.** The six boxes are in the settings
 panel only; the FAVORIS list in the pedal shows the names and goes to one
@@ -889,9 +980,15 @@ ringing into the gap that follows it.
 - LOW CUT and the three tone bands have no switch of their own. They have
   neutral positions — 0 Hz and 0 dB — and a switch that only duplicates a
   knob position is a control that can disagree with itself.
-- The name of a USER slot lives in the browser that typed it, because a
-  control port carries a number and not a string. The sound travels; the
-  name does not follow it to another machine.
+- A name typed in the web page reaches the plugin one character at a time,
+  on three ordinary control ports, because a control port carries a number
+  and not a string. It is slow by design — one code every 120 ms — and a
+  name pasted in faster than that arrives whole only because the page waits
+  for the keys to stop before sending.
+- The twelve locks are **global**: one set for the plugin, not one per
+  favourite. A favourite cannot remember that it wants its own reverb kept;
+  you decide that standing in the room, and it holds until you say
+  otherwise.
 - The tone controls are three broad parallel bands, not a surgical EQ, and
   the reverb is a Freeverb — a good room, not a convolution.
 

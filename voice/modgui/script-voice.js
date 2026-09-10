@@ -85,7 +85,7 @@ function (event, funcs) {
         var d = window.__voiceFav;
         if (!d) {
             d = { noms: {}, vu: {}, calme: {}, file: [], strobe: 0, coche: 0,
-                  tic: 0, garde: {}, program: 0,
+                  tic: 0, garde: {}, program: 0, arme: {},
                   echo: 0, echoVu: -1, lettres: [],
                   horloge: null, envoi: function () {} };
             window.__voiceFav = d;
@@ -153,6 +153,68 @@ function (event, funcs) {
            said a second ago. Two seconds is longer than that round trip.
            Per slot, so naming one does not deafen the page to the rest. */
         d.garde[slot] = d.tic + Math.ceil(2000 / PAS_MS);
+    }
+
+    /* ---------------- and the order that empties one ----------------
+       Code 2 on the same wire the letters go down. It needed no port of
+       its own, which matters more than it sounds: a port added here
+       would have cost a block removed and put back on every pedalboard
+       that already has one. */
+    var EFFACER = 2;
+
+    function effacer(slot) {
+        var d = fav();
+        d.file.push({ slot: slot, code: EFFACER });
+        d.noms[slot] = '';
+        ecrireNom(slot, '');
+        /* and do not believe the echo about this slot for a moment: the
+           old name may already be on its way up */
+        d.garde[slot] = d.tic + Math.ceil(2000 / PAS_MS);
+        /* the box that named it goes empty too, recorded as SEEN or the
+           clock would read the emptying back as something typed and send
+           it round again */
+        var boites = tourJq('.voice-fav-name[data-slot="' + slot + '"]');
+        if (boites) {
+            boites.each(function () { jQuery(this).val(''); });
+        }
+        d.vu[slot] = '';
+        d.calme[slot] = 0;
+    }
+
+    /* Two clicks, and the second within three seconds. The checkbox is
+       the arm; the same click that unticks it is the confirmation, so a
+       confirmation is built out of ONE form control and nothing bound to
+       anything - which is the only kind that survives mod-ui copying the
+       interface. Left armed, it disarms itself: a red cross waiting on a
+       page nobody is looking at is an accident. */
+    function surveillerSuppression() {
+        var d = fav();
+        var slot;
+        for (slot = 1; slot <= N_SLOT; slot++) {
+            var cases = tourJq('.voice-fav-del[data-slot="' + slot + '"]');
+            var coche = false;
+            if (cases) {
+                cases.each(function () { if (this.checked) { coche = true; } });
+            }
+            var arme = d.arme[slot] || 0;
+            if (coche && !arme) {
+                d.arme[slot] = d.tic + Math.ceil(3000 / PAS_MS);
+            } else if (!coche && arme) {
+                d.arme[slot] = 0;
+                if (arme > d.tic) { effacer(slot); }
+            } else if (arme && arme <= d.tic) {
+                d.arme[slot] = 0;
+                if (cases) {
+                    cases.each(function () { this.checked = false; });
+                }
+            }
+            var croix = tourJq('.voice-fav-x[data-slot="' + slot + '"]');
+            if (croix) {
+                var dit = d.arme[slot] ? 'S\u00dbR ?' : '\u2715';
+                if (croix.text() !== dit) { croix.text(dit); }
+                croix.toggleClass('arme', !!d.arme[slot]);
+            }
+        }
     }
 
     function pomper() {
@@ -261,7 +323,10 @@ function (event, funcs) {
             d.envoi('program', PREMIER_USER + choisi - 1);
         }
 
-        /* 5. and the names on show */
+        /* 5. a cross clicked twice is a favourite thrown away */
+        surveillerSuppression();
+
+        /* 6. and the names on show */
         peindreFavoris();
     }
 
@@ -401,17 +466,27 @@ function (event, funcs) {
     }
 
     /* A switch lights the whole section it sits in, which is the thing the
-       default interface could not do. */
+       default interface could not do. All twelve of them: HARMONY was
+       missing from this list and was the one section that never lit. */
     var SECTIONS = ['gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'drive_on',
-                    'pitch_on', 'doubler_on', 'mod_on', 'feedback_on',
-                    'delay_on', 'reverb_on'];
+                    'pitch_on', 'harm_on', 'doubler_on', 'mod_on',
+                    'feedback_on', 'delay_on', 'reverb_on'];
+
+    /* And one padlock per section, which lights only itself: a locked
+       block is not a block turned on, it is a block that has stopped
+       following the favourites. */
+    var VERROUS = ['lock_gate', 'lock_comp', 'lock_de_ess', 'lock_eq',
+                   'lock_drive', 'lock_pitch', 'lock_harm', 'lock_doubler',
+                   'lock_mod', 'lock_feedback', 'lock_delay', 'lock_reverb'];
 
     function majSection(icon, symbol, valeur) {
-        if (SECTIONS.indexOf(symbol) < 0) { return; }
+        var verrou = VERROUS.indexOf(symbol) >= 0;
+        if (!verrou && SECTIONS.indexOf(symbol) < 0) { return; }
         var sw = icon.find('[mod-port-symbol="' + symbol + '"]');
         if (!sw.length) { return; }
         var on = nombre(valeur) > 0.5;
         sw.toggleClass('on', on).toggleClass('off', !on);
+        if (verrou) { return; }
         if (sw.parent && sw.parent().parent) {
             sw.parent().parent().toggleClass('actif', on);
         }

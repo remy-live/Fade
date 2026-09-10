@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD26_AARCH64_20260910";
+static const volatile char build_tag[] = "VOICE_BUILD27_AARCH64_20260910";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -409,7 +409,25 @@ typedef enum {
     CTL_FAV_4         = 77,
     CTL_FAV_5         = 78,
     CTL_FAV_6         = 79,
-    CTL_COUNT         = 80
+    /* How far the cycle walks, and no further. */
+    CTL_CYCLE         = 80,
+    /* One lock per block of the sound, in the order of SwitchIndex: the
+       same twelve blocks the switches turn on and off, so switch_label[]
+       names both. A lock holds the block's SETTINGS against the programs;
+       its on/off goes on following them. */
+    CTL_LOCK_GATE     = 81,
+    CTL_LOCK_COMP     = 82,
+    CTL_LOCK_DE_ESS   = 83,
+    CTL_LOCK_EQ       = 84,
+    CTL_LOCK_DRIVE    = 85,
+    CTL_LOCK_PITCH    = 86,
+    CTL_LOCK_HARM     = 87,
+    CTL_LOCK_DOUBLER  = 88,
+    CTL_LOCK_MOD      = 89,
+    CTL_LOCK_FEEDBACK = 90,
+    CTL_LOCK_DELAY    = 91,
+    CTL_LOCK_REVERB   = 92,
+    CTL_COUNT         = 93
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -514,6 +532,19 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "fav_4",          0.0f,    1.0f,     0.0f },
     { "fav_5",          0.0f,    1.0f,     0.0f },
     { "fav_6",          0.0f,    1.0f,     0.0f },
+    { "cycle",          1.0f,    6.0f,     6.0f },
+    { "lock_gate",      0.0f,    1.0f,     0.0f },
+    { "lock_comp",      0.0f,    1.0f,     0.0f },
+    { "lock_de_ess",    0.0f,    1.0f,     0.0f },
+    { "lock_eq",        0.0f,    1.0f,     0.0f },
+    { "lock_drive",     0.0f,    1.0f,     0.0f },
+    { "lock_pitch",     0.0f,    1.0f,     0.0f },
+    { "lock_harm",      0.0f,    1.0f,     0.0f },
+    { "lock_doubler",   0.0f,    1.0f,     0.0f },
+    { "lock_mod",       0.0f,    1.0f,     0.0f },
+    { "lock_feedback",  0.0f,    1.0f,     0.0f },
+    { "lock_delay",     0.0f,    1.0f,     0.0f },
+    { "lock_reverb",    0.0f,    1.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -823,8 +854,13 @@ typedef enum {
     SLOT_DE_ESS_FREQ, SLOT_NEXT_USER, SLOT_SLOT_NAME,
     SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE, SLOT_BROWSE,
     SLOT_FAV_1, SLOT_FAV_2, SLOT_FAV_3, SLOT_FAV_4, SLOT_FAV_5, SLOT_FAV_6,
+    SLOT_CYCLE,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
-    SLOT_COUNT = SLOT_SWITCH + SW_COUNT
+    /* and one lock per block, in the same order: a lock is worth a
+       footswitch of its own - locking the reverb to the room is done
+       once, standing on the stage, with both hands on a microphone */
+    SLOT_LOCK = SLOT_SWITCH + SW_COUNT,
+    SLOT_COUNT = SLOT_LOCK + SW_COUNT
 } ScreenSlot;
 
 static uint8_t slot_ctl_of(int slot)
@@ -836,9 +872,12 @@ static uint8_t slot_ctl_of(int slot)
         CTL_MUTE, CTL_AB, CTL_HARM_1, CTL_HARM_2, CTL_HARM_MIX,
         CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME,
         CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE, CTL_FAV_BROWSE,
-        CTL_FAV_1, CTL_FAV_2, CTL_FAV_3, CTL_FAV_4, CTL_FAV_5, CTL_FAV_6
+        CTL_FAV_1, CTL_FAV_2, CTL_FAV_3, CTL_FAV_4, CTL_FAV_5, CTL_FAV_6,
+        CTL_CYCLE
     };
-    return (slot < SLOT_SWITCH) ? fixed[slot] : switch_ctl[slot - SLOT_SWITCH];
+    if (slot < (int)SLOT_SWITCH) { return fixed[slot]; }
+    if (slot < (int)SLOT_LOCK)   { return switch_ctl[slot - (int)SLOT_SWITCH]; }
+    return (uint8_t)(CTL_LOCK_GATE + (slot - (int)SLOT_LOCK));
 }
 
 /* Everything from CTL_GR on is an output port. */
@@ -1036,6 +1075,13 @@ typedef struct {
     uint32_t browse_max;       /* the longest press ever seen, for DIAG */
     int      browse_fait;      /* this press has already said go */
     int      fav_prev[N_USER]; /* the six direct switches */
+    /* --- the twelve locks, followed by their edges ---
+       Turning one ON needs nothing done: what is heard is already what
+       the knobs say, and param_read keeps it that way. Turning one OFF
+       is where the work is - the block has to be given back to the
+       program, knobs and all, or the port would go on showing a value
+       the sound no longer has. */
+    uint8_t  lock_prev[N_LOCK];
     int      caps_dits;        /* what the host announced for it, 99 = none */
     int      echo_slot;        /* which name is being shown to the page */
     uint32_t echo_left;        /* samples until the next one */
@@ -1540,13 +1586,80 @@ static float ctl_read(const Voice* self, int i)
     return v;
 }
 
+/* Is this block locked? A lock says "these settings are MINE": the room
+   decides the reverb and the set list decides the rest, so a locked block
+   stops following the programs and the knobs stay where they were put. */
+static int lock_on(const Voice* self, int k)
+{
+    return (k >= 0 && k < N_LOCK)
+        && (ctl_read(self, CTL_LOCK_GATE + k) > 0.5f);
+}
+
+/* And the same question about a CONTROL, which is the form every caller
+   wants: locked controls are the ones a program must not write. */
+static int ctl_locked(const Voice* self, int i)
+{
+    return lock_on(self, lock_of[i]);
+}
+
+/* How many locks are on. Nothing depends on it but the screen, and the
+   screen needs it: a lock left on from last week is a favourite that
+   sounds wrong for a reason nothing else would ever explain. */
+static int locks_on(const Voice* self)
+{
+    int n = 0;
+    for (int k = 0; k < N_LOCK; ++k) {
+        if (lock_on(self, k)) { ++n; }
+    }
+    return n;
+}
+
+/* How far the cycle walks. Six favourites is what the plugin holds and
+   three is what a song needs; a cycle that steps over three empty slots
+   to come back to the first is three presses of nothing. */
+static int cycle_len(const Voice* self)
+{
+    int n = (int)(ctl_read(self, CTL_CYCLE) + 0.5f);
+    if (n < 1)      { n = 1; }
+    if (n > N_USER) { n = N_USER; }
+    return n;
+}
+
+/* The next filled favourite INSIDE the cycle, -1 if there is none.
+   `from` is the slot the walk stands on, or -1 for nowhere. Standing
+   outside the cycle - on a factory sound, or on a favourite a GO switch
+   reached past the end - the walk comes back in at its first filled
+   slot rather than at whatever follows where you happen to be. */
+static int next_fav(const Voice* self, int from)
+{
+    const int n = cycle_len(self);
+    if (from < 0 || from >= n) {
+        for (int u = 0; u < n; ++u) {
+            if (self->user[u].filled) { return u; }
+        }
+        return -1;
+    }
+    for (int k = 1; k <= n; ++k) {
+        const int u = (from + k) % n;
+        if (self->user[u].filled) { return u; }
+    }
+    return -1;
+}
+
 /* What the DSP actually gets. With a program selected it comes from the
    built-in table; with MANUAL it comes from the port. IN GAIN, OUTPUT,
    the switches and the performance controls are never in the table, so
-   they are always the player's. */
+   they are always the player's.
+
+   And a LOCKED block is the player's too, whatever is selected: that is
+   the whole of what a lock does on the way out. Everything downstream -
+   the DSP, the knobs a program moves, the pedal page, SAVE - reads the
+   sound through here, so there is one place where a lock has to be
+   understood and no way to forget it in the second. */
 static float param_read(const Voice* self, int i)
 {
-    if (self->program > 0 && program_col[i] >= 0 && !self->ctl_mine[i]) {
+    if (self->program > 0 && program_col[i] >= 0 && !self->ctl_mine[i]
+        && !ctl_locked(self, i)) {
         const int   u = self->program - N_PROGRAM;
         const float* row = (u >= 0)
                          ? ((u < N_USER && self->user[u].filled)
@@ -1711,6 +1824,10 @@ static void push_port(Voice* self, int i, float value)
 #define FLICK_BLOCKS 30u      /* two detents closer than this: five steps */
 #define FLICK_MULT   5
 #define PAGE_GIVE_UP 700u     /* blocks of nothing before the editor lets go */
+/* What encoder 2 walks: 0 is NAME, then one entry per parameter, then
+   one per lock. Here so the walk, the editor and the screen cannot
+   disagree about where the locks begin. */
+#define PAGE_LOCK    (N_PROGRAM_COL + 1)
 
 /* How many detents this knob has just been turned, and which way. Zero
    when it has not moved, or when it moved further than a hand can. */
@@ -1919,6 +2036,11 @@ activate(LV2_Handle instance)
     for (int u = 0; u < N_USER; ++u) {
         self->fav_prev[u] = (ctl_read(self, CTL_FAV_1 + u) > 0.5f) ? 1 : 0;
     }
+    /* The locks as they stand, so a board being opened with one already
+       on is not read as somebody turning it on now. */
+    for (int k = 0; k < N_LOCK; ++k) {
+        self->lock_prev[k] = (ctl_read(self, CTL_LOCK_GATE + k) > 0.5f) ? 1u : 0u;
+    }
     self->caps_dits         = 99;
     self->echo_slot         = 0;
     self->echo_left         = 0u;
@@ -2098,6 +2220,7 @@ paint(Voice* self, int force)
         const uint32_t caps = self->caps[idx];
 
         char        vbuf[12];
+        char        ubuf[12];       /* the unit, when it has to be built */
         const char* label = NULL;
         const char* value = NULL;
         const char* unit  = NULL;
@@ -2278,6 +2401,18 @@ paint(Voice* self, int force)
             }
             break;
 
+        case SLOT_CYCLE: {
+            const int n = cycle_len(self);
+            label = "CYCLE";
+            copy_bounded(vbuf, sizeof(vbuf), "1-");
+            write_int(vbuf + 2, sizeof(vbuf) - 2, n);
+            value = (n > 1) ? vbuf : "1 ONLY";
+            unit  = "FAV";
+            bar   = (float)(n - 1) * (1.0f / (float)(N_USER - 1));
+            bar_h = (int)(bar * 100.0f + 0.5f);
+            break;
+        }
+
         case SLOT_SLOT_NAME: {
             int w = (int)(ctl_read(self, CTL_SLOT_NAME) + 0.5f);
             if (w < 0)            { w = 0; }
@@ -2357,6 +2492,20 @@ paint(Voice* self, int force)
                         / (float)(N_USER - 1);
                     bar_h = (int)(bar * 100.0f + 0.5f);
                 }
+                /* And how many blocks are NOT following the favourites.
+                   Standing, not a flash: a lock left on from last week is
+                   a favourite that sounds wrong for a reason nothing else
+                   on the machine would ever explain, and the moment it
+                   matters is the moment you land on the favourite - which
+                   is exactly when this line is being read. */
+                {
+                    const int n = locks_on(self);
+                    if (n > 0) {
+                        copy_bounded(ubuf, sizeof(ubuf), "LOCK ");
+                        write_int(ubuf + 5, sizeof(ubuf) - 5, n);
+                        unit = ubuf;
+                    }
+                }
             }
             break;
 
@@ -2380,6 +2529,19 @@ paint(Voice* self, int force)
                 label = "NOM";
                 value = program_label(self, self->program, vbuf, sizeof(vbuf));
                 unit  = est_valeur ? "TOURNER" : "";
+            } else if (self->page_param >= PAGE_LOCK) {
+                /* a lock, named after the block it holds. MINE and
+                   PROGRAM rather than ON and OFF: what the switch
+                   decides is WHOSE the settings are, and ON reads as
+                   "the reverb is on", which is a different question and
+                   the one the block's own switch answers. */
+                const int k = self->page_param - PAGE_LOCK;
+                const int on = lock_on(self, k);
+                label = switch_label[k];
+                value = on ? "MINE" : "PROGRAM";
+                unit  = "LOCK";
+                led   = on ? LV2_HMI_LED_Colour_Yellow
+                           : LV2_HMI_LED_Colour_Off;
             } else {
                 const ParamSpec* ps = &param_spec[self->page_param - 1];
                 const int i = (int)ps->ctl;
@@ -2387,7 +2549,12 @@ paint(Voice* self, int force)
                 label = ps->name;
                 write_value(vbuf, sizeof(vbuf), v, ps->dec);
                 value = vbuf;
-                unit  = ps->unit;
+                /* A locked parameter says MINE where its unit would go.
+                   It costs the unit, and it is worth it: a value that no
+                   longer follows the favourites and does not say so is a
+                   sound wrong for a reason nothing on the machine
+                   explains. */
+                unit  = ctl_locked(self, i) ? "MINE" : ps->unit;
                 if (ctl_spec[i].max > ctl_spec[i].min) {
                     bar = (v - ctl_spec[i].min)
                         / (ctl_spec[i].max - ctl_spec[i].min);
@@ -2469,8 +2636,21 @@ paint(Voice* self, int force)
         }
 
         default:
-            /* one of the eight per-effect switches */
-            if (s >= (int)SLOT_SWITCH && s < (int)SLOT_COUNT) {
+            if (s >= (int)SLOT_LOCK && s < (int)SLOT_COUNT) {
+                /* one of the twelve locks. MINE or PROGRAM, never ON or
+                   OFF: what it decides is WHOSE the settings are, and the
+                   block's own switch is the one that answers whether the
+                   block is in the sound. Yellow rather than green, for
+                   the same reason: it is not another thing turned on. */
+                const int k = s - (int)SLOT_LOCK;
+                const int on = lock_on(self, k);
+                label = switch_label[k];
+                value = on ? "MINE" : "PROGRAM";
+                unit  = "LOCK";
+                led   = on ? LV2_HMI_LED_Colour_Yellow
+                           : LV2_HMI_LED_Colour_Off;
+            } else if (s >= (int)SLOT_SWITCH && s < (int)SLOT_LOCK) {
+                /* one of the twelve per-effect switches */
                 const int k = s - (int)SLOT_SWITCH;
                 const int on = self->sw_state[k];
                 label = switch_label[k];
@@ -2630,8 +2810,17 @@ run(LV2_Handle instance, uint32_t n_samples)
            slot comes from USER SLOT, a list of its own, so a built-in
            sound can be changed and stored somewhere else without the
            original being touched. */
+        /* An EMPTY slot takes everything, locks and all: there is
+           nothing in it to protect, and a first save that stored only
+           eleven blocks of twelve would be a favourite with a hole in
+           it. A slot that already has something in it keeps what the
+           locks cover - the reverb dialled for tonight's room is not
+           something to bake into six favourites by pressing SAVE six
+           times, and undialling it afterwards is a job nobody can do. */
+        const int vierge = !self->user[u].filled;
         for (int i = 0; i < (int)CTL_COUNT; ++i) {
-            if (program_col[i] >= 0) {
+            if (program_col[i] >= 0
+                && (vierge || !ctl_locked(self, i))) {
                 self->user[u].value[program_col[i]] = param_read(self, i);
             }
         }
@@ -2713,7 +2902,11 @@ run(LV2_Handle instance, uint32_t n_samples)
        lose when it rebuilds the interface, and a code that goes missing
        costs one letter rather than a name landing on the wrong slot.
 
-       1 clears the name, 8 rubs out its last letter, 32 to 126 append. */
+       1 clears the name, 2 THROWS THE WHOLE FAVOURITE AWAY, 8 rubs out
+       the last letter, 32 to 126 append. Deleting needed no port of its
+       own: the wire that carries a name carries an order just as well,
+       and a port added for it would have cost a block removed and put
+       back on every pedalboard that has one. */
     {
         const float st = ctl_read(self, CTL_WEB_STROBE);
         if (st != self->strobe_prev) {
@@ -2728,6 +2921,27 @@ run(LV2_Handle instance, uint32_t n_samples)
                 /* k is the last letter, -1 when the name is empty */
                 if (c == 1) {
                     name_set(self->user[u].name, "");
+                    name_dirty(self);
+                } else if (c == 2) {
+                    /* Empty the slot: no name, no sound, nothing saved.
+                       The walks step over it from the next press, and
+                       what is being heard does not change even if this
+                       was the sound in force - an empty slot leaves the
+                       knobs in charge, which is exactly the state a new
+                       sound is dialled in. Two clicks in the web page
+                       before it gets here; there is no undo. */
+                    name_set(self->user[u].name, "");
+                    for (int q = 0; q < N_PROGRAM_COL; ++q) {
+                        self->user[u].value[q] = 0.0f;
+                    }
+                    for (int q = 0; q < (int)SW_COUNT; ++q) {
+                        self->user[u].sw[q] = 1u;
+                    }
+                    self->user[u].filled = 0u;
+                    if (self->browse_slot == u + 1) {
+                        self->browse_slot = 0;      /* the cursor was on it */
+                        self->browse_left = 0u;
+                    }
                     name_dirty(self);
                 } else if (c == 8 || c == 127) {
                     if (k >= 0) {
@@ -2827,7 +3041,13 @@ run(LV2_Handle instance, uint32_t n_samples)
             }
             if (d2) {                       /* encoder 2: the parameters */
                 int p = self->page_param + flicked(self, 1, d2);
-                const int n = N_PROGRAM_COL + 1;   /* NAME, then the rest */
+                /* NAME, then every parameter, then the twelve locks. The
+                   locks go at the END rather than beside the block they
+                   belong to: they are set once for a room and never in a
+                   song, and a knob that walks past twelve switches to
+                   reach the reverb is a knob that is slower every night
+                   for something done once. */
+                const int n = PAGE_LOCK + N_LOCK;
                 p %= n;
                 while (p < 0) { p += n; }
                 self->page_param = p;
@@ -2852,6 +3072,14 @@ run(LV2_Handle instance, uint32_t n_samples)
                             break;
                         }
                     }
+                } else if (self->page_param >= PAGE_LOCK) {
+                    /* a lock: right locks it, left gives it back. Not a
+                       flip - a knob you have to remember the state of
+                       before turning is a knob that gets it wrong in the
+                       dark, and there is nothing to turn towards on a
+                       thing with two states. */
+                    const int k = self->page_param - PAGE_LOCK;
+                    push_port(self, CTL_LOCK_GATE + k, (d3 > 0) ? 1.0f : 0.0f);
                 } else {
                     /* a parameter: one detent is one step of it, and the
                        new value is written back into its own port so the
@@ -2931,23 +3159,43 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
     }
 
+    /* ---------------- the twelve locks ----------------
+       ON needs nothing: what is heard is already what the knobs say, and
+       param_read goes on returning it whatever is selected. OFF is where
+       the work is - the block goes back to the program in force, and the
+       KNOBS have to go with it, or every port of that block would sit
+       showing a value the sound no longer has. That is the same
+       change-request the program list uses; without the host's feature
+       the sound still follows and only the display lags. */
+    for (int k = 0; k < N_LOCK; ++k) {
+        const uint8_t now = (ctl_read(self, CTL_LOCK_GATE + k) > 0.5f) ? 1u : 0u;
+        if (now == self->lock_prev[k]) { continue; }
+        self->lock_prev[k] = now;
+        if (now || self->settle_left) { continue; }   /* on, or a board opening */
+        for (int i = 0; i < (int)CTL_COUNT; ++i) {
+            if (lock_of[i] != (int8_t)k) { continue; }
+            /* Giving it back means giving it back whole: a knob turned
+               while the block was locked was turned INSIDE the lock, and
+               keeping it afterwards would make unlocking do nothing at
+               all for that one control. */
+            self->ctl_mine[i] = 0u;
+            const float v = param_read(self, i);
+            self->ctl_seen[i] = v;
+            push_port(self, i, v);
+        }
+    }
+
     /* NEXT USER: one footswitch to walk your own sounds, and only the
-       ones that exist - stepping into an empty slot would be a silent
-       press, which on stage reads as a broken pedal. */
-    /* The cycle switch, and nothing else: the next filled slot, now. It
-       used to also finish a walk begun on GO TO, and a switch that does
-       two things depending on what was pressed before it is a switch
-       nobody can read on a stage. GO TO finishes its own walk. */
+       ones that exist inside the CYCLE - stepping into an empty slot
+       would be a silent press, which on stage reads as a broken pedal.
+       It used to also finish a walk begun on GO TO, and a switch that
+       does two things depending on what was pressed before it is a
+       switch nobody can read on a stage. GO TO finishes its own walk. */
     if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
         const int depuis = (self->program >= N_PROGRAM)
                          ? self->program - N_PROGRAM : -1;
-        for (int k = 1; k <= N_USER; ++k) {
-            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-            if (self->user[u].filled) {
-                program_enter(self, N_PROGRAM + u);
-                break;
-            }
-        }
+        const int u = next_fav(self, depuis);
+        if (u >= 0) { program_enter(self, N_PROGRAM + u); }
     }
 
     /* ---------------- one switch per favourite ----------------
@@ -3015,13 +3263,10 @@ run(LV2_Handle instance, uint32_t n_samples)
                                  ? self->browse_slot - 1
                                  : ((self->program >= N_PROGRAM)
                                     ? self->program - N_PROGRAM : -1);
-                for (int k = 1; k <= N_USER; ++k) {
-                    const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-                    if (self->user[u].filled) {
-                        self->browse_slot = u + 1;
-                        self->browse_left = oubli;
-                        break;
-                    }
+                const int u = next_fav(self, depuis);
+                if (u >= 0) {
+                    self->browse_slot = u + 1;
+                    self->browse_left = oubli;
                 }
             }
             self->browse_high = 0u;
@@ -3045,68 +3290,6 @@ run(LV2_Handle instance, uint32_t n_samples)
                 self->browse_left = 0u;
                 self->browse_slot = 0;
             }
-        }
-    }
-
-    /* The cycle switch, and nothing else: the next filled slot, now. It
-       used to also finish a walk begun on GO TO, and a switch that does
-       two things depending on what was pressed before it is a switch
-       nobody can read on a stage. GO TO finishes its own walk. */
-    if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
-        const int depuis = (self->program >= N_PROGRAM)
-                         ? self->program - N_PROGRAM : -1;
-        for (int k = 1; k <= N_USER; ++k) {
-            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-            if (self->user[u].filled) {
-                program_enter(self, N_PROGRAM + u);
-                break;
-            }
-        }
-    }
-
-    /* ---------------- one switch per favourite ----------------
-       The plainest thing there is: a press goes to that favourite,
-       always, whatever was pressed before. Nothing to enchain, nothing to
-       remember, and the switch carries its name whether or not it is the
-       one being played. An empty slot is not refused - going to it leaves
-       the knobs in charge, which is how a sound is dialled before being
-       saved into it. */
-    for (int u = 0; u < N_USER; ++u) {
-        if (trigger_edge(self, CTL_FAV_1 + u, &self->fav_prev[u])) {
-            program_enter(self, N_PROGRAM + u);
-            self->browse_slot = 0;          /* any walk in progress is moot */
-            self->browse_left = 0u;
-        }
-    }
-
-    /* The cycle switch, and nothing else: the next filled slot, now. It
-       used to also finish a walk begun on GO TO, and a switch that does
-       two things depending on what was pressed before it is a switch
-       nobody can read on a stage. GO TO finishes its own walk. */
-    if (trigger_edge(self, CTL_NEXT_USER, &self->next_prev)) {
-        const int depuis = (self->program >= N_PROGRAM)
-                         ? self->program - N_PROGRAM : -1;
-        for (int k = 1; k <= N_USER; ++k) {
-            const int u = ((depuis + k) % N_USER + N_USER) % N_USER;
-            if (self->user[u].filled) {
-                program_enter(self, N_PROGRAM + u);
-                break;
-            }
-        }
-    }
-
-    /* ---------------- one switch per favourite ----------------
-       The plainest thing there is: a press goes to that favourite,
-       always, whatever was pressed before. Nothing to enchain, nothing to
-       remember, and the switch carries its name whether or not it is the
-       one being played. An empty slot is not refused - going to it leaves
-       the knobs in charge, which is how a sound is dialled before being
-       saved into it. */
-    for (int u = 0; u < N_USER; ++u) {
-        if (trigger_edge(self, CTL_FAV_1 + u, &self->fav_prev[u])) {
-            program_enter(self, N_PROGRAM + u);
-            self->browse_slot = 0;          /* any walk in progress is moot */
-            self->browse_left = 0u;
         }
     }
 
