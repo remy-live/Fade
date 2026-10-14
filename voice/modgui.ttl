@@ -35,7 +35,8 @@
                                 [ lv2:symbol "n5" ] ,
                                 [ lv2:symbol "n6" ] ,
                                 [ lv2:symbol "n7" ] ,
-                                [ lv2:symbol "diag" ] ;
+                                [ lv2:symbol "diag" ] ,
+                                [ lv2:symbol "fx_now" ] ;
     ] .
 
 <http://remy-live.github.io/lv2/voice#stereo>
@@ -69,5 +70,6 @@
                                 [ lv2:symbol "n5" ] ,
                                 [ lv2:symbol "n6" ] ,
                                 [ lv2:symbol "n7" ] ,
-                                [ lv2:symbol "diag" ] ;
+                                [ lv2:symbol "diag" ] ,
+                                [ lv2:symbol "fx_now" ] ;
     ] .

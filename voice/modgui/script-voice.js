@@ -436,6 +436,11 @@ function (event, funcs) {
             }
         } else if (symbol === 'time_out') {
             icon.find('.voice-time-value').text(Math.round(nombre(valeur)) + ' ms');
+        } else if (symbol === 'fx_now') {
+            /* which effect the foot cycle points at, under its encoders */
+            var NOMS = ['DOUBLE', 'HARMONY', 'PITCH', 'GRILLE', 'MOD', 'DELAY', 'REVERB'];
+            var p = Math.round(nombre(valeur));
+            icon.find('.voice-cycle-now').text('\u25B6 ' + (NOMS[p] || 'DOUBLE'));
         } else if (symbol === 'diag') {
             /* What the plugin sees, read out in words: a switch that does
                nothing has to be able to say why, and from inside a plugin
@@ -489,14 +494,18 @@ function (event, funcs) {
        missing from this list and was the one section that never lit. */
     var SECTIONS = ['gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'drive_on',
                     'pitch_on', 'harm_on', 'doubler_on', 'mod_on',
-                    'feedback_on', 'delay_on', 'reverb_on'];
+                    'feedback_on', 'delay_on', 'reverb_on', 'grille_on',
+                    /* NAV and VALIDATE light like switches: they are
+                       momentary, so the light is the press itself */
+                    'nav', 'validate'];
 
     /* And one padlock per section, which lights only itself: a locked
        block is not a block turned on, it is a block that has stopped
        following the favourites. */
     var VERROUS = ['lock_gate', 'lock_comp', 'lock_de_ess', 'lock_eq',
                    'lock_drive', 'lock_pitch', 'lock_harm', 'lock_doubler',
-                   'lock_mod', 'lock_feedback', 'lock_delay', 'lock_reverb'];
+                   'lock_mod', 'lock_feedback', 'lock_delay', 'lock_reverb',
+                   'lock_grille'];
 
     function majSection(icon, symbol, valeur) {
         var verrou = VERROUS.indexOf(symbol) >= 0;

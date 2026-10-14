@@ -31,9 +31,9 @@ out.
 ## The chain
 
 ```
-        [on] [on]  [on]    [on]                    [on]
-IN GAIN → LOW CUT → NO HOWL → GATE → COMP → DE-ESS → EQ → DRIVE → PITCH
-                                                     + [on] HARMONY x2
+        [on] [on]  [on]    [on]        [on]      [on]     [on]
+IN GAIN → LOW CUT → NO HOWL → GATE → COMP → DE-ESS → EQ → GRILLE → DRIVE → PITCH
+                                                                 + [on] HARMONY x2
      ┬─→ (dry) ────────────────────────────────────────────────┬─→ MUTE → OUTPUT
      ├─→ [on] DOUBLE ──────────────────────────────────────────┤
      ├─→ [on] MOD ─────────────────────────────────────────────┤
@@ -44,7 +44,9 @@ IN GAIN → LOW CUT → NO HOWL → GATE → COMP → DE-ESS → EQ → DRIVE �
 
 PITCH is *in* the chain, because a baritone is the voice and not something
 added to it. HARMONY is *beside* it, because a harmony is somebody else
-singing.
+singing. GRILLE is the Hygiaphone made into a block (build 30): the
+speaking hole at a counter, which a program could only be and a block can
+be *kicked in* under one foot while the rest of the sound stays as it was.
 
 **Every effect has its own switch**, made for a footswitch, and each one
 sits immediately in front of the controls it switches. On top of them, the
@@ -99,7 +101,7 @@ exactly what this needs:
 | | |
 |---|---|
 | **ENC 1 · FAVOURITE** | Walks the six USER slots, by name. The sound follows as you turn. |
-| **ENC 2 · PARAMETER** | Walks the sound's parameters — **NAME** first, then everything a program owns, then the twelve **locks** — showing the one it points at with its value. |
+| **ENC 2 · PARAMETER** | Walks the sound's parameters — **NAME** first, then everything a program owns, then the thirteen **locks** — showing the one it points at with its value. |
 | **ENC 3 · VALUE** | Changes it. On NAME it opens the name editor; on a lock, right locks and left gives it back. |
 | **USER ▶** (footswitch) | The next slot with something in it, inside the CYCLE. |
 | **SAVE** (footswitch) | Store what you are hearing into the slot. |
@@ -133,6 +135,58 @@ recall — moves nothing at all. Each knob is asked back to the middle when
 it strays: with no room left, a knob stops answering, and on a decision
 that means "yes" becomes impossible to say.
 
+## The foot cycle — seven effects on two switches
+
+A Dwarf page holds two footswitches, and the page above spends them on the
+favourites. Build 30 adds the other way of playing this plugin, the way
+MFX does it: **NAV** walks a cycle of seven effects and **VALIDATE** turns
+the one it points at on or off. Three encoders follow the pointed effect
+and turn *its* three settings. Put them on a second page and every effect
+is one or two presses away, with no footswitch of its own.
+
+```
+  DOUBLE → HARMONY → PITCH → GRILLE → MOD → DELAY → REVERB → (round again)
+```
+
+The channel strip — gate, compressor, de-esser, EQ, no-howl — is not in
+the cycle: it is set per sound and left alone on a stage.
+
+| | |
+|---|---|
+| **NAV**, short press | Next effect. On the *release*, so a held press can be told apart. |
+| **NAV**, held 0.8 s | Previous effect. It fires while the foot is still down; letting go then does nothing more. |
+| **NAV**, held on DELAY | Arms the **tap**: the tempo in force appears on the screen, VALIDATE's LED beats it, and two presses of VALIDATE take a new one — and show it. Any press of NAV leaves the tap and stays on DELAY; eight seconds without a tap and it leaves on its own. |
+| **VALIDATE** | The pointed effect on or off. Its own switch in the web page follows, through the host. |
+| **FX ENC 1 · 2 · 3** | The settings of the pointed effect, read in detents like the pedal page, each written back into its own control so the web page and the pedalboard follow. |
+
+What the three encoders turn:
+
+| Effect | ENC 1 | ENC 2 | ENC 3 |
+|---|---|---|---|
+| DOUBLE | amount | spread | voices |
+| HARMONY | voice 1 | voice 2 | mix |
+| PITCH | semitones | mix | — |
+| GRILLE | width | buzz | tone |
+| MOD | depth | speed | — |
+| DELAY | time | repeats | mix |
+| REVERB | tail | mix | — |
+
+On the screen, **NAV** carries one mark per effect — seven letters,
+`DHPGMLR`, a letter when the effect is on and a dash when it is off — with
+the name of the pointed effect under them, and its LED is lit in the
+**colour of that effect**: green DOUBLE, magenta HARMONY, blue PITCH,
+yellow GRILLE, cyan MOD, white DELAY, red REVERB. **VALIDATE** carries the
+name of the pointed effect, `ON` or `OFF`, and the same colour while it is
+on. Both switches ask to be addressed **momentary on**, like FAV BROWSE,
+because a press on NAV is timed. From the web page a switch latches, so
+a click on NAV is a press that is still down 0.8 s later — a *long* press,
+previous effect — and the next click is the release; the cycle is made
+for feet, and the page is where it is addressed, not played.
+
+The first time NAV or VALIDATE is addressed the screen says `VOICE /
+BUILD 30` for two seconds: the build number that is really running, which
+on a device with no terminal is otherwise a guess.
+
 ## Controls
 
 | Control | What it does |
@@ -150,6 +204,7 @@ that means "yes" becomes impossible to say.
 | **PRESENCE** | ±12 dB between ~1 and 4.5 kHz. Where a voice cuts through a band. |
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation that measures itself either side of the saturator, twice a second, and corrects the difference: the colour changes, how loud you are does not — at any input level, which a fixed reference could not do. |
+| **GRILLE** / **WIDTH** / **BUZZ** / **TONE** | The speaking grille at a counter, as a block. WIDTH opens both ends at once: 0 is a telephone (640 Hz to 2.8 kHz), 50 the Hygiaphone (320 to 6000 Hz), 100 nearly the whole voice (160 Hz to 12 kHz). TONE is where it rings, a +8 dB bell from 800 Hz to 3 kHz; BUZZ is the DRIVE saturation on what gets through, level-matched the same way. It starts **off**: a grille is a sound, not a setting. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
 | **HARMONY** / **VOICE 1** / **VOICE 2** | Two more singers, at fixed intervals in semitones from what *you* sing — +4 a major third above, −5 a fourth below, ±12 an octave. Nothing detects your note, so they follow the song wherever it stays in one key, which is what a chorus usually does. A voice at 0 is silent and costs nothing. Both are counted from the sung note, not from where PITCH has put you: PITCH −12 with a third above gives you both. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
@@ -167,12 +222,13 @@ that means "yes" becomes impossible to say.
 | **WEB SLOT** / **WEB CHAR** / **WEB STROBE** | How a name typed in the web page reaches the plugin: the favourite, the character, and one *change* of the strobe per character. Written by the interface, never by hand. See *Naming* below. |
 | **ENC 1 / ENC 2 / ENC 3** | The three encoders of a pedal page. See *One page of the pedal* above. |
 | **CYCLE** | How far USER ▶ and FAV BROWSE walk: 1 to 6 favourites, six by default. The GO switches ignore it. Worth an encoder. See *How far the cycle goes*. |
-| **LOCK …** | Twelve switches, one per block of the sound. A locked block stops following the programs and SAVE stops writing it; its ON/OFF still follows them. See *Locking a block to the room*. |
+| **LOCK …** | Thirteen switches, one per block of the sound. A locked block stops following the programs and SAVE stops writing it; its ON/OFF still follows them. See *Locking a block to the room*. |
 | **USER ▶** | Steps to the next USER slot with something in it inside the CYCLE, and round again. One footswitch for your own sounds, each under its name on the screen. Empty slots are skipped. |
 | **FAV BROWSE** | The second footswitch. One press walks the filled USER slots inside the CYCLE **without changing the sound** and names the one it reaches; holding it half a second goes there. A plain toggle asking for **momentary-on by default**, so the port follows the foot. Twelve seconds untouched and it forgets. |
 | **GO 1**…**GO 6** | One switch per favourite: a press goes to that one, always, whatever was pressed before. Each carries its own favourite's name. |
 | **A/B** | Back to the program you were on before this one; press again to return. For comparing two sounds at a soundcheck without walking the list. A plugin may not write its own PROGRAM port, so **PROGRAM NOW** publishes which one is really in force — and the web UI follows it. |
 | **TAP** | Two presses set the delay time. Meant for a footswitch. |
+| **NAV** / **VALIDATE** / **FX ENC 1–3** | The foot cycle. See *The foot cycle* above. |
 | **OUTPUT** | −60 to +12 dB. At −60 the plugin is silent. |
 
 And the outputs, for the screen, the web UI and anything else that
@@ -199,6 +255,9 @@ the readout:
 | **GATE** | `OPEN` or `SHUT`, with a bar following the gate's own fade. |
 | **DELAY** | The time in force, in ms — and the label reads `TAP` instead of `DELAY` when the tap owns it, rather than showing a knob position that is no longer true. |
 | **TAP** | The tempo in BPM, and the LED blinks it back at you. |
+| **NAV** | Seven marks, one per effect, and the name of the one pointed at; the LED in that effect's colour. With the tap armed: `TEMPO` and the time in ms. |
+| **VALIDATE** | The pointed effect, `ON` or `OFF`, the LED in its colour while on. With the tap armed: `TAP`, the tempo in BPM, the LED beating it. |
+| **FX ENC 1–3** | The setting each one turns on the pointed effect, with its value and a bar — or the effect's name and `-` where it has only two. |
 | **FX** / **FX TRIGGER** | `ON` or `OFF`, green or dark. |
 | **CYCLE** | `1-3 FAV`, with a bar: how far the two walking switches go. |
 | **LOCK …** | `MINE` or `PROGRAM`, amber or dark — never `ON` or `OFF`: what it decides is *whose* the settings are, and the block's own switch is what answers whether the block is in the sound. |
@@ -329,10 +388,10 @@ The room decides the reverb. The set list decides the rest. Without a way
 to say so, going to another favourite brings that favourite's reverb with
 it and the hall has to be dialled again, sound by sound.
 
-Twelve switches — **LOCK GATE**, **LOCK COMP**, **LOCK DE-ESS**, **LOCK
+Thirteen switches — **LOCK GATE**, **LOCK COMP**, **LOCK DE-ESS**, **LOCK
 EQ**, **LOCK DRIVE**, **LOCK PITCH**, **LOCK HARMONY**, **LOCK DOUBLE**,
-**LOCK MOD**, **LOCK NO HOWL**, **LOCK DELAY**, **LOCK REVERB** — one per
-block of the sound. A locked block:
+**LOCK MOD**, **LOCK NO HOWL**, **LOCK DELAY**, **LOCK REVERB**, **LOCK
+GRILLE** — one per block of the sound. A locked block:
 
 * **is not recalled.** Pick another favourite, or a factory sound, and its
   knobs stay exactly where you put them.
@@ -627,7 +686,7 @@ otherwise build from the descriptor — and a panel built from the descriptor
 is every port in index order: a wall of sixty knobs with no shape, and
 nowhere at all to type a name, since a control port carries a number. Ours
 is the same panel **in sections** — FAVORIS, IN AND OUT, then the strip in
-the order of the pedal, then the twelve locks, PEDAL PAGE and the three
+the order of the pedal, then the thirteen locks, PEDAL PAGE and the three
 ports that are not for hands — with the six name boxes under the first one,
 each with a ✕ of its own.
 
@@ -710,6 +769,14 @@ COPYFILE_DISABLE=1 tar czf - --exclude='._*' voice.lv2 \
 adds are mistaken by lilv for bundle directories, and the plugin fails to
 load. Remove the block from your pedalboard before installing and add it
 back afterwards — mod-ui caches a failed load.
+
+**Coming from build 29:** the favourites come back. The file beside the
+bundle and the state inside a saved pedalboard both carry twenty-six
+settings and twelve switches per slot there; build 30 reads them column
+for column, with the grille off and at its defaults in each, and writes
+them back in its own layout the next time SAVE is pressed. The new ports
+are, as always, at the end of the list — remove the VOICE block from the
+pedalboard and add it back, or NAV, VALIDATE and the grille reach nothing.
 
 ## When a switch does nothing: DIAG
 
@@ -1122,7 +1189,7 @@ It cannot be measured here, only on the device.
   and not a string. It is slow by design — one code every 120 ms — and a
   name pasted in faster than that arrives whole only because the page waits
   for the keys to stop before sending.
-- The twelve locks are **global**: one set for the plugin, not one per
+- The thirteen locks are **global**: one set for the plugin, not one per
   favourite. A favourite cannot remember that it wants its own reverb kept;
   you decide that standing in the room, and it holds until you say
   otherwise.

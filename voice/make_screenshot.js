@@ -99,7 +99,7 @@ document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}')
 
 (async () => {
     const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
-    const p = await browser.newPage({ viewport: { width: 780, height: 700 } });
+    const p = await browser.newPage({ viewport: { width: 780, height: 900 } });
     await p.setContent(page);
     const debord = await p.evaluate(() => {
         const pedal = document.querySelector('.mod-pedal');

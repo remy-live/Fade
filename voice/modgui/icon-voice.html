@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 29</div>
+    <div class="voice-build{{{cns}}}">GUI 30</div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a
          plugin: whether its port is connected, how many favourites the
@@ -383,6 +383,39 @@
             </div>
         </div>
 
+        <div class="voice-section{{{cns}}} voice-w3{{{cns}}} voice-section-grille">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">GRILLE</span>
+                <div class="voice-lock{{{cns}}} voice-lock"
+                     mod-role="input-control-port"
+                     mod-port-symbol="lock_grille" mod-widget="switch"
+                     title="Lock GRILLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting."></div>
+                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_on" mod-widget="switch"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_width" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">WIDTH</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="grille_width"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_buzz" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">BUZZ</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="grille_buzz"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_tone" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">TONE</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="grille_tone"></div>
+            </div>
+        </div>
+
         <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
             <div class="voice-section-head{{{cns}}}">
                 <span class="voice-section-name{{{cns}}}">PITCH</span>
@@ -625,6 +658,45 @@
                 <span class="voice-notch{{{cns}}} voice-notch-2"></span>
                 <span class="voice-notch{{{cns}}} voice-notch-3"></span>
                 <span class="voice-notch-cap{{{cns}}}">NOTCHES</span>
+            </div>
+        </div>
+
+        <div class="voice-section{{{cns}}} voice-w2{{{cns}}} voice-section-cycle">
+            <div class="voice-section-head{{{cns}}}">
+                <span class="voice-section-name{{{cns}}}">FOOT CYCLE</span>
+                <span class="voice-cycle-now{{{cns}}} voice-cycle-now">&#9654; DOUBLE</span>
+            </div>
+            <!-- Two switches that reach seven effects the MFX way, and
+                 three encoders that follow the one pointed at. Here to
+                 be assignable; the readout names the effect, from FX NOW. -->
+            <div class="voice-cycle-row{{{cns}}}">
+                <div class="voice-cycle-sw{{{cns}}}">
+                    <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                         mod-port-symbol="nav" mod-widget="switch"
+                         title="NAV: short = next effect, held = previous, held on DELAY = tap"></div>
+                    <div class="voice-cycle-cap{{{cns}}}">NAV</div>
+                </div>
+                <div class="voice-cycle-sw{{{cns}}}">
+                    <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                         mod-port-symbol="validate" mod-widget="switch"
+                         title="VALIDATE: the pointed effect on or off"></div>
+                    <div class="voice-cycle-cap{{{cns}}}">VALID</div>
+                </div>
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="fx_enc1"
+                     mod-widget-rotation="270"
+                     title="Encoder 1 of the pointed effect"></div>
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="fx_enc2"
+                     mod-widget-rotation="270"
+                     title="Encoder 2 of the pointed effect"></div>
+                <div class="voice-page-dial{{{cns}}}"
+                     mod-role="input-control-port"
+                     mod-port-symbol="fx_enc3"
+                     mod-widget-rotation="270"
+                     title="Encoder 3 of the pointed effect"></div>
             </div>
         </div>
 

@@ -81,14 +81,14 @@ dire("and asks for momentary-on by default, so the port follows the foot",
 # again in the same block - and nothing would ever stay locked.
 _locks = ("lock_gate", "lock_comp", "lock_de_ess", "lock_eq", "lock_drive",
           "lock_pitch", "lock_harm", "lock_doubler", "lock_mod",
-          "lock_feedback", "lock_delay", "lock_reverb")
+          "lock_feedback", "lock_delay", "lock_reverb", "lock_grille")
 _mauvais = []
 for _l in _locks:
     _m = re.search(r'lv2:symbol\s+"%s"\s*;.*?lv2:portProperty\s+([^;]+);' % _l,
                    ttl, re.S)
     if _m is None or 'toggled' not in _m.group(1) or 'trigger' in _m.group(1):
         _mauvais.append(_l)
-dire("the twelve locks are toggles, not triggers: a lock is a STATE",
+dire("the thirteen locks are toggles, not triggers: a lock is a STATE",
      not _mauvais, " ".join(_mauvais))
 
 # And every control a program writes belongs to one of them. A control a
@@ -328,7 +328,12 @@ dire("VOICES offers two, three and four",
      [v for _l, v in scale_points('voices')] == ['2.0', '3.0', '4.0'])
 
 # and the values themselves, program by program
-ctl_by_symbol = [p for p in mono if p['control'] and p['input']]
+# program_col is indexed over EVERY control, outputs included - the ports
+# added since build 12 sit after the first outputs - so the symbol of a
+# column is read from the whole list, not from the inputs alone. Read
+# from the inputs alone, every column past the first output landed on
+# the wrong symbol and the grille's three were never compared at all.
+ctl_by_symbol = [p for p in mono if p['control']]
 col_of = dict((ctl_by_symbol[i]['symbol'], h_col[i]) for i in range(len(h_col))
               if i < len(ctl_by_symbol))
 sw_order = re.findall(r'CTL_(\w+_ON)', src.split('switch_ctl[SW_COUNT]')[1].split('};')[0])

@@ -275,7 +275,10 @@ SLOT_WORDS = (
 )
 SWITCHES = ("gate_on", "comp_on", "de_ess_on", "eq_on", "drive_on", "pitch_on",
             "harm_on", "doubler_on", "mod_on", "feedback_on", "delay_on",
-            "reverb_on")
+            "reverb_on",
+            # BUILD30: the grille, appended LAST like every port added
+            # since build 12 - its switch is the thirteenth of the list.
+            "grille_on")
 
 # One LOCK per block of the sound, in the order of SWITCHES and named
 # after the PANEL section it covers.
@@ -307,6 +310,10 @@ LOCK_BLOCKS = (
     ("lock_feedback", "NO HOWL"),
     ("lock_delay",    "DELAY"),
     ("lock_reverb",   "REVERB"),
+    # BUILD30. The lock of the grille comes straight after the twelve
+    # above, so the locks stay ONE contiguous run of ports: the plugin
+    # reaches lock k as CTL_LOCK_GATE + k.
+    ("lock_grille",   "GRILLE"),
 )
 N_USER = 6
 
@@ -1095,6 +1102,75 @@ TAIL += [
     for sym, sec in LOCK_BLOCKS
 ]
 
+# ---------------- BUILD30: the grille, and the foot cycle ----------------
+#
+# The GRILLE is the Hygiaphone made into a BLOCK rather than a program: a
+# program takes the whole sound over, a block can be kicked in and out
+# under one effect of a foot cycle while everything else stays as it was.
+# It sits after the EQ and before the drive. Off by default, unlike the
+# other blocks: the others are transparent at zero, a grille is not.
+#
+# The FOOT CYCLE is the MFX way of reaching every effect with two
+# footswitches: NAV walks a cycle of seven - DOUBLE HARMONY PITCH GRILLE
+# MOD DELAY REVERB - and VALIDATE turns the one it points at on or off.
+# Three encoders follow the pointed effect and turn its own three
+# settings. The switches are plain toggles asking for momentary-on, like
+# FAV BROWSE, because a press on NAV is TIMED: short is next, held is
+# previous, and held on DELAY arms the tap.
+TAIL += [
+ ("in", "grille_on", "GRILLE ON", 0.0, 1.0, 0.0, None, SWITCH,
+  "Switches the grille in and out. Made for a footswitch, and the one "
+  "block that starts OFF: a grille is a sound, not a setting. VALIDATE "
+  "reaches it as the fourth effect of the foot cycle."),
+ ("in", "grille_width", "GRILLE WIDTH", 0.0, 100.0, 50.0, "pc", [],
+  "How much of the voice gets through the grille. 0 is a telephone - "
+  "nothing under 640 Hz or over 2.8 kHz - 50 is the speaking grille at a "
+  "bank counter, 320 to 6000 Hz, and 100 is nearly the whole voice, "
+  "160 Hz to 12 kHz, with only the bell and the buzz left of the grille."),
+ ("in", "grille_buzz", "GRILLE BUZZ", 0.0, 100.0, 40.0, "pc", [],
+  "How hard the grille buzzes: the same saturation as DRIVE, applied to "
+  "what gets through, and level-matched the same way so it changes the "
+  "colour and not how loud you are."),
+ ("in", "grille_tone", "GRILLE TONE", 800.0, 3000.0, 1800.0, "hz",
+  ["pprops:logarithmic"],
+  "Where the grille rings: a hard bell, +8 dB, at this frequency. 1.8 kHz "
+  "is the Hygiaphone; lower is a bigger box, higher a smaller one."),
+ ("in", "nav", "NAV", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "mod:preferMomentaryOnByDefault"],
+  "The first switch of the foot cycle. A short press points at the NEXT "
+  "effect of the seven - DOUBLE, HARMONY, PITCH, GRILLE, MOD, DELAY, "
+  "REVERB - and a press held 0.8 s points at the previous one. Held on "
+  "DELAY it arms the tap instead: the tempo appears, VALIDATE's LED "
+  "beats it, and two presses of VALIDATE set it; any press of NAV leaves "
+  "the tap and stays on DELAY. The switch shows a mark per effect, a "
+  "letter for an effect that is on and a dash for one that is off, and "
+  "under it the name of the one it points at. It asks to be addressed "
+  "MOMENTARY ON, which is what lets a press be timed."),
+ ("in", "validate", "VALIDATE", 0.0, 1.0, 0.0, None,
+  ["lv2:toggled", "mod:preferMomentaryOnByDefault"],
+  "The second switch of the foot cycle: a press turns the effect NAV "
+  "points at on or off, and its own switch in the web page follows. The "
+  "switch carries the name of that effect, ON or OFF, and the LED is "
+  "lit in the colour of the effect while it is on. While the tap is "
+  "armed it is the tap switch instead."),
+ ("in", "fx_enc1", "FX ENC 1", 0.0, 1.0, 0.5, None, [],
+  "First of three encoders that follow the effect NAV points at, read in "
+  "detents like the pedal page. DOUBLE: amount. HARMONY: voice 1. PITCH: "
+  "semitones. GRILLE: width. MOD: depth. DELAY: time. REVERB: tail. What "
+  "it turns is written back into that control, so the web page and the "
+  "pedalboard follow."),
+ ("in", "fx_enc2", "FX ENC 2", 0.0, 1.0, 0.5, None, [],
+  "Second encoder of the pointed effect. DOUBLE: spread. HARMONY: voice "
+  "2. PITCH: mix. GRILLE: buzz. MOD: speed. DELAY: repeats. REVERB: mix."),
+ ("in", "fx_enc3", "FX ENC 3", 0.0, 1.0, 0.5, None, [],
+  "Third encoder of the pointed effect. DOUBLE: voices. HARMONY: mix. "
+  "GRILLE: tone. DELAY: mix. PITCH, MOD and REVERB have only two "
+  "settings, and this one says so."),
+ ("out", "fx_now", "FX NOW", 0.0, 6.0, 0.0, None, [],
+  "Output. Which effect the foot cycle points at: 0 DOUBLE, 1 HARMONY, "
+  "2 PITCH, 3 GRILLE, 4 MOD, 5 DELAY, 6 REVERB."),
+]
+
 # Names for the screen, where the descriptor's own name is too long for
 # eight upper-case characters. Only the ones that do not fit are here.
 SHORT_NAME = {
@@ -1103,6 +1179,7 @@ SHORT_NAME = {
     "pitch_mix": "PIT MIX", "modulation": "MOD", "mod_speed": "SPEED",
     "harm_mix": "HARMONY", "doubler": "DOUBLE", "feedback": "NO HOWL",
     "low_cut": "LOW CUT", "presence": "PRESENCE",
+    "grille_width": "WIDTH", "grille_buzz": "BUZZ", "grille_tone": "TONE",
 }
 
 # How much one detent of encoder 3 moves a control. Anything not named
@@ -1111,6 +1188,7 @@ STEP = {
     "low_cut": 5.0, "gate": 1.0, "mid_freq": 50.0, "de_ess_freq": 100.0,
     "body": 0.5, "presence": 0.5, "air": 0.5, "pitch": 1.0, "harm_1": 1.0,
     "harm_2": 1.0, "voices": 1.0, "mod_speed": 0.1, "delay_time": 10.0,
+    "grille_tone": 50.0,
 }
 
 # How the settings panel is laid out. mod-ui builds one of its own from
@@ -1130,6 +1208,7 @@ PANEL = [
     ("DE-ESS",   ["de_ess_on", "de_ess", "de_ess_freq"]),
     ("EQ",       ["eq_on", "low_cut", "body", "mid_freq", "presence", "air"]),
     ("DRIVE",    ["drive_on", "drive"]),
+    ("GRILLE",   ["grille_on", "grille_width", "grille_buzz", "grille_tone"]),
     ("PITCH",    ["pitch_on", "pitch", "pitch_mix"]),
     ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_mix"]),
     ("DOUBLE",   ["doubler_on", "doubler", "spread", "voices"]),
@@ -1142,6 +1221,7 @@ PANEL = [
     ("LOCKS - KEEP A BLOCK WHERE IT IS WHEN THE SOUND CHANGES",
      [sym for sym, _sec in LOCK_BLOCKS]),
     ("PEDAL PAGE", ["enc_slot", "enc_param", "enc_value"]),
+    ("FOOT CYCLE", ["nav", "validate", "fx_enc1", "fx_enc2", "fx_enc3"]),
     # Present because every control input has to be reachable, and for
     # nothing else: these three are written by the interface a character
     # at a time. Turning one by hand does no harm and no good.
@@ -1249,11 +1329,20 @@ def write_presets(path):
     out = [PRESET_HEAD]
     for uri, suffix in PLUGINS:
         for key, label, _short, values in PRESETS:
-            unknown = [k for k in values if k not in [c[0] for c in CONTROLS]]
+            unknown = [k for k in values
+                       if k not in [c[0] for c in CONTROLS]
+                       and k not in [t[1] for t in TAIL]]
             if unknown:
                 raise SystemExit("preset %s names no such port: %s" % (key, unknown))
             ports = []
-            for symbol, _n, mn, mx, default, _u, _p, _c in CONTROLS:
+            # the TAIL ports a program owns, and its switches, written at
+            # their defaults like everything else a preset does not name
+            extra = [c for c in program_controls()
+                     if c[0] not in [k[0] for k in CONTROLS]]
+            extra += [(sym, pname, mn, mx, default, unit, props, comment)
+                      for way, sym, pname, mn, mx, default, unit, props, comment
+                      in TAIL if way == "in" and sym in SWITCHES]
+            for symbol, _n, mn, mx, default, _u, _p, _c in CONTROLS + extra:
                 if symbol in PRESET_SKIP:
                     continue
                 v = values.get(symbol, default)
@@ -1488,8 +1577,38 @@ def write_bounds(c_path, js_path):
     return haut
 
 
-def write_programs(path):
+# The controls a program OWNS. The first twenty-six are in CONTROLS; the
+# ones added since build 12 live in the TAIL (a port index is what a
+# pedalboard remembers, so everything new goes at the end), and a TAIL
+# port belongs to a program when the panel puts it in a section a lock
+# covers. Columns are therefore appended, never inserted: a favourite
+# saved by an older build reads back column for column.
+def program_controls():
     cont = [c for c in CONTROLS if c[0] not in LIVE and c[0] not in SWITCHES]
+    locked = set()
+    for _sym, sec in LOCK_BLOCKS:
+        locked.update(dict(PANEL).get(sec, []))
+    for way, symbol, pname, mn, mx, default, unit, props, comment in TAIL:
+        if way == "in" and symbol in locked and symbol not in SWITCHES:
+            cont.append((symbol, pname, mn, mx, default, unit, props, comment))
+    return cont
+
+
+# Every switch, with its own default: the twelve of build 29 start ON, the
+# grille starts OFF, and a program that does not name a switch adopts that
+# default rather than ON for all.
+def switch_default(symbol):
+    for c in CONTROLS:
+        if c[0] == symbol:
+            return c[4]
+    for way, sym, _n, _mn, _mx, default, _u, _p, _c in TAIL:
+        if sym == symbol:
+            return default
+    raise SystemExit("no such switch: " + symbol)
+
+
+def write_programs(path):
+    cont = program_controls()
     col = {}
     for i, c in enumerate(cont):
         col[c[0]] = i
@@ -1535,7 +1654,7 @@ def write_programs(path):
     for symbol, _n, _mn, _mx, _d, _u, _p, _c in OUTPUTS:
         cols += "    -1,  /* %s */\n" % symbol
     for _w, symbol, _n, _mn, _mx, _d, _u, _p, _c in TAIL:
-        cols += "    -1,  /* %s */\n" % symbol
+        cols += "    %d,   /* %s */\n" % (col.get(symbol, -1), symbol)
 
     verrous = ""
     for symbol, _n, _mn, _mx, _d, _u, _p, _c in CONTROLS:
@@ -1543,7 +1662,7 @@ def write_programs(path):
     for symbol, _n, _mn, _mx, _d, _u, _p, _c in OUTPUTS:
         verrous += "    -1,  /* %s */\n" % symbol
     for _w, symbol, _n, _mn, _mx, _d, _u, _p, _c in TAIL:
-        verrous += "    -1,  /* %s */\n" % symbol
+        verrous += "    %d,   /* %s */\n" % (bloc.get(symbol, -1), symbol)
 
     def row(values):
         out = []
@@ -1560,7 +1679,8 @@ def write_programs(path):
         values += row(v)
 
     def srow(v):
-        return ("    { " + ", ".join("%d" % int(v.get(s, 1.0)) for s in SWITCHES)
+        return ("    { " + ", ".join("%d" % int(v.get(s, switch_default(s)))
+                                     for s in SWITCHES)
                 + " },\n")
 
     switches = srow({})

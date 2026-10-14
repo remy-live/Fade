@@ -4525,10 +4525,392 @@ static void demo(void)
 }
 
 /* ================================================================== */
+/* BUILD30: the grille                                                 */
+/* ================================================================== */
+
+/* Energy at f over energy at the fundamental, in dB: what the buzz adds. */
+static double harmonique_db(Banc* b, double f0, double amp, int k)
+{
+    const size_t n = 8192;
+    float* acc = (float*)calloc(n, sizeof(float));
+    for (int w = 0; w < 40; ++w) { sinus(b, f0, amp); tourner(b); }   /* settle */
+    size_t got = 0;
+    while (got + b->bloc <= n) {
+        sinus(b, f0, amp); tourner(b);
+        memcpy(acc + got, b->out[0], b->bloc * sizeof(float));
+        got += b->bloc;
+    }
+    const double e1 = energie_a(acc, got, f0, b->sr);
+    const double ek = energie_a(acc, got, f0 * (double)k, b->sr);
+    free(acc);
+    return 10.0 * log10((ek + 1e-30) / (e1 + 1e-30));
+}
+
+static void essai_grille(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_DRIVE] = 0.0f;
+
+    /* off, it is not there at all */
+    verifie("grille OFF: 1 kHz passes untouched",
+            gain_db(&b, 1000.0, 0.1, 20, 20), 0.0, 0.2);
+    const double bas_avant = gain_db(&b, 100.0, 0.1, 20, 20);
+    verifie("grille OFF: 100 Hz passes untouched", bas_avant, 0.0, 0.2);
+
+    /* the Hygiaphone: nothing low, nothing high, a bell in the middle */
+    b.ctl[CTL_GRILLE_ON]   = 1.0f;
+    b.ctl[CTL_GRILLE_BUZZ] = 0.0f;
+    chauffer(&b, 100.0);
+    verifie_entre("grille 50: 100 Hz is gone",
+                  gain_db(&b, 100.0, 0.1, 20, 20), -60.0, -14.0);
+    verifie_entre("grille 50: 12 kHz is gone",
+                  gain_db(&b, 12000.0, 0.1, 20, 20), -60.0, -8.0);
+    verifie_entre("grille 50: 900 Hz gets through",
+                  gain_db(&b, 900.0, 0.1, 20, 20), -3.0, 4.0);
+    verifie_entre("grille 50: the bell rings at 1.8 kHz",
+                  gain_db(&b, 1800.0, 0.1, 20, 20), 5.0, 12.0);
+    /* the bell follows TONE */
+    b.ctl[CTL_GRILLE_TONE] = 900.0f;
+    chauffer(&b, 100.0);
+    verifie_entre("TONE 900: the bell is at 900 Hz now",
+                  gain_db(&b, 900.0, 0.1, 20, 20), 5.0, 12.0);
+    verifie_entre("TONE 900: and no longer at 1.8 kHz",
+                  gain_db(&b, 1800.0, 0.1, 20, 20), -4.0, 4.0);
+    b.ctl[CTL_GRILLE_TONE] = 1800.0f;
+
+    /* WIDTH opens both ends */
+    b.ctl[CTL_GRILLE_WIDTH] = 0.0f;
+    chauffer(&b, 100.0);
+    verifie_entre("WIDTH 0: 300 Hz is a telephone, gone",
+                  gain_db(&b, 300.0, 0.1, 20, 20), -60.0, -10.0);
+    verifie_entre("WIDTH 0: 5 kHz is gone too",
+                  gain_db(&b, 5000.0, 0.1, 20, 20), -60.0, -8.0);
+    b.ctl[CTL_GRILLE_WIDTH] = 100.0f;
+    chauffer(&b, 100.0);
+    verifie_entre("WIDTH 100: 300 Hz gets through",
+                  gain_db(&b, 300.0, 0.1, 20, 20), -4.0, 4.0);
+    verifie_entre("WIDTH 100: 8 kHz gets through",
+                  gain_db(&b, 8000.0, 0.1, 20, 20), -6.0, 4.0);
+    b.ctl[CTL_GRILLE_WIDTH] = 50.0f;
+
+    /* BUZZ adds harmonics and not level */
+    const double g0 = gain_db(&b, 900.0, 0.25, 20, 20);
+    const double h0 = harmonique_db(&b, 900.0, 0.25, 3);
+    b.ctl[CTL_GRILLE_BUZZ] = 80.0f;
+    chauffer(&b, 200.0);
+    const double g1 = gain_db(&b, 900.0, 0.25, 20, 20);
+    const double h1 = harmonique_db(&b, 900.0, 0.25, 3);
+    verifie_entre("BUZZ 0: no third harmonic", h0, -200.0, -40.0);
+    verifie_entre("BUZZ 80: a third harmonic to hear", h1, -30.0, 0.0);
+    verifie("BUZZ 80: not much louder than BUZZ 0", g1, g0, 4.0);
+
+    /* the switch crossfades out and the voice comes back whole */
+    b.ctl[CTL_GRILLE_ON] = 0.0f;
+    chauffer(&b, 100.0);
+    verifie("grille switched off: 100 Hz is back",
+            gain_db(&b, 100.0, 0.1, 20, 20), bas_avant, 0.15);
+
+    /* nothing ever leaves the range */
+    b.ctl[CTL_GRILLE_ON] = 1.0f;
+    b.ctl[CTL_GRILLE_BUZZ] = 100.0f;
+    int fini = 1;
+    for (int k = 0; k < 200; ++k) {
+        sinus(&b, 400.0, 1.0); tourner(&b);
+        if (!tout_fini(&b)) { fini = 0; }
+    }
+    verifie_vrai("BUZZ 100 at full scale stays inside [-1, 1]", fini);
+
+    /* the Hygiaphone PROGRAM is untouched: it still leaves the grille off */
+    b.ctl[CTL_PROGRAM] = (float)programme_nomme("HYGIAPH");
+    silence(&b); tourner(&b); silence(&b); tourner(&b);
+    verifie_vrai("the Hygiaphone program leaves the grille off",
+                 ((Voice*)b.h)->sw_state[SW_GRILLE] == 0);
+    fermer(&b);
+}
+
+/* ================================================================== */
+/* BUILD30: the foot cycle                                             */
+/* ================================================================== */
+
+static void attendre(Banc* b, double ms)
+{
+    const int blocs = (int)(ms * 0.001 * b->sr / (double)b->bloc + 0.5);
+    for (int k = 0; k < blocs; ++k) { silence(b); tourner(b); }
+}
+
+static void presser(Banc* b, int ctl, double ms)
+{
+    b->ctl[ctl] = 1.0f;
+    attendre(b, ms);
+    b->ctl[ctl] = 0.0f;
+    attendre(b, 60.0);       /* a screen pass or two */
+}
+
+static void essai_cycle_pied(void)
+{
+    Banc b;
+    memset(&ecran, 0, sizeof(ecran));
+    ouvrir(&b, 0, 48000.0, 128, 1);
+    neutre(&b);
+    Voice* v = (Voice*)b.h;
+
+    /* --- the build number, once, when NAV is addressed --- */
+    adresser(&b, CTL_NAV, TOUTES_CAPS, (void*)0xD0);
+    attendre(&b, 50.0);
+    verifie_vrai("the build is announced once NAV is addressed",
+                 ecran.n_popup == 1 && !strcmp(ecran.dernier_popup_titre, "VOICE")
+                 && !strcmp(ecran.dernier_popup, "BUILD 30"));
+    /* and the screen keeps quiet while the popup is there */
+    {
+        const int avant = ecran.n_label + ecran.n_value + ecran.n_indic;
+        attendre(&b, 1500.0);
+        verifie_vrai("nothing is sent to the screen under the popup",
+                     ecran.n_label + ecran.n_value + ecran.n_indic == avant);
+        attendre(&b, 700.0);
+        verifie_vrai("and everything is painted again when it expires",
+                     ecran.n_label + ecran.n_value + ecran.n_indic > avant);
+    }
+    verifie_vrai("NAV shows a mark per effect: seven letters",
+                 strlen(ecran.dernier_label) == 7);
+    verifie_vrai("and DOUBLE is pointed at first",
+                 !strcmp(ecran.dernier_value, "DOUBLE")
+                 && b.ctl[CTL_FX_NOW] == 0.0f);
+
+    /* --- a short press: next --- */
+    presser(&b, CTL_NAV, 100.0);
+    verifie("a short press points at HARMONY", (double)b.ctl[CTL_FX_NOW], 1.0, 0.01);
+    verifie_vrai("and NAV says so", !strcmp(ecran.dernier_value, "HARMONY"));
+    presser(&b, CTL_NAV, 100.0);
+    presser(&b, CTL_NAV, 100.0);
+    verifie("two more land on GRILLE", (double)b.ctl[CTL_FX_NOW], 3.0, 0.01);
+    /* --- a long press: previous, while the foot is still down --- */
+    b.ctl[CTL_NAV] = 1.0f;
+    attendre(&b, 600.0);
+    verifie("600 ms down: nothing yet", (double)b.ctl[CTL_FX_NOW], 3.0, 0.01);
+    attendre(&b, 400.0);
+    verifie("1 s down: back to PITCH", (double)b.ctl[CTL_FX_NOW], 2.0, 0.01);
+    b.ctl[CTL_NAV] = 0.0f;
+    attendre(&b, 100.0);
+    verifie("and letting go does nothing more", (double)b.ctl[CTL_FX_NOW], 2.0, 0.01);
+    /* round the cycle: seven short presses come back where they started */
+    for (int k = 0; k < 7; ++k) { presser(&b, CTL_NAV, 100.0); }
+    verifie("seven presses go round the cycle", (double)b.ctl[CTL_FX_NOW], 2.0, 0.01);
+
+    /* --- VALIDATE flips the pointed effect, and its port follows --- */
+    adresser(&b, CTL_VALIDATE, TOUTES_CAPS, (void*)0xD1);
+    attendre(&b, 50.0);
+    verifie_vrai("VALIDATE carries the name of the pointed effect",
+                 !strcmp(ecran.dernier_label, "PITCH")
+                 && !strcmp(ecran.dernier_value, "ON"));
+    verifie_vrai("and its LED in the colour of that effect",
+                 ecran.couleur == (int)LV2_HMI_LED_Colour_Blue);
+    presser(&b, CTL_VALIDATE, 50.0);
+    verifie_vrai("a press turns PITCH off", v->sw_state[SW_PITCH] == 0);
+    verifie("and PITCH ON in the web page followed", (double)b.ctl[CTL_PITCH_ON], 0.0, 0.01);
+    verifie_vrai("the switch says OFF", !strcmp(ecran.dernier_value, "OFF"));
+    verifie_vrai("and the LED is dark", ecran.couleur == (int)LV2_HMI_LED_Colour_Off);
+    presser(&b, CTL_VALIDATE, 50.0);
+    verifie_vrai("a second press turns it back on", v->sw_state[SW_PITCH] == 1);
+    verifie("and the port came back too", (double)b.ctl[CTL_PITCH_ON], 1.0, 0.01);
+
+    /* with MANUAL selected the ports rule - but a host that will not move
+       the port must not undo the foot */
+    refus_requetes = 1;
+    presser(&b, CTL_VALIDATE, 50.0);
+    attendre(&b, 300.0);
+    verifie_vrai("a refused request still leaves the foot in charge",
+                 v->sw_state[SW_PITCH] == 0 && b.ctl[CTL_PITCH_ON] == 1.0f);
+    /* until the port itself moves */
+    b.ctl[CTL_PITCH_ON] = 0.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_PITCH_ON] = 1.0f; silence(&b); tourner(&b);
+    verifie_vrai("and the port, moved by hand, rules again",
+                 v->sw_state[SW_PITCH] == 1);
+    refus_requetes = 0;
+
+    /* --- the three encoders follow the pointed effect --- */
+    verifie("PITCH points at 0 semitones", (double)b.ctl[CTL_PITCH], 0.0, 0.01);
+    cran(&b, CTL_FX_ENC1, +1);
+    verifie("one click of encoder 1 on PITCH: +1 semitone", (double)b.ctl[CTL_PITCH], 1.0, 0.01);
+    cran(&b, CTL_FX_ENC1, -1);
+    cran(&b, CTL_FX_ENC1, -1);
+    verifie("two back: -1", (double)b.ctl[CTL_PITCH], -1.0, 0.01);
+    cran(&b, CTL_FX_ENC2, -1);
+    verifie("encoder 2 on PITCH is the mix", (double)b.ctl[CTL_PITCH_MIX], 99.0, 0.01);
+    adresser(&b, CTL_FX_ENC3, TOUTES_CAPS, (void*)0xD4);
+    attendre(&b, 50.0);
+    verifie_vrai("encoder 3 on PITCH says there is nothing to turn",
+                 !strcmp(ecran.dernier_label, "PITCH")
+                 && !strcmp(ecran.dernier_value, "-"));
+    cran(&b, CTL_FX_ENC3, +1);
+    verifie_vrai("and turning it changes nothing",
+                 b.ctl[CTL_PITCH] == -1.0f && b.ctl[CTL_PITCH_MIX] == 99.0f);
+    /* on to the grille */
+    presser(&b, CTL_NAV, 100.0);
+    verifie("NAV: GRILLE", (double)b.ctl[CTL_FX_NOW], 3.0, 0.01);
+    attendre(&b, 50.0);
+    verifie_vrai("encoder 3 on GRILLE is TONE",
+                 !strcmp(ecran.dernier_label, "TONE")
+                 && !strcmp(ecran.dernier_value, "1800")
+                 && !strcmp(ecran.dernier_unit, "HZ"));
+    cran(&b, CTL_FX_ENC3, +1);
+    verifie("one click: 1850 Hz", (double)b.ctl[CTL_GRILLE_TONE], 1850.0, 0.01);
+    cran(&b, CTL_FX_ENC1, +1);
+    verifie("encoder 1 on GRILLE is WIDTH", (double)b.ctl[CTL_GRILLE_WIDTH], 51.0, 0.01);
+    cran(&b, CTL_FX_ENC2, -1);
+    verifie("encoder 2 on GRILLE is BUZZ", (double)b.ctl[CTL_GRILLE_BUZZ], 39.0, 0.01);
+    verifie_vrai("GRILLE is off until VALIDATE", v->sw_state[SW_GRILLE] == 0);
+    presser(&b, CTL_VALIDATE, 50.0);
+    verifie_vrai("VALIDATE turns the grille on", v->sw_state[SW_GRILLE] == 1
+                 && b.ctl[CTL_GRILLE_ON] == 1.0f);
+    /* an encoder that strays is asked back to the middle */
+    b.ctl[CTL_FX_ENC1] = 0.92f;
+    silence(&b); tourner(&b); silence(&b); tourner(&b);
+    verifie("an encoder near its stop is recentred", (double)b.ctl[CTL_FX_ENC1], 0.5, 0.01);
+
+    /* --- the tap, on DELAY --- */
+    /* encoder 3 is unaddressed, so the last string on the screen is
+       VALIDATE's: the slots are painted in order and it comes before */
+    notif(b.d)->unaddressed(b.h, b.n_audio + (uint32_t)CTL_FX_ENC3);
+    presser(&b, CTL_NAV, 100.0);
+    presser(&b, CTL_NAV, 100.0);
+    verifie("NAV: DELAY", (double)b.ctl[CTL_FX_NOW], 5.0, 0.01);
+    ecran.n_popup = 0;
+    b.ctl[CTL_NAV] = 1.0f;
+    attendre(&b, 1000.0);
+    b.ctl[CTL_NAV] = 0.0f;
+    attendre(&b, 60.0);
+    verifie_vrai("held on DELAY: the tap is armed, not the previous effect",
+                 v->tap_mode == 1 && b.ctl[CTL_FX_NOW] == 5.0f);
+    verifie_vrai("and the tempo in force is shown",
+                 ecran.n_popup == 1 && !strcmp(ecran.dernier_popup_titre, "TEMPO")
+                 && !strcmp(ecran.dernier_popup, "400 MS"));
+    attendre(&b, 2100.0);                 /* the popup lets go */
+    verifie_vrai("VALIDATE is the tap switch now, beating 150 BPM",
+                 !strcmp(ecran.dernier_label, "TAP")
+                 && !strcmp(ecran.dernier_value, "150")
+                 && !strcmp(ecran.dernier_unit, "BPM")
+                 && ecran.clignote_on > 0);
+    /* two taps 500 ms apart */
+    presser(&b, CTL_VALIDATE, 20.0);
+    attendre(&b, 500.0 - 80.0);
+    presser(&b, CTL_VALIDATE, 20.0);
+    verifie("two taps on VALIDATE set the time", (double)b.ctl[CTL_TIME_OUT], 500.0, 6.0);
+    verifie_vrai("and the tempo taken is shown",
+                 ecran.n_popup == 2 && !strcmp(ecran.dernier_popup_titre, "TEMPO"));
+    verifie_vrai("DELAY was not switched by the taps", v->sw_state[SW_DELAY] == 1);
+    attendre(&b, 2100.0);
+    presser(&b, CTL_NAV, 100.0);
+    verifie_vrai("a press of NAV leaves the tap and stays on DELAY",
+                 v->tap_mode == 0 && b.ctl[CTL_FX_NOW] == 5.0f);
+    /* the tap mode lets go on its own */
+    b.ctl[CTL_NAV] = 1.0f; attendre(&b, 1000.0); b.ctl[CTL_NAV] = 0.0f;
+    attendre(&b, 60.0);
+    verifie_vrai("armed again", v->tap_mode == 1);
+    attendre(&b, 8500.0);
+    verifie_vrai("and forgotten after eight seconds of nothing", v->tap_mode == 0);
+
+    /* --- the switch strings never break the screen's rules --- */
+    verifie_vrai("no screen string too long, lower-case or non-ASCII",
+                 !ecran.trop_long && !ecran.minuscule && !ecran.non_ascii);
+    fermer(&b);
+}
+
+/* ================================================================== */
+/* BUILD30: what build 29 saved comes back                             */
+/* ================================================================== */
+
+static void essai_migration(void)
+{
+    /* the file on the disc, as build 29 wrote it */
+    SlotsFile29 f;
+    memset(&f, 0, sizeof(f));
+    f.magic = SLOTS_MAGIC; f.version = SLOTS_VERSION;
+    f.n_user = N_USER; f.n_col = N_PROGRAM_COL_29; f.n_switch = SW_COUNT_29;
+    for (int i = 0; i < SW_COUNT_29; ++i) { f.slot[1].sw[i] = 1u; }
+    f.slot[1].sw[SW_REVERB] = 0u;
+    f.slot[1].value[program_col[CTL_DELAY_TIME]] = 333.0f;
+    f.slot[1].value[program_col[CTL_REVERB_MIX]] = 44.0f;
+    f.slot[1].filled = 1u;
+    strcpy(f.slot[1].name, "VIEUX");
+    {
+        FILE* h = fopen("voice-slots.bin", "wb");
+        fwrite(&f, 1, sizeof(f), h);
+        fclose(h);
+    }
+    garder_disque = 1;
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    garder_disque = 0;
+    Voice* v = (Voice*)b.h;
+    verifie_vrai("a build-29 slot file is read: the slot is there",
+                 v->user[1].filled && !strcmp(v->user[1].name, "VIEUX"));
+    verifie("its delay time came back", (double)v->user[1].value[program_col[CTL_DELAY_TIME]], 333.0, 0.01);
+    verifie("its reverb mix came back", (double)v->user[1].value[program_col[CTL_REVERB_MIX]], 44.0, 0.01);
+    verifie_vrai("its switches came back, the reverb off",
+                 v->user[1].sw[SW_REVERB] == 0 && v->user[1].sw[SW_DELAY] == 1);
+    verifie_vrai("and the grille it never knew is off, at its defaults",
+                 v->user[1].sw[SW_GRILLE] == 0
+                 && v->user[1].value[program_col[CTL_GRILLE_WIDTH]] == 50.0f
+                 && v->user[1].value[program_col[CTL_GRILLE_TONE]] == 1800.0f);
+    verifie_vrai("the other slots are empty", !v->user[0].filled && !v->user[2].filled);
+    /* and it plays */
+    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 1.0f;
+    silence(&b); tourner(&b); silence(&b); tourner(&b);
+    verifie("entering it plays the saved time", (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
+    fermer(&b);
+
+    /* the LV2 state of a pedalboard saved by build 29 */
+    const LV2_Descriptor* d = lv2_descriptor(0);
+    const LV2_State_Interface* st =
+        (const LV2_State_Interface*)d->extension_data(LV2_STATE__interface);
+    {
+        int n = 0;
+        memset(etat_buf, 0, sizeof(etat_buf));
+        for (int u = 0; u < N_USER; ++u) {
+            const int plein = (u == 4);
+            etat_buf[n++] = plein ? 1.0f : 0.0f;
+            const char* nom = plein ? "ANCIEN " : "       ";
+            for (int k = 0; k < NAME_LEN; ++k) { etat_buf[n++] = (float)nom[k]; }
+            for (int i = 0; i < N_PROGRAM_COL_29; ++i) {
+                etat_buf[n++] = (plein && i == program_col[CTL_DELAY_TIME]) ? 222.0f : 0.0f;
+            }
+            for (int k = 0; k < SW_COUNT_29; ++k) { etat_buf[n++] = 1.0f; }
+        }
+        etat_taille = sizeof(float) * (size_t)n;
+        etat_cle = f_map(NULL, VOICE_SLOTS_URI);
+        etat_type = f_map(NULL, LV2_ATOM__Chunk);
+    }
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    v = (Voice*)b.h;
+    verifie_vrai("a build-29 state is restored without complaint",
+                 st->restore(b.h, f_retrieve, NULL, 0, NULL) == LV2_STATE_SUCCESS);
+    verifie_vrai("its slot is there, by name",
+                 v->user[4].filled && !strcmp(v->user[4].name, "ANCIEN"));
+    verifie("with its time", (double)v->user[4].value[program_col[CTL_DELAY_TIME]], 222.0, 0.01);
+    verifie_vrai("and the grille off", v->user[4].sw[SW_GRILLE] == 0);
+    /* saved again, it goes out in the new layout and comes back whole */
+    etat_taille = 0;
+    verifie_vrai("saved again by this build",
+                 st->save(b.h, f_store, NULL, 0, NULL) == LV2_STATE_SUCCESS
+                 && etat_taille == sizeof(float) * STATE_FLOATS);
+    fermer(&b);
+}
+
+/* ================================================================== */
 
 int main(int argc, char** argv)
 {
     if (argc > 1 && !strcmp(argv[1], "--demo")) { demo(); return 0; }
+    if (argc > 1 && !strcmp(argv[1], "--build30")) {
+        /* the three benches of build 30 alone, for a quick turn */
+        printf("The grille:\n");                essai_grille();
+        printf("The foot cycle:\n");            essai_cycle_pied();
+        printf("What build 29 saved:\n");      essai_migration();
+        printf("\n%s\n", echec ? "*** SOME CHECKS FAILED ***" : "All checks pass.");
+        return echec;
+    }
 
     printf("Maths, against the libm this build is not allowed to link:\n");
     essai_maths();
@@ -4581,6 +4963,9 @@ int main(int argc, char** argv)
     printf("Waking up:\n");                 essai_reveil();
     printf("The pedal page:\n");            essai_page();
                                            essai_page_saut();
+    printf("The grille:\n");                essai_grille();
+    printf("The foot cycle:\n");            essai_cycle_pied();
+    printf("What build 29 saved:\n");      essai_migration();
     printf("The host's part:\n");           essai_hote();
     printf("USER slots:\n");                essai_slots();
                                            essai_retouche();

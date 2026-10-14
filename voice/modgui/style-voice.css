@@ -14,7 +14,7 @@
 .mod-pedal-voice{{{cns}}} {
     position: relative;
     width: 720px;
-    height: 792px;
+    height: 820px;
     box-sizing: border-box;
     border-radius: 14px;
     padding: 0 14px;
@@ -284,6 +284,14 @@
 .voice-diag{{{cns}}}.alerte { color: #ffb347; }
 
 .voice-page{{{cns}}} { text-align: center; }
+/* The foot cycle, beside the pedal page: two small switches and the three
+   encoders of the pointed effect, with its name under them. */
+.voice-cycle-row{{{cns}}} { display: flex; gap: 6px; align-items: center; margin-top: 3px; }
+.voice-cycle-sw{{{cns}}} { text-align: center; }
+.voice-cycle-cap{{{cns}}} { font-size: 7px; letter-spacing: 1px; color: #93a2b4; }
+.voice-cycle-now{{{cns}}} {
+    font-size: 8px; letter-spacing: 1px; color: #8df3bd; white-space: nowrap;
+}
 .voice-page-cap{{{cns}}} {
     font-size: 8px; letter-spacing: 1.5px; color: #93a2b4; margin-bottom: 2px;
 }

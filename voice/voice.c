@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD29_AARCH64_20260910";
+static const volatile char build_tag[] = "VOICE_BUILD30_AARCH64_20261014";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -427,7 +427,24 @@ typedef enum {
     CTL_LOCK_FEEDBACK = 90,
     CTL_LOCK_DELAY    = 91,
     CTL_LOCK_REVERB   = 92,
-    CTL_COUNT         = 93
+    /* --- BUILD30. The lock of the grille comes FIRST, right after the
+           twelve above, so CTL_LOCK_GATE + k still reaches every lock. --- */
+    CTL_LOCK_GRILLE   = 93,
+    /* The grille: the Hygiaphone as a block rather than a program, so it
+       can be kicked in under one effect of the foot cycle. */
+    CTL_GRILLE_ON     = 94,
+    CTL_GRILLE_WIDTH  = 95,
+    CTL_GRILLE_BUZZ   = 96,
+    CTL_GRILLE_TONE   = 97,
+    /* The foot cycle: two switches that reach seven effects, and three
+       encoders that follow the one pointed at. */
+    CTL_NAV           = 98,
+    CTL_VALIDATE      = 99,
+    CTL_FX_ENC1       = 100,
+    CTL_FX_ENC2       = 101,
+    CTL_FX_ENC3       = 102,
+    CTL_FX_NOW        = 103, /* output: which effect the cycle points at */
+    CTL_COUNT         = 104
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -545,6 +562,17 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "lock_feedback",  0.0f,    1.0f,     0.0f },
     { "lock_delay",     0.0f,    1.0f,     0.0f },
     { "lock_reverb",    0.0f,    1.0f,     0.0f },
+    { "lock_grille",    0.0f,    1.0f,     0.0f },
+    { "grille_on",      0.0f,    1.0f,     0.0f },
+    { "grille_width",   0.0f,  100.0f,    50.0f },
+    { "grille_buzz",    0.0f,  100.0f,    40.0f },
+    { "grille_tone",  800.0f, 3000.0f,  1800.0f },
+    { "nav",            0.0f,    1.0f,     0.0f },
+    { "validate",       0.0f,    1.0f,     0.0f },
+    { "fx_enc1",        0.0f,    1.0f,     0.5f },
+    { "fx_enc2",        0.0f,    1.0f,     0.5f },
+    { "fx_enc3",        0.0f,    1.0f,     0.5f },
+    { "fx_now",         0.0f,    6.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -558,20 +586,86 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
    is the "all of it, off" stomp, each switch is "this one, off". */
 typedef enum {
     SW_GATE = 0, SW_COMP, SW_DE_ESS, SW_EQ, SW_DRIVE, SW_PITCH,
-    SW_HARM, SW_DOUBLER, SW_MOD, SW_FEEDBACK, SW_DELAY, SW_REVERB, SW_COUNT
+    SW_HARM, SW_DOUBLER, SW_MOD, SW_FEEDBACK, SW_DELAY, SW_REVERB,
+    SW_GRILLE,          /* BUILD30, appended: a slot saved before it has
+                           twelve switches, and reads back as twelve */
+    SW_COUNT
 } SwitchIndex;
+
+/* The twelve switches and twenty-six columns of build 29, for reading
+   back what that build saved - on the disc and in a pedalboard. */
+#define SW_COUNT_29      12
+#define N_PROGRAM_COL_29 26
 
 static const uint8_t switch_ctl[SW_COUNT] = {
     CTL_GATE_ON, CTL_COMP_ON, CTL_DE_ESS_ON, CTL_EQ_ON, CTL_DRIVE_ON,
     CTL_PITCH_ON, CTL_HARM_ON, CTL_DOUBLER_ON, CTL_MOD_ON, CTL_FEEDBACK_ON,
-    CTL_DELAY_ON, CTL_REVERB_ON
+    CTL_DELAY_ON, CTL_REVERB_ON, CTL_GRILLE_ON
 };
 
 /* Eight characters at most: the device truncates silently. */
 static const char* const switch_label[SW_COUNT] = {
     "GATE", "COMP", "DE-ESS", "EQ", "DRIVE", "PITCH",
-    "HARMONY", "DOUBLE", "MOD", "NO HOWL", "DELAY", "REVERB"
+    "HARMONY", "DOUBLE", "MOD", "NO HOWL", "DELAY", "REVERB", "GRILLE"
 };
+
+/* ------------------------------------------------------------------ */
+/* The foot cycle                                                      */
+/*                                                                     */
+/* Two footswitches reach seven effects, the way MFX does it: NAV walks */
+/* the cycle, VALIDATE flips the effect it points at, and three         */
+/* encoders follow the pointed effect and turn ITS settings. The        */
+/* channel strip - gate, compressor, de-esser, EQ, no-howl - is not in  */
+/* the cycle: it is set per sound and left alone on a stage.            */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    FX_DOUBLE = 0, FX_HARM, FX_PITCH, FX_GRILLE, FX_MOD, FX_DELAY, FX_REVERB,
+    FX_N
+} FxIndex;
+
+static const uint8_t fx_switch[FX_N] = {
+    SW_DOUBLER, SW_HARM, SW_PITCH, SW_GRILLE, SW_MOD, SW_DELAY, SW_REVERB
+};
+
+/* Seven characters at most: the width of a footswitch label. */
+static const char* const fx_name[FX_N] = {
+    "DOUBLE", "HARMONY", "PITCH", "GRILLE", "MOD", "DELAY", "REVERB"
+};
+
+/* One mark per effect on NAV's label, seven characters for seven
+   effects: the letter when the effect is on, a dash when it is off. */
+static const char fx_mark[FX_N + 1] = "DHPGMLR";
+
+/* One colour per effect, so the LED says which one is pointed at. Never
+   relies on brightness, which does nothing on this device. */
+static const LV2_HMI_LED_Colour fx_colour[FX_N] = {
+    LV2_HMI_LED_Colour_Green,   LV2_HMI_LED_Colour_Magenta,
+    LV2_HMI_LED_Colour_Blue,    LV2_HMI_LED_Colour_Yellow,
+    LV2_HMI_LED_Colour_Cyan,    LV2_HMI_LED_Colour_White,
+    LV2_HMI_LED_Colour_Red
+};
+
+/* What the three encoders turn, per effect. CTL_COUNT means "nothing":
+   an effect with two settings leaves its third knob saying so. */
+static const uint8_t fx_param[FX_N][3] = {
+    { CTL_DOUBLER,      CTL_SPREAD,        CTL_VOICES      },
+    { CTL_HARM_1,       CTL_HARM_2,        CTL_HARM_MIX    },
+    { CTL_PITCH,        CTL_PITCH_MIX,     CTL_COUNT       },
+    { CTL_GRILLE_WIDTH, CTL_GRILLE_BUZZ,   CTL_GRILLE_TONE },
+    { CTL_MOD,          CTL_MOD_SPEED,     CTL_COUNT       },
+    { CTL_DELAY_TIME,   CTL_DELAY_REPEATS, CTL_DELAY_MIX   },
+    { CTL_REVERB,       CTL_REVERB_MIX,    CTL_COUNT       },
+};
+
+/* A press on NAV held this long is a LONG press: previous effect, or the
+   tap on DELAY. Rémy found 1500 ms too long for a long press. */
+#define NAV_LONG_MS   800.0f
+/* How long a popup owns the screen. Nothing else may be sent to the
+   screen while it is there: every write repaints the page over it. */
+#define POPUP_HOLD_MS 2000.0f
+/* The tap mode lets go on its own after this long without a tap. */
+#define TAP_MODE_MS   8000.0f
 
 /* ------------------------------------------------------------------ */
 /* Blocks                                                              */
@@ -817,6 +911,9 @@ typedef struct {
     float   de_z1, de_z2;    /* de-esser band split, two poles */
     float   eq_low, eq_mid_hi, eq_mid_lo, eq_air;
     float   dc_x, dc_y;      /* DC blocker after the drive stage */
+    /* the grille: two poles up, two poles down, and the bell */
+    float   gr_hp1, gr_hp2, gr_lp1, gr_lp2;
+    SVF     gr_bell;
 
     /* effects */
     Ring    shortline;       /* doubler and modulation taps */
@@ -844,6 +941,7 @@ typedef enum {
        a program change turns all of them at once, which is a bang. */
     SM_MAKEUP, SM_COMP_THR, SM_COMP_SLOPE, SM_SPREAD, SM_MOD_DEPTH,
     SM_VOICE_GAIN, SM_HARM,
+    SM_GRILLE_PRE, SM_GRILLE_POST, SM_GRILLE_MIX,   /* the buzz, like the drive */
     SM_COUNT
 } SmoothIndex;
 
@@ -863,6 +961,7 @@ typedef enum {
     SLOT_ENC_SLOT, SLOT_ENC_PARAM, SLOT_ENC_VALUE, SLOT_BROWSE,
     SLOT_FAV_1, SLOT_FAV_2, SLOT_FAV_3, SLOT_FAV_4, SLOT_FAV_5, SLOT_FAV_6,
     SLOT_CYCLE,
+    SLOT_NAV, SLOT_VALIDATE, SLOT_FX_ENC1, SLOT_FX_ENC2, SLOT_FX_ENC3,
     SLOT_SWITCH,                      /* the first of SW_COUNT switch slots */
     /* and one lock per block, in the same order: a lock is worth a
        footswitch of its own - locking the reverb to the room is done
@@ -881,7 +980,8 @@ static uint8_t slot_ctl_of(int slot)
         CTL_DE_ESS_FREQ, CTL_NEXT_USER, CTL_SLOT_NAME,
         CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE, CTL_FAV_BROWSE,
         CTL_FAV_1, CTL_FAV_2, CTL_FAV_3, CTL_FAV_4, CTL_FAV_5, CTL_FAV_6,
-        CTL_CYCLE
+        CTL_CYCLE,
+        CTL_NAV, CTL_VALIDATE, CTL_FX_ENC1, CTL_FX_ENC2, CTL_FX_ENC3
     };
     if (slot < (int)SLOT_SWITCH) { return fixed[slot]; }
     if (slot < (int)SLOT_LOCK)   { return switch_ctl[slot - (int)SLOT_SWITCH]; }
@@ -958,6 +1058,11 @@ typedef struct {
     int   fx_toggle_prev;
     float fx_gain;            /* ramped, so the send does not click */
     float sw[SW_COUNT];       /* one ramp per effect switch, same reason */
+    /* VALIDATE has just flipped this switch from the foot: the state is
+       the foot's until the PORT moves, even with MANUAL selected, where
+       the ports otherwise rule every block. The host's own write of the
+       port, asked for by push_port, is the move that clears it. */
+    uint8_t sw_foot[SW_COUNT];
 
     /* Which program is in force, and the switch positions that go with it.
        A program ADOPTS the switches when it is selected and then lets go:
@@ -1061,11 +1166,24 @@ typedef struct {
     /* --- the two host services that make a save visible and durable --- */
     const LV2_ControlInputPort_Change_Request* portreq;
     LV2_Worker_Schedule* sched;
-    /* --- the pedal page: three encoders, read in detents --- */
-    float    enc_last[3];      /* where each knob was last block */
-    float    enc_notch[3];     /* the size of one detent, learned downwards */
-    uint32_t enc_when[3];      /* when the last detent arrived, in blocks */
-    uint8_t  enc_have[3];      /* the first read is a position, not a move */
+    /* --- the pedal page: three encoders, read in detents, and the
+           three of the foot cycle after them --- */
+    float    enc_last[6];      /* where each knob was last block */
+    float    enc_notch[6];     /* the size of one detent, learned downwards */
+    uint32_t enc_when[6];      /* when the last detent arrived, in blocks */
+    uint8_t  enc_have[6];      /* the first read is a position, not a move */
+    /* --- the foot cycle --- */
+    int      fx_point;         /* which of the seven NAV points at */
+    int      nav_was;          /* the NAV port last block */
+    uint32_t nav_high;         /* samples NAV has been held, 0 = up */
+    int      nav_done;         /* this press has already done its long job */
+    int      validate_prev;
+    int      tap_mode;         /* VALIDATE is the tap switch for now */
+    uint32_t tap_mode_left;    /* samples before the tap mode lets go */
+    uint32_t screen_hold;      /* samples a popup still owns the screen */
+    int      boot_popup;       /* the build number, shown once at start */
+    SVFCoef  gr_coef;          /* the grille's bell */
+    float    gr_bell_gain;     /* k * (A*A - 1) of that bell */
     int      page_param;       /* 0 = NAME, then the parameters in order */
     int      page_mode;        /* 0 browsing, 1 typing a name */
     int      page_pos;         /* which letter is being typed */
@@ -1925,6 +2043,7 @@ static void program_enter(Voice* self, int prog)
         for (int k = 0; k < (int)SW_COUNT; ++k) {
             self->sw_state[k] = adopt[k] ? 1 : 0;
             self->sw_prev[k]  = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
+            self->sw_foot[k]  = 0u;
         }
     }
 
@@ -2017,6 +2136,8 @@ activate(LV2_Handle instance)
         ch->lc_z = ch->de_z1 = ch->de_z2 = 0.0f;
         ch->eq_low = ch->eq_mid_hi = ch->eq_mid_lo = ch->eq_air = 0.0f;
         ch->dc_x = ch->dc_y = 0.0f;
+        ch->gr_hp1 = ch->gr_hp2 = ch->gr_lp1 = ch->gr_lp2 = 0.0f;
+        ch->gr_bell.ic1 = ch->gr_bell.ic2 = 0.0f;
         ch->dly_lp = ch->dly_hp = 0.0f;
         for (int k = 0; k < MAX_VOICES; ++k) {
             ch->choir_lp[k] = 0.0f;
@@ -2084,15 +2205,30 @@ activate(LV2_Handle instance)
            and not on the first turn of the knob: a reader that swallows
            its first detent is a pedal that ignores the first thing you
            do to it. */
-        static const int enc_ctl[3] =
-            { CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE };
-        for (int e = 0; e < 3; ++e) {
+        static const int enc_ctl[6] =
+            { CTL_ENC_SLOT, CTL_ENC_PARAM, CTL_ENC_VALUE,
+              CTL_FX_ENC1, CTL_FX_ENC2, CTL_FX_ENC3 };
+        for (int e = 0; e < 6; ++e) {
             self->enc_notch[e] = NOTCH_GUESS;
             self->enc_when[e]  = self->blocks;
             self->enc_last[e]  = ctl_read(self, enc_ctl[e]);
             self->enc_have[e]  = 1u;
         }
     }
+    /* the foot cycle starts on DOUBLE, with nothing pressed and no tap
+       armed; the build number is owed to the screen once */
+    self->fx_point      = FX_DOUBLE;
+    self->nav_was       = (ctl_read(self, CTL_NAV) > 0.5f) ? 1 : 0;
+    self->nav_high      = 0u;
+    self->nav_done      = 0;
+    self->validate_prev = (ctl_read(self, CTL_VALIDATE) > 0.5f) ? 1 : 0;
+    self->tap_mode      = 0;
+    self->tap_mode_left = 0u;
+    self->screen_hold   = 0u;
+    self->boot_popup    = 1;
+    for (int k = 0; k < (int)SW_COUNT; ++k) { self->sw_foot[k] = 0u; }
+    svf_set(&self->gr_coef, param_read(self, CTL_GRILLE_TONE), 1.0f, self->rate);
+    self->gr_bell_gain  = 0.0f;
     self->mute_gain         = (ctl_read(self, CTL_MUTE) > 0.5f) ? 0.0f : 1.0f;
     self->sm[SM_DRIVE_MIX]  = param_read(self, CTL_DRIVE) * 0.01f;
     self->sm[SM_PITCH]      = param_read(self, CTL_PITCH_MIX)  * 0.01f;
@@ -2108,6 +2244,9 @@ activate(LV2_Handle instance)
     self->sm[SM_MOD_DEPTH]  = 0.5f + 3.5f * param_read(self, CTL_MOD) * 0.01f;
     self->sm[SM_VOICE_GAIN] = voice_gain_of(self, self->n_ch);
     self->sm[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
+    self->sm[SM_GRILLE_PRE] = drive_pre_of(param_read(self, CTL_GRILLE_BUZZ));
+    self->sm[SM_GRILLE_POST]= drive_post_of(self->sm[SM_GRILLE_PRE]);
+    self->sm[SM_GRILLE_MIX] = param_read(self, CTL_GRILLE_BUZZ) * 0.01f;
     {
         const int n = voices_of(self);
         for (int k = 0; k < MAX_VOICES; ++k) {
@@ -2230,6 +2369,40 @@ cleanup(LV2_Handle instance)
 /* fails the build on anything else, because the device silently        */
 /* truncates it instead.                                                */
 /* ------------------------------------------------------------------ */
+
+/* A message that takes the whole screen for two seconds. It goes out on
+   the addressing of a control of the foot cycle - a popup is only shown
+   for the control the player has just touched - and while it is there
+   NOTHING else may be sent to the screen: every label, value and bar
+   repaints the page over it. run() keeps quiet for POPUP_HOLD_MS, then
+   forgets its caches and paints everything again. */
+static void
+popup(Voice* self, const char* title, const char* body)
+{
+    const LV2_HMI_WidgetControl* hmi = self->hmi;
+    if (!hmi || !hmi->popup_message) { return; }
+    /* refuse only when the host SAYS its struct is too small: some leave
+       the size at zero, and a >= test would block every popup there */
+    if (self->hmi_size != 0u
+        && self->hmi_size < LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE) {
+        return;
+    }
+    LV2_HMI_Addressing a = self->addr[self->n_audio + (uint32_t)CTL_NAV];
+    if (!a) { a = self->addr[self->n_audio + (uint32_t)CTL_VALIDATE]; }
+    if (!a) { return; }
+    hmi->popup_message(hmi->handle, a, LV2_HMI_Popup_Style_Normal, title, body);
+    self->screen_hold = (uint32_t)(self->rate * POPUP_HOLD_MS * 0.001f);
+}
+
+/* "620 MS": the tempo as the popup and the switches say it. */
+static void
+write_ms(char* buf, size_t size, int ms)
+{
+    write_int(buf, size, ms);
+    size_t n = 0;
+    while (n < size - 1 && buf[n] != '\0') { ++n; }
+    copy_bounded(buf + n, size - n, " MS");
+}
 
 static void
 paint(Voice* self, int force)
@@ -2595,6 +2768,80 @@ paint(Voice* self, int force)
             break;
         }
 
+        case SLOT_NAV:
+            /* The marks: seven effects, seven characters, a letter for
+               one that is on and a dash for one that is off - exactly the
+               width of a footswitch label. Under it, the name of the one
+               pointed at, and the LED in that effect's colour. */
+            if (self->tap_mode) {
+                const int ms = (int)(time_ms + 0.5f);
+                label = "TEMPO";
+                write_ms(vbuf, sizeof(vbuf), ms);
+                value = vbuf;
+                led   = LV2_HMI_LED_Colour_Cyan;
+            } else {
+                for (int f = 0; f < (int)FX_N; ++f) {
+                    vbuf[f] = self->sw_state[fx_switch[f]] ? fx_mark[f] : '-';
+                }
+                vbuf[FX_N] = '\0';
+                label = vbuf;
+                value = fx_name[self->fx_point];
+                led   = fx_colour[self->fx_point];
+            }
+            break;
+
+        case SLOT_VALIDATE:
+            /* The effect NAV points at, ON or OFF, and the LED lit in its
+               colour while it is on. While the tap is armed this switch
+               IS the tap switch, and says so. */
+            if (self->tap_mode) {
+                const int ms = (int)(time_ms + 0.5f);
+                label = "TAP";
+                if (ms > 0) {
+                    write_int(vbuf, sizeof(vbuf), (60000 + ms / 2) / ms);
+                    value = vbuf;
+                    unit  = "BPM";
+                    led   = LV2_HMI_LED_Colour_Cyan;
+                    blink = ms;
+                }
+            } else {
+                const int k  = fx_switch[self->fx_point];
+                const int on = self->sw_state[k];
+                label = fx_name[self->fx_point];
+                value = on ? "ON" : "OFF";
+                led   = on ? fx_colour[self->fx_point] : LV2_HMI_LED_Colour_Off;
+            }
+            break;
+
+        case SLOT_FX_ENC1:
+        case SLOT_FX_ENC2:
+        case SLOT_FX_ENC3: {
+            /* The setting this knob turns on the pointed effect: its
+               name, its value and its bar, exactly like the pedal page.
+               An effect with only two settings leaves the third knob
+               saying which effect it belongs to and nothing to turn. */
+            const int e = s - (int)SLOT_FX_ENC1;
+            const int i = fx_param[self->fx_point][e];
+            if (i >= (int)CTL_COUNT || program_col[i] < 0) {
+                label = fx_name[self->fx_point];
+                value = "-";
+                bar_h = 0;
+            } else {
+                const ParamSpec* ps = &param_spec[program_col[i]];
+                const float v = param_read(self, i);
+                label = ps->name;
+                write_value(vbuf, sizeof(vbuf), v, ps->dec);
+                value = vbuf;
+                unit  = ctl_locked(self, i) ? "MINE" : ps->unit;
+                if (ctl_spec[i].max > ctl_spec[i].min) {
+                    bar = (v - ctl_spec[i].min)
+                        / (ctl_spec[i].max - ctl_spec[i].min);
+                    bar_h = (int)(bar * 100.0f + 0.5f);
+                }
+            }
+            break;
+        }
+
         case SLOT_HOWL:
             /* The useful readout is not the setting, it is how many
                notches the room has cost you. Four means the stage is
@@ -2773,7 +3020,7 @@ addressed(LV2_Handle handle, uint32_t index,
        plugin has sent an indicator, the firmware draws its own default
        representation of the port instead of a readout. */
     forget_caches(self);
-    paint(self, 1);
+    if (self->screen_hold == 0u) { paint(self, 1); }
 }
 
 static void
@@ -3190,6 +3437,115 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
     }
 
+    /* ---------------- the foot cycle ----------------
+       NAV is TIMED, like FAV BROWSE: a short press steps to the next
+       effect on the RELEASE, a press held NAV_LONG_MS steps back - or,
+       on DELAY, arms the tap - and fires while the foot is still down.
+       Nothing counts during the settle window, and a press that has done
+       its long job does nothing more when it lets go. */
+    int validate_tap = 0;      /* VALIDATE pressed while the tap is armed */
+    {
+        const uint32_t long_n = (uint32_t)(rate * NAV_LONG_MS * 0.001f);
+        const int now = (ctl_read(self, CTL_NAV) > 0.5f) ? 1 : 0;
+        int court = 0, longue = 0;
+
+        if (self->settle_left) {
+            self->nav_was = now;                 /* a board being restored */
+        } else if (now && !self->nav_was) {      /* pressed */
+            self->nav_high = 1u;
+            self->nav_done = 0;
+            self->nav_was  = 1;
+        } else if (now) {                        /* still down */
+            self->nav_high += n_samples;
+            if (!self->nav_done && self->nav_high >= long_n) {
+                self->nav_done = 1;
+                longue = 1;
+            }
+        } else if (self->nav_was) {              /* released */
+            if (!self->nav_done) { court = 1; }
+            self->nav_high = 0u;
+            self->nav_done = 0;
+            self->nav_was  = 0;
+        }
+
+        if (court || longue) {
+            if (self->tap_mode) {
+                /* any press of NAV leaves the tap and stays on DELAY */
+                self->tap_mode      = 0;
+                self->tap_mode_left = 0u;
+            } else if (longue && self->fx_point == FX_DELAY) {
+                char body[12];
+                self->tap_mode      = 1;
+                self->tap_mode_left = (uint32_t)(rate * TAP_MODE_MS * 0.001f);
+                write_ms(body, sizeof(body),
+                         (int)((self->tap_active ? self->tap_ms
+                                                 : self->knob_ms_prev) + 0.5f));
+                popup(self, "TEMPO", body);
+            } else if (longue) {
+                self->fx_point = (self->fx_point + (int)FX_N - 1) % (int)FX_N;
+            } else {
+                self->fx_point = (self->fx_point + 1) % (int)FX_N;
+            }
+        }
+
+        /* VALIDATE: the pointed effect flips, and its own switch in the
+           web page follows through the host. With MANUAL selected the
+           ports rule every block, so the flip is marked as the foot's
+           until the port has moved to agree. While the tap is armed the
+           press is a tap instead, counted further down with TAP's. */
+        if (trigger_edge(self, CTL_VALIDATE, &self->validate_prev)) {
+            if (self->tap_mode) {
+                validate_tap = 1;
+                self->tap_mode_left = (uint32_t)(rate * TAP_MODE_MS * 0.001f);
+            } else {
+                const int k = fx_switch[self->fx_point];
+                self->sw_state[k] = !self->sw_state[k];
+                self->sw_foot[k]  = 1u;
+                push_port(self, switch_ctl[k], self->sw_state[k] ? 1.0f : 0.0f);
+            }
+        }
+
+        /* a tap left armed and forgotten lets go on its own */
+        if (self->tap_mode) {
+            if (self->tap_mode_left > n_samples) {
+                self->tap_mode_left -= n_samples;
+            } else {
+                self->tap_mode_left = 0u;
+                self->tap_mode      = 0;
+            }
+        }
+
+        /* --- the three encoders of the pointed effect ---
+           Read in detents like the pedal page, and asked back to the
+           middle when they stray; what they turn is written back into
+           its own port so the web page and the pedalboard follow. */
+        for (int e = 0; e < 3; ++e) {
+            const int ctl = CTL_FX_ENC1 + e;
+            const int d   = detents(self, 3 + e, ctl);
+            {
+                const float x = ctl_read(self, ctl);
+                if (x < 0.15f || x > 0.85f) {
+                    push_port(self, ctl, 0.5f);
+                    self->enc_have[3 + e] = 0u;
+                }
+            }
+            if (!d) { continue; }
+            const int i = fx_param[self->fx_point][e];
+            if (i >= (int)CTL_COUNT || program_col[i] < 0) {
+                self->enc_when[3 + e] = self->blocks;
+                continue;
+            }
+            const ParamSpec* ps = &param_spec[program_col[i]];
+            float v = param_read(self, i)
+                    + (float)flicked(self, 3 + e, d) * ps->step;
+            if (v < ctl_spec[i].min) { v = ctl_spec[i].min; }
+            if (v > ctl_spec[i].max) { v = ctl_spec[i].max; }
+            self->ctl_seen[i] = v;
+            self->ctl_mine[i] = 1u;   /* the hand owns it now */
+            push_port(self, i, v);
+        }
+    }
+
     /* ---------------- the twelve locks ----------------
        ON needs nothing: what is heard is already what the knobs say, and
        param_read goes on returning it whatever is selected. OFF is where
@@ -3412,7 +3768,10 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     for (int k = 0; k < (int)SW_COUNT; ++k) {
         const int now = (ctl_read(self, switch_ctl[k]) > 0.5f) ? 1 : 0;
-        if (now != self->sw_prev[k] || self->program == 0) {
+        if (now != self->sw_prev[k]) {
+            self->sw_state[k] = now;
+            self->sw_foot[k]  = 0u;      /* the port has moved: it rules */
+        } else if (self->program == 0 && !self->sw_foot[k]) {
             self->sw_state[k] = now;
         }
         self->sw_prev[k] = now;
@@ -3450,13 +3809,22 @@ run(LV2_Handle instance, uint32_t n_samples)
                                            out makes every tapped tempo one
                                            buffer fast */
     }
-    if (trigger_edge(self, CTL_TAP, &self->tap_prev)) {
-        const float gap_ms = (float)self->tap_count / ms2n;
-        if (gap_ms >= ctl_spec[CTL_DELAY_TIME].min && gap_ms <= DELAY_MAX_MS) {
-            self->tap_ms     = gap_ms;
-            self->tap_active = 1;
+    {
+        const int tap_edge = trigger_edge(self, CTL_TAP, &self->tap_prev);
+        if (tap_edge || validate_tap) {
+            const float gap_ms = (float)self->tap_count / ms2n;
+            if (gap_ms >= ctl_spec[CTL_DELAY_TIME].min && gap_ms <= DELAY_MAX_MS) {
+                self->tap_ms     = gap_ms;
+                self->tap_active = 1;
+                /* from the foot cycle, the tempo taken is shown at once */
+                if (validate_tap) {
+                    char body[12];
+                    write_ms(body, sizeof(body), (int)(gap_ms + 0.5f));
+                    popup(self, "TEMPO", body);
+                }
+            }
+            self->tap_count = 0u;
         }
-        self->tap_count = 0u;
     }
 
     /* Moving the knob takes the time back from the tap. The knob is
@@ -3579,6 +3947,29 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float drive_pre  = drive_pre_of(drive_amt);
     const float drive_post = drive_post_of(drive_pre);
 
+    /* The grille. WIDTH opens both ends at once, an octave each way
+       around the Hygiaphone's 320-6000 Hz: 0 is a telephone, 100 nearly
+       the whole voice. Two poles each end, a +8 dB bell where TONE says,
+       then the same saturation as DRIVE on what gets through. */
+    const float grille_w    = param_read(self, CTL_GRILLE_WIDTH) * 0.01f;
+    const float grille_hp_c = onepole_coef(320.0f * exp2_approx((0.5f - grille_w) * 2.0f),
+                                           rate);
+    const float grille_lp_c = onepole_coef(6000.0f * exp2_approx((grille_w - 0.5f) * 2.2f),
+                                           rate);
+    {
+        /* A = 10^(8/40) for +8 dB; the bell's k is 1/(Q*A), and the SVF
+           band output times k*(A*A - 1) added to the input is the bell */
+        const float bell_a = 1.5849f;
+        svf_set(&self->gr_coef, param_read(self, CTL_GRILLE_TONE),
+                1.2f * bell_a, rate);
+        self->gr_bell_gain = self->gr_coef.k * (bell_a * bell_a - 1.0f);
+    }
+    const float grille_buzz = param_read(self, CTL_GRILLE_BUZZ);
+    const float grille_pre  = drive_pre_of(grille_buzz);
+    const float grille_post = drive_post_of(grille_pre);
+    /* the band it keeps is quieter than the voice that went in */
+    const float grille_makeup = 1.25f;
+
     /* ---------------- smoothing ----------------
        Anything a hand can turn walks to its new value across the block. */
     float target[SM_COUNT];
@@ -3603,6 +3994,9 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_MOD_DEPTH]  = 0.5f + 3.5f * mod_amt;
     target[SM_VOICE_GAIN] = voice_gain_of(self, n_ch);
     target[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
+    target[SM_GRILLE_PRE] = grille_pre;
+    target[SM_GRILLE_POST]= grille_post;
+    target[SM_GRILLE_MIX] = grille_buzz * 0.01f;
 
     float sm[SM_COUNT], sm_step[SM_COUNT];
     for (int k = 0; k < (int)SM_COUNT; ++k) {
@@ -3922,6 +4316,27 @@ run(LV2_Handle instance, uint32_t n_samples)
                         + sm[SM_PRESENCE] * mid_gain
                                           * (ch->eq_mid_hi - ch->eq_mid_lo)
                         + sm[SM_AIR]      * (v - ch->eq_air));
+        }
+
+        /* --- the grille: what a voice sounds like through the speaking
+               hole at a counter. Two poles up, two poles down, a hard
+               bell, then the buzz - the DRIVE saturation, blended in the
+               same way so BUZZ at zero is just the band. Its switch
+               crossfades the whole block in and out over 40 ms. --- */
+        for (uint32_t c = 0; c < n_ch; ++c) {
+            Chan* ch = &self->ch[c];
+            const float v = x[c];
+            ch->gr_hp1 = flush(ch->gr_hp1 + grille_hp_c * (v - ch->gr_hp1));
+            float a = v - ch->gr_hp1;
+            ch->gr_hp2 = flush(ch->gr_hp2 + grille_hp_c * (a - ch->gr_hp2));
+            a -= ch->gr_hp2;
+            ch->gr_lp1 = flush(ch->gr_lp1 + grille_lp_c * (a - ch->gr_lp1));
+            ch->gr_lp2 = flush(ch->gr_lp2 + grille_lp_c * (ch->gr_lp1 - ch->gr_lp2));
+            a = ch->gr_lp2;
+            a += self->gr_bell_gain * svf_bp(&ch->gr_bell, &self->gr_coef, a);
+            const float sat = softclip(a * sm[SM_GRILLE_PRE]) * sm[SM_GRILLE_POST];
+            a = (a + sm[SM_GRILLE_MIX] * (sat - a)) * grille_makeup;
+            x[c] = v + self->sw[SW_GRILLE] * (a - v);
         }
 
         /* --- drive, then a DC blocker: saturation on a signal that
@@ -4278,11 +4693,40 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self->ctl_out[CTL_TIME_OUT]) {
         *self->ctl_out[CTL_TIME_OUT] = time_target;
     }
+    if (self->ctl_out[CTL_FX_NOW]) {
+        *self->ctl_out[CTL_FX_NOW] = (float)self->fx_point;
+    }
 
     /* Screen: at most SCREEN_HZ passes per second, plus a full cache
        flush once a second to survive the firmware's repaints. */
     if (self->hmi) {
         int force = 0;
+
+        /* The build number, once, the first time a switch of the foot
+           cycle is addressed and the plugin is awake: a popup is shown
+           for the control the player has just touched, and these two
+           are the ones that get touched. Worth it for testing: the
+           screen says which build is really running. */
+        if (self->boot_popup && self->settle_left == 0u
+            && (self->addr[self->n_audio + (uint32_t)CTL_NAV]
+                || self->addr[self->n_audio + (uint32_t)CTL_VALIDATE])) {
+            self->boot_popup = 0;
+            popup(self, "VOICE", "BUILD 30");
+        }
+
+        /* While a popup owns the screen nothing is sent: every write
+           repaints the page over it. When it expires the caches are
+           forgotten and everything painted again, or the screen would
+           stay frozen on the last values sent. */
+        if (self->screen_hold) {
+            if (self->screen_hold > n_samples) {
+                self->screen_hold -= n_samples;
+                return;
+            }
+            self->screen_hold = 0u;
+            forget_caches(self);
+            force = 1;
+        }
 
         if (self->forget_left <= n_samples) {
             self->forget_left = self->forget_period;
@@ -4386,30 +4830,81 @@ static void slots_to_disk(const Voice* self)
     else                { remove(tmp); }
 }
 
+/* The file as build 29 wrote it: twenty-six columns, twelve switches.
+   Read back column for column and switch for switch - the new ones were
+   APPENDED, which is the whole reason they can be - with the grille's
+   three settings at their defaults and its switch off. Six favourites
+   dialled over a summer are not something a build may throw away. */
+typedef struct {
+    uint32_t magic;
+    uint32_t version;
+    uint32_t n_user;
+    uint32_t n_col;
+    uint32_t n_switch;
+    struct {
+        float   value[N_PROGRAM_COL_29];
+        uint8_t sw[SW_COUNT_29];
+        uint8_t filled;
+        char    name[NAME_LEN + 1];
+        uint8_t pad[3];
+    } slot[N_USER];
+} SlotsFile29;
+
+/* One slot, from however many columns and switches the file carried.
+   Columns it lacks read their control's default; switches it lacks read
+   their control's default too - OFF for the grille. */
+static void slot_take(Voice* self, int u, const float* value, int n_col,
+                      const uint8_t* sw, int n_sw, int filled, const char* name)
+{
+    for (int i = 0; i < N_PROGRAM_COL; ++i) {
+        float v = 0.0f;
+        if (i < n_col) {
+            v = value[i];
+        } else {
+            for (int c = 0; c < (int)CTL_COUNT; ++c) {
+                if (program_col[c] == i) { v = ctl_spec[c].def; break; }
+            }
+        }
+        self->user[u].value[i] = (v == v) ? v : 0.0f;    /* never a NaN */
+    }
+    for (int k = 0; k < (int)SW_COUNT; ++k) {
+        self->user[u].sw[k] = (k < n_sw) ? (sw[k] ? 1u : 0u)
+                            : (ctl_spec[switch_ctl[k]].def > 0.5f ? 1u : 0u);
+    }
+    self->user[u].filled = filled ? 1u : 0u;
+    name_set(self->user[u].name, name);
+}
+
 static void slots_from_disk(Voice* self)
 {
     if (!self->slots_path[0]) { return; }
     FILE* h = fopen(self->slots_path, "rb");
     if (!h) { return; }
-    SlotsFile f;
+    /* the bigger of the two layouts holds either */
+    union { SlotsFile now; SlotsFile29 old; } f;
+    memset(&f, 0, sizeof(f));
     const size_t n = fread(&f, 1, sizeof(f), h);
     fclose(h);
-    if (n != sizeof(f) || f.magic != SLOTS_MAGIC || f.version != SLOTS_VERSION
-        || f.n_user != (uint32_t)N_USER || f.n_col != (uint32_t)N_PROGRAM_COL
-        || f.n_switch != (uint32_t)SW_COUNT) {
+    if (f.now.magic != SLOTS_MAGIC || f.now.version != SLOTS_VERSION
+        || f.now.n_user != (uint32_t)N_USER) {
         return;                       /* not ours, or from another build */
     }
-    for (int u = 0; u < N_USER; ++u) {
-        for (int i = 0; i < N_PROGRAM_COL; ++i) {
-            const float v = f.slot[u].value[i];
-            self->user[u].value[i] = (v == v) ? v : 0.0f;    /* never a NaN */
+    if (n == sizeof(f.now) && f.now.n_col == (uint32_t)N_PROGRAM_COL
+        && f.now.n_switch == (uint32_t)SW_COUNT) {
+        for (int u = 0; u < N_USER; ++u) {
+            f.now.slot[u].name[NAME_LEN] = '\0';
+            slot_take(self, u, f.now.slot[u].value, N_PROGRAM_COL,
+                      f.now.slot[u].sw, (int)SW_COUNT,
+                      f.now.slot[u].filled, f.now.slot[u].name);
         }
-        for (int k = 0; k < (int)SW_COUNT; ++k) {
-            self->user[u].sw[k] = f.slot[u].sw[k] ? 1u : 0u;
+    } else if (n == sizeof(f.old) && f.old.n_col == (uint32_t)N_PROGRAM_COL_29
+               && f.old.n_switch == (uint32_t)SW_COUNT_29) {
+        for (int u = 0; u < N_USER; ++u) {
+            f.old.slot[u].name[NAME_LEN] = '\0';
+            slot_take(self, u, f.old.slot[u].value, N_PROGRAM_COL_29,
+                      f.old.slot[u].sw, SW_COUNT_29,
+                      f.old.slot[u].filled, f.old.slot[u].name);
         }
-        self->user[u].filled = f.slot[u].filled ? 1u : 0u;
-        f.slot[u].name[NAME_LEN] = '\0';
-        name_set(self->user[u].name, f.slot[u].name);
     }
 }
 
@@ -4482,30 +4977,34 @@ state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve,
     uint32_t type = 0;
     uint32_t fl   = 0;
     const void* data = retrieve(handle, self->urid_slots, &size, &type, &fl);
-    if (!data || size != sizeof(float) * STATE_FLOATS) {
+    /* Ours, from this build - or from build 29, which saved twenty-six
+       columns and twelve switches per slot and is read back column for
+       column, exactly like the file on the disc. */
+    int n_col = N_PROGRAM_COL, n_sw = (int)SW_COUNT;
+    if (data && size == sizeof(float)
+                        * (size_t)(N_USER * (1 + NAME_LEN + N_PROGRAM_COL_29
+                                             + SW_COUNT_29))) {
+        n_col = N_PROGRAM_COL_29;
+        n_sw  = SW_COUNT_29;
+    } else if (!data || size != sizeof(float) * STATE_FLOATS) {
         return LV2_STATE_ERR_BAD_TYPE;   /* nothing saved, or not ours */
     }
 
     const float* buf = (const float*)data;
     int n = 0;
     for (int u = 0; u < N_USER; ++u) {
-        self->user[u].filled = (buf[n++] > 0.5f) ? 1u : 0u;
-        {
-            char nom[NAME_LEN + 1];
-            for (int k = 0; k < NAME_LEN; ++k) {
-                const float c = buf[n++];
-                nom[k] = (c >= 32.0f && c < 127.0f) ? (char)(c + 0.5f) : ' ';
-            }
-            nom[NAME_LEN] = '\0';
-            name_set(self->user[u].name, nom);
+        const int filled = (buf[n++] > 0.5f) ? 1 : 0;
+        char nom[NAME_LEN + 1];
+        for (int k = 0; k < NAME_LEN; ++k) {
+            const float c = buf[n++];
+            nom[k] = (c >= 32.0f && c < 127.0f) ? (char)(c + 0.5f) : ' ';
         }
-        for (int i = 0; i < N_PROGRAM_COL; ++i) {
-            const float v = buf[n++];
-            self->user[u].value[i] = (v == v) ? v : 0.0f;   /* never a NaN */
-        }
-        for (int k = 0; k < (int)SW_COUNT; ++k) {
-            self->user[u].sw[k] = (buf[n++] > 0.5f) ? 1u : 0u;
-        }
+        nom[NAME_LEN] = '\0';
+        float   value[N_PROGRAM_COL];
+        uint8_t sw[SW_COUNT];
+        for (int i = 0; i < n_col; ++i) { value[i] = buf[n++]; }
+        for (int k = 0; k < n_sw; ++k)  { sw[k] = (buf[n++] > 0.5f) ? 1u : 0u; }
+        slot_take(self, u, value, n_col, sw, n_sw, filled, nom);
     }
     return LV2_STATE_SUCCESS;
 }
