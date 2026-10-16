@@ -507,16 +507,28 @@ function (event, funcs) {
                    'lock_mod', 'lock_feedback', 'lock_delay', 'lock_reverb',
                    'lock_grille'];
 
+    /* And whether each block is FITTED at all. Off, it is not computed -
+       so the whole section goes grey: a block that is not in the chain
+       must not look like one that is merely switched off, or a
+       soundcheck is spent wondering why a switch does nothing. */
+    var MONTES = ['use_eq', 'use_grille', 'use_drive', 'use_double',
+                  'use_mod', 'use_delay', 'use_reverb'];
+
     function majSection(icon, symbol, valeur) {
         var verrou = VERROUS.indexOf(symbol) >= 0;
-        if (!verrou && SECTIONS.indexOf(symbol) < 0) { return; }
+        var monte  = MONTES.indexOf(symbol) >= 0;
+        if (!verrou && !monte && SECTIONS.indexOf(symbol) < 0) { return; }
         var sw = icon.find('[mod-port-symbol="' + symbol + '"]');
         if (!sw.length) { return; }
         var on = nombre(valeur) > 0.5;
         sw.toggleClass('on', on).toggleClass('off', !on);
         if (verrou) { return; }
         if (sw.parent && sw.parent().parent) {
-            sw.parent().parent().toggleClass('actif', on);
+            if (monte) {
+                sw.parent().parent().toggleClass('horsjeu', !on);
+            } else {
+                sw.parent().parent().toggleClass('actif', on);
+            }
         }
     }
 

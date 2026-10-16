@@ -1069,6 +1069,47 @@ ringing into the gap that follows it.
 - Cost: about 1.5 % of one core of an x86-64 build machine for the stereo
   variant with every effect on. Not measured on the device.
 
+## Fitted, or not in the chain at all
+
+Every effect has an **ON/OFF** switch, and it is a foot's control: it
+fades the block out over 40 ms and cuts what goes *in*, so delay and
+reverb tails ring out. That is right on a stage — and it means the block
+goes on being **computed**.
+
+Seven of them now carry a second, smaller switch: **USE EQ**, **USE
+GRILLE**, **USE DRIVE**, **USE DOUBLE**, **USE MOD**, **USE DELAY**,
+**USE REVERB**. Off, the block is not worked out at all. Unfitting all
+seven takes **about forty per cent** off the worst case.
+
+The other six need nothing: GATE, COMP, DE-ESS, PITCH, HARMONY and NO
+HOWL each already stop dead when their own control reaches zero. These
+seven were the only ones left paying for themselves while switched off.
+
+**Never put one under a foot.** Unfitting a block mid-song would drop the
+processor load and refitting it would raise it again, which is exactly
+how a pedalboard that measured fine at the soundcheck gives out on the
+chorus. It is a rig decision — what this board is *for* — so it sits with
+IN GAIN and OUTPUT in `LIVE`, where no program and no favourite writes
+it, and it is saved with the pedalboard.
+
+What it costs to be careful about it:
+
+* Unfitting **fades**, on its own ramp on top of the switch's, so a block
+  leaves the chain over the same 40 ms rather than being yanked out.
+* Once the ramp reaches zero the state is cleared — the small filters at
+  once, the delay line and the reverb combs **a slice of 2048 samples per
+  block**, because clearing three hundred kilobytes inside one block of
+  audio is a spike in a thread that must not have one. Without it,
+  fitting a block again an hour later fades back whatever it was holding.
+* With everything fitted, which is the default, the plugin is
+  **bit-identical** to the build before: 921 600 samples of the worst case
+  rendered and subtracted, zero differences.
+
+The test bench checks the thing that listening cannot: a block running on
+zeros sounds the same and costs the same, so the states are **poisoned**
+with a value the block would destroy if it ran, and then played into.
+Every one of the seven gates has a check that fails when it is removed.
+
 ## Where the time goes
 
 `bench_voice.c` times `run()` on the same source that is cross-compiled,

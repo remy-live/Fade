@@ -912,6 +912,192 @@ static void essai_interrupteur_sans_clic(void)
     fermer(&b);
 }
 
+/* ------------------------------------------------------------------ */
+/* FITTED: the seven blocks that cost the same switched off            */
+/*                                                                     */
+/* Their ON/OFF is a foot's control - it fades the block out and lets   */
+/* the tail ring, which is right on a stage and means the block goes    */
+/* on being computed. USE takes it out of the chain for good.           */
+/* ------------------------------------------------------------------ */
+
+/* nothing at all left in a line */
+static int tout_zero(const float* buf, uint32_t len)
+{
+    if (!buf) { return 1; }
+    for (uint32_t i = 0; i < len; ++i) {
+        if (buf[i] != 0.0f) { return 0; }
+    }
+    return 1;
+}
+
+/* the loudest sample anywhere in a block */
+static double tail_peak(Banc* b, int blocs)
+{
+    double m = 0.0;
+    for (int k = 0; k < blocs; ++k) {
+        silence(b); tourner(b);
+        const double a = crete(b->out[0], b->bloc);
+        if (a > m) { m = a; }
+    }
+    return m;
+}
+
+static void essai_montage(void)
+{
+    Banc b;
+    ouvrir(&b, 1, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_REVERB_ON]  = 1.0f;
+    b.ctl[CTL_REVERB]     = 90.0f;
+    b.ctl[CTL_REVERB_MIX] = 100.0f;
+
+    /* fitted, as every block is by default: a tail */
+    for (int k = 0; k < 60; ++k) { sinus(&b, 440.0, 0.4); tourner(&b); }
+    const double monte = tail_peak(&b, 30);
+    verifie_vrai("fitted, the reverb leaves a tail", monte > 1.0e-3);
+
+    /* the ON switch alone does NOT stop the arithmetic - that is what it
+       is for, the tail has to ring out - so this is not the test */
+    b.ctl[CTL_USE_REVERB] = 0.0f;
+    for (int k = 0; k < 400; ++k) { silence(&b); tourner(&b); }
+    for (int k = 0; k < 60; ++k) { sinus(&b, 440.0, 0.4); tourner(&b); }
+    const double demonte = tail_peak(&b, 30);
+    verifie_vrai("unfitted, there is no tail at all", demonte < monte * 0.01);
+
+    /* and it comes back */
+    b.ctl[CTL_USE_REVERB] = 1.0f;
+    for (int k = 0; k < 60; ++k) { silence(&b); tourner(&b); }
+    for (int k = 0; k < 60; ++k) { sinus(&b, 440.0, 0.4); tourner(&b); }
+    const double remonte = tail_peak(&b, 30);
+    verifie_vrai("fitting it again brings the tail back",
+                 remonte > monte * 0.5);
+    fermer(&b);
+
+    /* Unfitting FADES. A block pulled out of the chain in one sample is
+       a click, and the player does this standing on a stage. */
+    ouvrir(&b, 0, 48000.0, 64, 0);
+    neutre(&b);
+    b.ctl[CTL_DRIVE_ON] = 1.0f;
+    b.ctl[CTL_DRIVE]    = 90.0f;
+    for (int k = 0; k < 200; ++k) { sinus(&b, 300.0, 0.4); tourner(&b); }
+    b.ctl[CTL_USE_DRIVE] = 0.0f;
+    double saut = 0.0;
+    float  prec = b.out[0][b.bloc - 1];
+    for (int k = 0; k < 60; ++k) {
+        sinus(&b, 300.0, 0.4); tourner(&b);
+        for (uint32_t i = 0; i < b.bloc; ++i) {
+            const double d = fabs((double)b.out[0][i] - (double)prec);
+            if (d > saut) { saut = d; }
+            prec = b.out[0][i];
+        }
+    }
+    /* 300 Hz at 48 kHz moves 0.04 of full scale between two samples at
+       this level; a block yanked out would be several times that */
+    verifie_vrai("unfitting fades rather than cuts", saut < 0.12);
+    fermer(&b);
+
+    /* A block out of the chain leaves everything else exactly as it was:
+       unfitting the grille must not touch the EQ. */
+    float avec[256], sans[256];
+    for (int tour = 0; tour < 2; ++tour) {
+        ouvrir(&b, 0, 48000.0, 256, 0);
+        neutre(&b);
+        b.ctl[CTL_EQ_ON]   = 1.0f;
+        b.ctl[CTL_PRESENCE] = 6.0f;
+        b.ctl[CTL_GRILLE_ON] = 0.0f;       /* switched off either way */
+        if (tour) { b.ctl[CTL_USE_GRILLE] = 0.0f; }
+        for (int k = 0; k < 200; ++k) { sinus(&b, 1200.0, 0.3); tourner(&b); }
+        memcpy(tour ? sans : avec, b.out[0], sizeof(avec));
+        fermer(&b);
+    }
+    double ecart = 0.0;
+    for (int i = 0; i < 256; ++i) {
+        const double d = fabs((double)avec[i] - (double)sans[i]);
+        if (d > ecart) { ecart = d; }
+    }
+    verifie_vrai("taking a switched-off block out changes nothing else",
+                 ecart < 1.0e-6);
+
+    /* THE POINT OF THE WHOLE FEATURE, and the one thing listening to the
+       output cannot show: the arithmetic has actually stopped. A block
+       still running with its gain at zero sounds exactly the same and
+       costs exactly as much, which is the bug this exists to fix.
+       So look at the state instead: a filter that ran would have left
+       something in it, and a line that was written would not be zero. */
+    {
+        Banc c;
+        ouvrir(&c, 0, 48000.0, 128, 0);
+        neutre(&c);
+        /* every block switched ON and turned up, and every one of them
+           taken OUT of the chain */
+        c.ctl[CTL_EQ_ON] = c.ctl[CTL_GRILLE_ON] = c.ctl[CTL_DRIVE_ON] = 1.0f;
+        c.ctl[CTL_DOUBLER_ON] = c.ctl[CTL_MOD_ON] = 1.0f;
+        c.ctl[CTL_DELAY_ON] = c.ctl[CTL_REVERB_ON] = 1.0f;
+        c.ctl[CTL_PRESENCE] = 6.0f;   c.ctl[CTL_DRIVE] = 80.0f;
+        c.ctl[CTL_DOUBLER] = 100.0f;  c.ctl[CTL_MOD] = 80.0f;
+        c.ctl[CTL_DELAY_MIX] = 80.0f; c.ctl[CTL_REVERB_MIX] = 80.0f;
+        c.ctl[CTL_USE_EQ] = c.ctl[CTL_USE_GRILLE] = c.ctl[CTL_USE_DRIVE] = 0.0f;
+        c.ctl[CTL_USE_DOUBLE] = c.ctl[CTL_USE_MOD] = 0.0f;
+        c.ctl[CTL_USE_DELAY] = c.ctl[CTL_USE_REVERB] = 0.0f;
+
+        Voice* v = (Voice*)c.h;
+        /* long enough that the fades are done and the lines are wiped.
+           A block still FADING is still running, by design - that is
+           what stops it clicking - so nothing is looked at until the
+           fades are long over. */
+        for (int k = 0; k < 1200; ++k) { sinus(&c, 350.0, 0.5); tourner(&c); }
+
+        Chan* ch = &v->ch[0];
+        /* The lines are cleared - that is the wipe doing its job, so
+           fitting a block again cannot fade back an hour-old tail. */
+        verifie_vrai("the delay's line is cleared, not left holding a tail",
+                     tout_zero(ch->delay.buf, ch->delay.len));
+        verifie_vrai("and the reverb's combs with it",
+                     tout_zero(ch->comb[0].buf, ch->comb[0].len)
+                     && tout_zero(ch->allpass[0].buf, ch->allpass[0].len));
+
+        /* And now the thing that matters, which a clean state cannot
+           show: a block running on zeros leaves a clean state too, and
+           costs every cycle it ever did. So POISON each state with a
+           number the block would destroy if it ran, and play into it. */
+        ch->eq_low       = 0.25f;
+        ch->gr_hp1       = 0.25f;
+        ch->dc_x         = 0.25f;
+        ch->choir_lp[0]  = 0.25f;
+        v->ph_mod        = 0.25f;
+        ch->dly_lp       = 0.25f;
+        ch->comb[0].store = 0.25f;
+        for (int k = 0; k < 20; ++k) { sinus(&c, 350.0, 0.5); tourner(&c); }
+
+        verifie_vrai("unfitted, the EQ filters are never run",
+                     ch->eq_low == 0.25f);
+        verifie_vrai("nor the grille's", ch->gr_hp1 == 0.25f);
+        verifie_vrai("nor the drive's DC blocker", ch->dc_x == 0.25f);
+        verifie_vrai("nor a doubled voice's throat", ch->choir_lp[0] == 0.25f);
+        verifie_vrai("the chorus LFO does not even turn", v->ph_mod == 0.25f);
+        verifie_vrai("the delay's feedback tone is not run",
+                     ch->dly_lp == 0.25f);
+        verifie_vrai("and the reverb's combs are not stepped",
+                     ch->comb[0].store == 0.25f);
+        /* and the sound still comes through: a block out of the chain is
+           out of the chain, not a mute */
+        verifie_vrai("and the voice itself still comes through",
+                     crete(c.out[0], c.bloc) > 0.05);
+        fermer(&c);
+    }
+
+    /* And no program may write these: they say what the RIG is, not what
+       the sound is. A favourite that carried them would change the
+       processor load every time it was picked. */
+    {
+        int ecrit = 0;
+        for (int i = 0; i < (int)F_COUNT; ++i) {
+            if (program_col[CTL_USE_EQ + i] >= 0) { ecrit = 1; }
+        }
+        verifie_vrai("no program writes a FITTED switch", !ecrit);
+    }
+}
+
 static void essai_reverb(void)
 {
     Banc b;
@@ -4971,6 +5157,7 @@ int main(int argc, char** argv)
                                            essai_retouche();
                                            essai_etat();
     printf("Screen - the list:\n");         essai_ecran_programme();
+    printf("Fitted, or not in the chain:\n"); essai_montage();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
     printf("Stereo variant:\n");           essai_stereo();

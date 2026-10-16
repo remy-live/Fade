@@ -314,6 +314,44 @@ A(Paragraph(
     "droite oui</b>. Quinze secondes sans rien toucher et il abandonne "
     "tout seul : un silence n'est pas une décision.", P))
 
+A(PageBreak())
+A(Paragraph("MONTÉ — ce que ce pedalboard utilise", H))
+A(Paragraph(
+    "Chaque effet a un interrupteur <b>ON/OFF</b>, qui est fait pour le "
+    "pied : il fond l'effet et laisse les queues de delay et de réverbe "
+    "finir de sonner. C'est ce qu'il faut sur scène — et ça veut dire que "
+    "l'effet <b>continue d'être calculé</b>.", P))
+A(Paragraph(
+    "À côté, sept blocs ont un deuxième petit interrupteur, carré et gris : "
+    "<b>MONTÉ</b>. Éteint, le bloc n'est plus calculé du tout. Il ne coûte "
+    "plus rien au processeur, et son ON/OFF n'a plus rien à allumer. La "
+    "section devient grise dans l'interface, pour qu'on ne cherche pas "
+    "pourquoi un switch ne fait rien.", P))
+A(tableau([
+    ("Les sept", "EQ, GRILLE, DRIVE, DOUBLE, MOD, DELAY, RÉVERBE. Les "
+                 "démonter tous enlève à peu près <b>40 % de la charge</b>."),
+    ("Les six autres",
+     "GATE, COMP, DE-ESS, PITCH, HARMONY, NO HOWL n'ont pas besoin de ce "
+     "switch : chacun s'arrête déjà tout seul quand son propre réglage "
+     "arrive à zéro."),
+    ("Le doubleur",
+     "Il répond aussi à <b>VOICES</b> : deux voix au lieu de quatre, c'est "
+     "la moitié du bloc, et c'est le poste le plus lourd du plugin."),
+]))
+A(Spacer(1, 2*mm))
+A(encadre("La règle, et elle n'a qu'une ligne", [
+    "<b>Ne mettez jamais un MONTÉ sous un pied.</b> C'est un réglage de "
+    "rig — ce à quoi sert ce pedalboard — et pas un geste de scène. "
+    "Démonter un bloc en plein morceau ferait tomber la charge et le "
+    "remonter la ferait remonter : c'est comme ça qu'un pedalboard qui "
+    "mesurait bien à la balance lâche au refrain.",
+    "Aucun programme et aucun favori ne l'écrit, et il est sauvé avec le "
+    "pedalboard. Démonter fond le bloc sur quarante millisecondes et "
+    "attend que sa queue soit finie avant d'arrêter le calcul — ça ne "
+    "claque pas.",
+]))
+
+A(PageBreak())
 A(Paragraph("Si quelque chose ne répond pas", H))
 A(Paragraph(
     "En haut à gauche du bloc, il y a une ligne de texte. C'est le "

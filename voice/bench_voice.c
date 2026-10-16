@@ -105,14 +105,20 @@ static void sans_pitch(Banc* b)   { b->ctl[CTL_PITCH_ON] = 0.0f;
 static void sans_harm(Banc* b)    { b->ctl[CTL_HARM_ON] = 0.0f;
                                     b->ctl[CTL_HARM_1] = 0.0f;
                                     b->ctl[CTL_HARM_2] = 0.0f; }
-static void sans_reverb(Banc* b)  { b->ctl[CTL_REVERB_ON] = 0.0f;
-                                    b->ctl[CTL_REVERB_MIX] = 0.0f; }
-static void sans_delay(Banc* b)   { b->ctl[CTL_DELAY_ON] = 0.0f;
-                                    b->ctl[CTL_DELAY_MIX] = 0.0f; }
-static void sans_mod(Banc* b)     { b->ctl[CTL_MOD_ON] = 0.0f;
-                                    b->ctl[CTL_MOD] = 0.0f; }
-static void sans_drive(Banc* b)   { b->ctl[CTL_DRIVE_ON] = 0.0f;
-                                    b->ctl[CTL_DRIVE] = 0.0f; }
+/* The seven that are FITTED or not: their ON switch only multiplies the
+   output, so it is the USE port that actually stops the arithmetic. */
+static void sans_reverb(Banc* b)  { b->ctl[CTL_USE_REVERB] = 0.0f; }
+static void sans_delay(Banc* b)   { b->ctl[CTL_USE_DELAY]  = 0.0f; }
+static void sans_mod(Banc* b)     { b->ctl[CTL_USE_MOD]    = 0.0f; }
+static void sans_drive(Banc* b)   { b->ctl[CTL_USE_DRIVE]  = 0.0f; }
+static void sans_eq(Banc* b)      { b->ctl[CTL_USE_EQ]     = 0.0f; }
+static void sans_grille(Banc* b)  { b->ctl[CTL_USE_GRILLE] = 0.0f; }
+static void sans_double(Banc* b)  { b->ctl[CTL_USE_DOUBLE] = 0.0f; }
+static void sans_les_sept(Banc* b)
+{
+    sans_eq(b); sans_grille(b); sans_drive(b); sans_double(b);
+    sans_mod(b); sans_delay(b); sans_reverb(b);
+}
 static void sans_comp(Banc* b)    { b->ctl[CTL_COMP_ON] = 0.0f;
                                     b->ctl[CTL_COMP] = 0.0f; }
 static void sans_deess(Banc* b)   { b->ctl[CTL_DE_ESS_ON] = 0.0f;
@@ -120,7 +126,10 @@ static void sans_deess(Banc* b)   { b->ctl[CTL_DE_ESS_ON] = 0.0f;
 
 static const Organe organes[] = {
     { "anti-Larsen (16 SVF)", sans_larsen },
-    { "doubleur (switch)",    sans_doubleur },
+    { "doubleur (USE)",       sans_double },
+    { "EQ (USE)",             sans_eq },
+    { "grille (USE)",         sans_grille },
+    { "LES SEPT (USE)",       sans_les_sept },
     { "doubleur 4 -> 2 voix", sans_voix4 },
     { "pitch",                sans_pitch },
     { "harmonies (x2)",       sans_harm },

@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 30</div>
+    <div class="voice-build{{{cns}}}">GUI 31</div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a
          plugin: whether its port is connected, how many favourites the
@@ -328,6 +328,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_eq" mod-widget="switch"
                      title="Lock EQ to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_eq" mod-widget="switch"
+                     title="Is EQ FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="eq_on" mod-widget="switch"></div>
             </div>
@@ -371,6 +375,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_drive" mod-widget="switch"
                      title="Lock DRIVE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_drive" mod-widget="switch"
+                     title="Is DRIVE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="drive_on" mod-widget="switch"></div>
             </div>
@@ -390,6 +398,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_grille" mod-widget="switch"
                      title="Lock GRILLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_grille" mod-widget="switch"
+                     title="Is GRILLE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="grille_on" mod-widget="switch"></div>
             </div>
@@ -485,6 +497,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_doubler" mod-widget="switch"
                      title="Lock DOUBLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_double" mod-widget="switch"
+                     title="Is DOUBLE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="doubler_on" mod-widget="switch"></div>
             </div>
@@ -518,6 +534,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_mod" mod-widget="switch"
                      title="Lock MOD to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_mod" mod-widget="switch"
+                     title="Is MOD FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="mod_on" mod-widget="switch"></div>
             </div>
@@ -547,6 +567,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_delay" mod-widget="switch"
                      title="Lock DELAY to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_delay" mod-widget="switch"
+                     title="Is DELAY FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="delay_on" mod-widget="switch"></div>
             </div>
@@ -582,6 +606,10 @@
                      mod-role="input-control-port"
                      mod-port-symbol="lock_reverb" mod-widget="switch"
                      title="Lock REVERB to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
+                <div class="voice-fit{{{cns}}} voice-fit"
+                     mod-role="input-control-port"
+                     mod-port-symbol="use_reverb" mod-widget="switch"
+                     title="Is REVERB FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
                 <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
                      mod-port-symbol="reverb_on" mod-widget="switch"></div>
             </div>

@@ -1199,4 +1199,74 @@
         lv2:minimum 0.0 ;
         lv2:maximum 6.0 ;
         rdfs:comment "Output. Which effect the foot cycle points at: 0 DOUBLE, 1 HARMONY, 2 PITCH, 3 GRILLE, 4 MOD, 5 DELAY, 6 REVERB."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 106 ;
+        lv2:symbol "use_eq" ;
+        lv2:name "USE EQ" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the EQ block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 107 ;
+        lv2:symbol "use_grille" ;
+        lv2:name "USE GRILLE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the GRILLE block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 108 ;
+        lv2:symbol "use_drive" ;
+        lv2:name "USE DRIVE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the DRIVE block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 109 ;
+        lv2:symbol "use_double" ;
+        lv2:name "USE DOUBLE" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the DOUBLE block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 110 ;
+        lv2:symbol "use_mod" ;
+        lv2:name "USE MOD" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the MOD block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 111 ;
+        lv2:symbol "use_delay" ;
+        lv2:name "USE DELAY" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the DELAY block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 112 ;
+        lv2:symbol "use_reverb" ;
+        lv2:name "USE REVERB" ;
+        lv2:portProperty lv2:toggled ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        rdfs:comment "Is the REVERB block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
     ] .

@@ -258,6 +258,32 @@ CONTROLS = [
 LIVE = ("program", "user_slot", "save", "in_gain", "output", "fx", "fx_2",
         "tap", "mute", "ab", "slot_name", "next_user")
 
+# The seven blocks that are FITTED or not, and what it costs to fit them.
+#
+# Their ON/OFF switch is a foot's control: it fades the block out and
+# leaves the tails ringing, which is right on a stage and means the block
+# goes on being COMPUTED. These seven were the only ones left paying for
+# themselves while switched off - the other six already stop dead when
+# their own control reaches zero, which is why there is no switch here
+# for GATE, COMP, DE-ESS, PITCH, HARMONY or NO HOWL.
+#
+# Unfitting one is not a performance gesture and must never be put under
+# a foot: it takes the block out of the chain, and the ON switch then has
+# nothing to switch. It is a rig decision - what this pedalboard is for -
+# so it sits with IN GAIN and OUTPUT in LIVE, where no program writes it.
+#
+# (symbol, screen name, PANEL section, what it saves)
+FITTED = (
+    ("use_eq",     "EQ",     "EQ"),
+    ("use_grille", "GRILLE", "GRILLE"),
+    ("use_drive",  "DRIVE",  "DRIVE"),
+    ("use_double", "DOUBLE", "DOUBLE"),
+    ("use_mod",    "MOD",    "MOD"),
+    ("use_delay",  "DELAY",  "DELAY"),
+    ("use_reverb", "REVERB", "REVERB"),
+)
+LIVE += tuple(sym for sym, _n, _s in FITTED)
+
 # The words a USER slot can be called on the device screen.
 #
 # A control port carries a number and not text, so a name typed in a
@@ -1220,12 +1246,32 @@ PANEL = [
     # block where I have put it, whatever sound is picked afterwards.
     ("LOCKS - KEEP A BLOCK WHERE IT IS WHEN THE SOUND CHANGES",
      [sym for sym, _sec in LOCK_BLOCKS]),
+    # What this pedalboard is FOR. Not switches for a foot.
+    ("FITTED - WHAT THIS BOARD USES AT ALL",
+     [sym for sym, _n, _s in FITTED]),
     ("PEDAL PAGE", ["enc_slot", "enc_param", "enc_value"]),
     ("FOOT CYCLE", ["nav", "validate", "fx_enc1", "fx_enc2", "fx_enc3"]),
     # Present because every control input has to be reachable, and for
     # nothing else: these three are written by the interface a character
     # at a time. Turning one by hand does no harm and no good.
     ("NOT BY HAND", ["web_slot", "web_char", "web_strobe"]),
+]
+
+# The seven FITTED switches. Written from the table at the top so the
+# port, the screen label and the panel section cannot say three different
+# things, and appended last like everything since build 12.
+TAIL += [
+    ("in", sym, "USE " + nom, 0.0, 1.0, 1.0, None, ["lv2:toggled"],
+     "Is the %s block FITTED at all? Off, it is not computed - it costs "
+     "nothing, and its ON switch has nothing left to switch. This is a rig "
+     "decision and not a performance one: NEVER put it under a foot, or the "
+     "processor load will jump in the middle of a song. It is what the "
+     "pedalboard is for, so no program and no favourite ever writes it. "
+     "Unfitting fades the block out over forty milliseconds and lets its "
+     "tail run down before the arithmetic stops, so it costs no click. "
+     "GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: "
+     "each already stops dead when its own control reaches zero." % nom)
+    for sym, nom, _sec in FITTED
 ]
 
 # A line of explanation under a section, where the switches alone cannot
@@ -1261,6 +1307,26 @@ NOTES = {
         "reaches nothing. The readout at the top of the pedal says which: it "
         "compares the padlocks lit here with the number the plugin actually "
         "sees.",
+    "FITTED - WHAT THIS BOARD USES AT ALL":
+        "OFF means <b>the block is not computed at all</b> - it costs no "
+        "processor, and its ON/OFF switch has nothing left to switch. The "
+        "ON switches are a foot's controls: they fade a block out and leave "
+        "its tail ringing, which is right on a stage and means the block "
+        "goes on being worked out. These seven were the only ones still "
+        "paying for themselves while switched off."
+        "<br><br>"
+        "<b>Never put one of these under a foot.</b> Unfitting a block mid "
+        "song would drop the processor load and refitting it would raise it "
+        "again, which is how a pedalboard that measured fine at the "
+        "soundcheck gives out on the chorus. It is a rig decision - what "
+        "this board is for - so no program and no favourite ever writes it, "
+        "and it is saved with the pedalboard."
+        "<br><br>"
+        "GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL are not here "
+        "because they need nothing: each already stops dead when its own "
+        "control reaches zero. And the doubled voices answer to "
+        "<b>VOICES</b> as well - two instead of four is half that block "
+        "for nothing.",
     "NOT BY HAND":
         "Written by the interface, one character at a time. Here because "
         "every control has to be reachable, and for nothing else.",

@@ -286,6 +286,13 @@ static const uint8_t ctl_is_out[CTL_COUNT] = {
     0,   /* fx_enc2 */
     0,   /* fx_enc3 */
     1,   /* fx_now */
+    0,   /* use_eq */
+    0,   /* use_grille */
+    0,   /* use_drive */
+    0,   /* use_double */
+    0,   /* use_mod */
+    0,   /* use_delay */
+    0,   /* use_reverb */
 };
 
 /* Which column of program_value holds a control, -1 for the ones a
@@ -395,6 +402,13 @@ static const int8_t program_col[CTL_COUNT] = {
     -1,   /* fx_enc2 */
     -1,   /* fx_enc3 */
     -1,   /* fx_now */
+    -1,   /* use_eq */
+    -1,   /* use_grille */
+    -1,   /* use_drive */
+    -1,   /* use_double */
+    -1,   /* use_mod */
+    -1,   /* use_delay */
+    -1,   /* use_reverb */
 };
 
 static const float program_value[N_PROGRAM][N_PROGRAM_COL] = {
@@ -588,6 +602,13 @@ static const int8_t lock_of[CTL_COUNT] = {
     -1,   /* fx_enc2 */
     -1,   /* fx_enc3 */
     -1,   /* fx_now */
+    -1,   /* use_eq */
+    -1,   /* use_grille */
+    -1,   /* use_drive */
+    -1,   /* use_double */
+    -1,   /* use_mod */
+    -1,   /* use_delay */
+    -1,   /* use_reverb */
 };
 
 /* Switch positions, in the order of SwitchIndex. A program ADOPTS these

@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD30_AARCH64_20261014";
+static const volatile char build_tag[] = "VOICE_BUILD31_AARCH64_20261016";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -444,7 +444,16 @@ typedef enum {
     CTL_FX_ENC2       = 101,
     CTL_FX_ENC3       = 102,
     CTL_FX_NOW        = 103, /* output: which effect the cycle points at */
-    CTL_COUNT         = 104
+    /* Is this block FITTED at all? Off, it is not computed. These are
+       rig decisions and never a foot's: see FitIndex. */
+    CTL_USE_EQ        = 104,
+    CTL_USE_GRILLE    = 105,
+    CTL_USE_DRIVE     = 106,
+    CTL_USE_DOUBLE    = 107,
+    CTL_USE_MOD       = 108,
+    CTL_USE_DELAY     = 109,
+    CTL_USE_REVERB    = 110,
+    CTL_COUNT         = 111
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -573,6 +582,13 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "fx_enc2",        0.0f,    1.0f,     0.5f },
     { "fx_enc3",        0.0f,    1.0f,     0.5f },
     { "fx_now",         0.0f,    6.0f,     0.0f },
+    { "use_eq",         0.0f,    1.0f,     1.0f },
+    { "use_grille",     0.0f,    1.0f,     1.0f },
+    { "use_drive",      0.0f,    1.0f,     1.0f },
+    { "use_double",     0.0f,    1.0f,     1.0f },
+    { "use_mod",        0.0f,    1.0f,     1.0f },
+    { "use_delay",      0.0f,    1.0f,     1.0f },
+    { "use_reverb",     0.0f,    1.0f,     1.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -596,6 +612,33 @@ typedef enum {
    back what that build saved - on the disc and in a pedalboard. */
 #define SW_COUNT_29      12
 #define N_PROGRAM_COL_29 26
+
+/* The seven blocks that are FITTED or not. Their ON/OFF switch is a
+   foot's control - it fades the block out and leaves the tail ringing,
+   which is right on a stage and means the block goes on being COMPUTED.
+   These seven were the only ones still paying for themselves while
+   switched off; the other six stop dead when their own control reaches
+   zero, which is why there is no entry here for GATE, COMP, DE-ESS,
+   PITCH, HARMONY or NO HOWL.
+
+   In the order of the ports, which is the order of FITTED in
+   make_ttl.py: CTL_USE_EQ + F_x is the port of block x. */
+typedef enum {
+    F_EQ = 0, F_GRILLE, F_DRIVE, F_DOUBLE, F_MOD, F_DELAY, F_REVERB,
+    F_COUNT
+} FitIndex;
+
+static const char* const fit_label[F_COUNT] = {
+    "EQ", "GRILLE", "DRIVE", "DOUBLE", "MOD", "DELAY", "REVERB"
+};
+
+/* How many samples of a line are cleared per run() when a block stops.
+   The output is already silent by then - the ramp saw to that - so this
+   is only so that refitting months later does not fade a ghost back in.
+   Done a slice at a time rather than in one memset: the delay line is
+   three hundred kilobytes, and clearing it in one block of audio is a
+   spike in a thread that must not have one. */
+#define WIPE_SLICE 2048u
 
 static const uint8_t switch_ctl[SW_COUNT] = {
     CTL_GATE_ON, CTL_COMP_ON, CTL_DE_ESS_ON, CTL_EQ_ON, CTL_DRIVE_ON,
@@ -967,7 +1010,12 @@ typedef enum {
        footswitch of its own - locking the reverb to the room is done
        once, standing on the stage, with both hands on a microphone */
     SLOT_LOCK = SLOT_SWITCH + SW_COUNT,
-    SLOT_COUNT = SLOT_LOCK + SW_COUNT
+    /* and one per FITTED block, so a rig can be put together from the
+       device: the whole point of these is that they are set once, and
+       once is often standing in front of the amplifier rather than in
+       front of a browser */
+    SLOT_FIT = SLOT_LOCK + SW_COUNT,
+    SLOT_COUNT = SLOT_FIT + F_COUNT
 } ScreenSlot;
 
 static uint8_t slot_ctl_of(int slot)
@@ -985,7 +1033,10 @@ static uint8_t slot_ctl_of(int slot)
     };
     if (slot < (int)SLOT_SWITCH) { return fixed[slot]; }
     if (slot < (int)SLOT_LOCK)   { return switch_ctl[slot - (int)SLOT_SWITCH]; }
-    return (uint8_t)(CTL_LOCK_GATE + (slot - (int)SLOT_LOCK));
+    if (slot < (int)SLOT_FIT)    {
+        return (uint8_t)(CTL_LOCK_GATE + (slot - (int)SLOT_LOCK));
+    }
+    return (uint8_t)(CTL_USE_EQ + (slot - (int)SLOT_FIT));
 }
 
 /* Everything from CTL_GR on is an output port. */
@@ -1058,6 +1109,13 @@ typedef struct {
     int   fx_toggle_prev;
     float fx_gain;            /* ramped, so the send does not click */
     float sw[SW_COUNT];       /* one ramp per effect switch, same reason */
+    /* One ramp per FITTED block, on top of its switch: unfitting fades
+       the block out over the same forty milliseconds before the
+       arithmetic stops, so taking a block out of the chain costs no
+       click. While the ramp is above zero the block is still computed. */
+    float    fit[F_COUNT];
+    uint8_t  fit_done[F_COUNT];   /* its state has been cleared since */
+    uint32_t fit_wipe[F_COUNT];   /* samples of its lines left to clear */
     /* VALIDATE has just flipped this switch from the foot: the state is
        the foot's until the PORT moves, even with MANUAL selected, where
        the ports otherwise rule every block. The host's own write of the
@@ -1954,6 +2012,91 @@ static void push_port(Voice* self, int i, float value)
     }
 }
 
+/* Zero the slice of one line that this pass is responsible for. The
+   counter runs DOWN, so the slice starts at len - total and the lines
+   shorter than the longest of the block are simply finished sooner. */
+static void zero_slice(float* buf, uint32_t len, uint32_t total, uint32_t n)
+{
+    if (!buf || total > len) {
+        const uint32_t saut = (total > len) ? (total - len) : 0u;
+        if (!buf || saut >= n) { return; }
+        n -= saut;
+        total = len;
+    }
+    const uint32_t deb = len - total;
+    const uint32_t fin = (deb + n > len) ? len : deb + n;
+    for (uint32_t i = deb; i < fin; ++i) { buf[i] = 0.0f; }
+}
+
+/* A block whose ramp has reached zero has stopped being computed, so
+   its state is no longer refreshed. Everything small is cleared at once
+   here; the long lines are counted out and cleared a slice at a time by
+   the function below. Without this, fitting a block again an hour later
+   fades back in whatever was in it when it stopped. */
+static uint32_t fit_quiet(Voice* self, int k)
+{
+    uint32_t reste = 0u;
+    for (uint32_t c = 0; c < self->n_ch; ++c) {
+        Chan* ch = &self->ch[c];
+        switch (k) {
+        case F_EQ:
+            ch->eq_low = ch->eq_mid_hi = ch->eq_mid_lo = ch->eq_air = 0.0f;
+            break;
+        case F_GRILLE:
+            ch->gr_hp1 = ch->gr_hp2 = ch->gr_lp1 = ch->gr_lp2 = 0.0f;
+            ch->gr_bell.ic1 = ch->gr_bell.ic2 = 0.0f;
+            break;
+        case F_DRIVE:
+            ch->dc_x = ch->dc_y = 0.0f;
+            self->drive_in = self->drive_out = 0.0f;
+            break;
+        case F_DOUBLE:
+            for (int v = 0; v < MAX_VOICES; ++v) {
+                ch->choir_lp[v] = ch->choir_hp[v] = 0.0f;
+            }
+            break;
+        case F_DELAY:
+            ch->dly_lp = ch->dly_hp = 0.0f;
+            if (ch->delay.len > reste) { reste = ch->delay.len; }
+            break;
+        case F_REVERB:
+            for (int i = 0; i < N_COMB; ++i) {
+                ch->comb[i].store = 0.0f;
+                if (ch->comb[i].len > reste) { reste = ch->comb[i].len; }
+            }
+            for (int i = 0; i < N_ALLPASS; ++i) {
+                if (ch->allpass[i].len > reste) { reste = ch->allpass[i].len; }
+            }
+            break;
+        default:        /* MOD keeps no line of its own */
+            break;
+        }
+    }
+    return reste;
+}
+
+/* One slice of the long lines, so that clearing three hundred kilobytes
+   never lands inside a single block of audio. */
+static void fit_wipe_slice(Voice* self, int k)
+{
+    const uint32_t total = self->fit_wipe[k];
+    const uint32_t n     = (total > WIPE_SLICE) ? WIPE_SLICE : total;
+    for (uint32_t c = 0; c < self->n_ch; ++c) {
+        Chan* ch = &self->ch[c];
+        if (k == F_DELAY) {
+            zero_slice(ch->delay.buf, ch->delay.len, total, n);
+        } else if (k == F_REVERB) {
+            for (int i = 0; i < N_COMB; ++i) {
+                zero_slice(ch->comb[i].buf, ch->comb[i].len, total, n);
+            }
+            for (int i = 0; i < N_ALLPASS; ++i) {
+                zero_slice(ch->allpass[i].buf, ch->allpass[i].len, total, n);
+            }
+        }
+    }
+    self->fit_wipe[k] = total - n;
+}
+
 /* ------------------------------------------------------------------ */
 /* The pedal page: three encoders, one page, the whole loop             */
 /*                                                                     */
@@ -2123,6 +2266,13 @@ activate(LV2_Handle instance)
         self->sw_state[k] = on;
         self->sw_prev[k]  = on;
         self->sw[k]       = on ? 1.0f : 0.0f;
+    }
+    for (int k = 0; k < (int)F_COUNT; ++k) {
+        /* Whatever the port says, with no ramp: a board opening with a
+           block unfitted must not fade it out, it was never in. */
+        self->fit[k]      = (ctl_read(self, CTL_USE_EQ + k) > 0.5f) ? 1.0f : 0.0f;
+        self->fit_done[k] = (self->fit[k] > 0.0f) ? 0u : 1u;
+        self->fit_wipe[k] = 0u;
     }
     for (int i = 0; i < (int)CTL_COUNT; ++i) {
         self->ctl_seen[i]  = ctl_read(self, i);
@@ -2914,7 +3064,20 @@ paint(Voice* self, int force)
         }
 
         default:
-            if (s >= (int)SLOT_LOCK && s < (int)SLOT_COUNT) {
+            if (s >= (int)SLOT_FIT && s < (int)SLOT_COUNT) {
+                /* Is this block in the rig at all? IN or OUT, never ON
+                   or OFF: the block's own switch answers that, and when
+                   this one says OUT that switch has nothing to switch.
+                   Dark when out, because an unfitted block is not a
+                   thing turned off, it is a thing that is not there. */
+                const int k  = s - (int)SLOT_FIT;
+                const int in = ctl_read(self, CTL_USE_EQ + k) > 0.5f;
+                label = fit_label[k];
+                value = in ? "IN" : "OUT";
+                unit  = "FITTED";
+                led   = in ? LV2_HMI_LED_Colour_Green
+                           : LV2_HMI_LED_Colour_Off;
+            } else if (s >= (int)SLOT_LOCK && s < (int)SLOT_FIT) {
                 /* one of the twelve locks. MINE or PROGRAM, never ON or
                    OFF: what it decides is WHOSE the settings are, and the
                    block's own switch is the one that answers whether the
@@ -4017,6 +4180,29 @@ run(LV2_Handle instance, uint32_t n_samples)
         sw_target[k] = self->sw_state[k] ? 1.0f : 0.0f;
     }
 
+    /* A block runs while its ramp is above zero OR it is being fitted
+       again: the fade out has to have something to fade. Once the ramp
+       reaches zero the arithmetic stops and the lines are cleared, a
+       slice per block, so that refitting cannot bring back a tail from
+       an hour ago. */
+    float fit_target[F_COUNT];
+    int   run_fit[F_COUNT];
+    for (int k = 0; k < (int)F_COUNT; ++k) {
+        fit_target[k] = (ctl_read(self, CTL_USE_EQ + k) > 0.5f) ? 1.0f : 0.0f;
+        run_fit[k] = (self->fit[k] > 0.0f) || (fit_target[k] > 0.0f);
+        if (run_fit[k]) { self->fit_done[k] = 0u; }
+    }
+    const int run_eq     = run_fit[F_EQ];
+    const int run_grille = run_fit[F_GRILLE];
+    const int run_drive  = run_fit[F_DRIVE];
+    const int run_double = run_fit[F_DOUBLE];
+    const int run_mod    = run_fit[F_MOD];
+    const int run_delay  = run_fit[F_DELAY];
+    const int run_reverb = run_fit[F_REVERB];
+    /* The short line feeds the doubled voices AND the chorus: it is
+       written while either of them is in the chain. */
+    const int run_short  = run_double || run_mod;
+
     /* A voice VOICES has just added fades in across the block rather than
        arriving at full level, and one it has dropped fades out - so the
        loop below still has to run every voice that is not yet silent. */
@@ -4103,6 +4289,15 @@ run(LV2_Handle instance, uint32_t n_samples)
             } else if (self->sw[k] > sw_target[k]) {
                 self->sw[k] -= fx_step;
                 if (self->sw[k] < sw_target[k]) { self->sw[k] = sw_target[k]; }
+            }
+        }
+        for (int k = 0; k < (int)F_COUNT; ++k) {
+            if (self->fit[k] < fit_target[k]) {
+                self->fit[k] += fx_step;
+                if (self->fit[k] > fit_target[k]) { self->fit[k] = fit_target[k]; }
+            } else if (self->fit[k] > fit_target[k]) {
+                self->fit[k] -= fx_step;
+                if (self->fit[k] < fit_target[k]) { self->fit[k] = fit_target[k]; }
             }
         }
 
@@ -4303,6 +4498,7 @@ run(LV2_Handle instance, uint32_t n_samples)
            Parallel rather than cascaded: the bands overlap, so the knobs
            interact a little, but nothing can ring and the phase stays
            gentle, which is what a voice needs. */
+        if (run_eq)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             const float v = x[c];
@@ -4311,7 +4507,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             ch->eq_mid_lo = flush(ch->eq_mid_lo + eq_ml_c  * (v - ch->eq_mid_lo));
             ch->eq_air    = flush(ch->eq_air    + eq_air_c * (v - ch->eq_air));
 
-            x[c] = v + self->sw[SW_EQ]
+            x[c] = v + self->sw[SW_EQ] * self->fit[F_EQ]
                        * (sm[SM_BODY]     * ch->eq_low
                         + sm[SM_PRESENCE] * mid_gain
                                           * (ch->eq_mid_hi - ch->eq_mid_lo)
@@ -4323,6 +4519,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                bell, then the buzz - the DRIVE saturation, blended in the
                same way so BUZZ at zero is just the band. Its switch
                crossfades the whole block in and out over 40 ms. --- */
+        if (run_grille)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             const float v = x[c];
@@ -4336,7 +4533,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             a += self->gr_bell_gain * svf_bp(&ch->gr_bell, &self->gr_coef, a);
             const float sat = softclip(a * sm[SM_GRILLE_PRE]) * sm[SM_GRILLE_POST];
             a = (a + sm[SM_GRILLE_MIX] * (sat - a)) * grille_makeup;
-            x[c] = v + self->sw[SW_GRILLE] * (a - v);
+            x[c] = v + self->sw[SW_GRILLE] * self->fit[F_GRILLE] * (a - v);
         }
 
         /* --- drive, then a DC blocker: saturation on a signal that
@@ -4347,6 +4544,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                of a loud passage by nearly two decibels the moment the
                control leaves zero. --- */
         float dr_a = 0.0f, dr_b = 0.0f;
+        if (run_drive)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             /* The average is taken of what the saturator PRODUCES, not
@@ -4357,7 +4555,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                              * sm[SM_DRIVE_POST];
             const float sat  = brut * drive_fix;
             const float v    = x[c] + sm[SM_DRIVE_MIX] * self->sw[SW_DRIVE]
-                                      * (sat - x[c]);
+                                      * self->fit[F_DRIVE] * (sat - x[c]);
             {
                 const float a = absf(x[c]), b = absf(brut);
                 if (a > dr_a) { dr_a = a; }
@@ -4506,9 +4704,10 @@ run(LV2_Handle instance, uint32_t n_samples)
         float dly_sum = 0.0f;
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
-            ring_write(&ch->shortline, send[c]);
+            if (run_short) { ring_write(&ch->shortline, send[c]); }
 
             float w = 0.0f;
+            if (run_double)
             for (int k = 0; k < n_run; ++k) {
                 float v = ring_read(&ch->shortline, d_a[k]) * w_a[k]
                         + ring_read(&ch->shortline, d_b[k]) * (1.0f - w_a[k]);
@@ -4533,39 +4732,52 @@ run(LV2_Handle instance, uint32_t n_samples)
                 }
             }
             w *= sm[SM_VOICE_GAIN];
-            wet[c] = w * sm[SM_DOUBLER] * self->sw[SW_DOUBLER];
+            wet[c] = w * sm[SM_DOUBLER] * self->sw[SW_DOUBLER]
+                       * self->fit[F_DOUBLE];
 
-            const float mod_ph = self->ph_mod + (c ? 0.25f : 0.0f);
-            const float d_mod  = (8.0f + depth * lfo_sin(mod_ph)) * ms2n;
-            wet[c] += ring_read(&ch->shortline, d_mod)
-                    * sm[SM_MOD] * self->sw[SW_MOD] * 0.6f;
+            if (run_mod) {
+                const float mod_ph = self->ph_mod + (c ? 0.25f : 0.0f);
+                const float d_mod  = (8.0f + depth * lfo_sin(mod_ph)) * ms2n;
+                wet[c] += ring_read(&ch->shortline, d_mod)
+                        * sm[SM_MOD] * self->sw[SW_MOD] * 0.6f
+                        * self->fit[F_MOD];
+            }
 
             /* --- delay. Its switch cuts what goes IN, so the tail rings
                    out; cutting the return would chop it. --- */
-            const float dly = ring_read(&ch->delay, delay_n);
-            ch->dly_lp = flush(ch->dly_lp + fb_lp_c * (dly - ch->dly_lp));
-            const float band = ch->dly_lp;
-            ch->dly_hp = flush(ch->dly_hp + fb_hp_c * (band - ch->dly_hp));
-            ring_write(&ch->delay, flush(send[c] * self->sw[SW_DELAY]
-                                         + (band - ch->dly_hp) * fb_amt));
+            if (run_delay) {
+                const float dly = ring_read(&ch->delay, delay_n);
+                ch->dly_lp = flush(ch->dly_lp + fb_lp_c * (dly - ch->dly_lp));
+                const float band = ch->dly_lp;
+                ch->dly_hp = flush(ch->dly_hp + fb_hp_c * (band - ch->dly_hp));
+                ring_write(&ch->delay,
+                           flush(send[c] * self->sw[SW_DELAY]
+                                         * self->fit[F_DELAY]
+                                 + (band - ch->dly_hp) * fb_amt));
 
-            wet[c] += dly * sm[SM_DELAY];
-            dly_sum += dly;
+                wet[c] += dly * sm[SM_DELAY] * self->fit[F_DELAY];
+                dly_sum += dly * self->fit[F_DELAY];
+            }
         }
         if (n_ch > 1u) { dly_sum *= 0.5f; }
 
         /* --- reverb, fed by the send AND by the delay, so the repeats
                are in the room too --- */
         const float rev_in = (send_sum + dly_sum * sm[SM_DELAY])
-                           * self->sw[SW_REVERB] * rev_in_g;
+                           * self->sw[SW_REVERB] * self->fit[F_REVERB]
+                           * rev_in_g;
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
             float r = 0.0f;
-            for (int k = 0; k < N_COMB; ++k) {
-                r += comb_run(&ch->comb[k], rev_in, rev_room, rev_damp1, rev_damp2);
-            }
-            for (int k = 0; k < N_ALLPASS; ++k) {
-                r = allpass_run(&ch->allpass[k], r);
+            if (run_reverb) {
+                for (int k = 0; k < N_COMB; ++k) {
+                    r += comb_run(&ch->comb[k], rev_in, rev_room,
+                                  rev_damp1, rev_damp2);
+                }
+                for (int k = 0; k < N_ALLPASS; ++k) {
+                    r = allpass_run(&ch->allpass[k], r);
+                }
+                r *= self->fit[F_REVERB];
             }
             /* 3.0 is measured, not chosen: it puts the tail level with
                the mix at maximum within half a decibel of the dry signal,
@@ -4581,6 +4793,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             if (a > peak) { peak = a; }
         }
 
+        if (run_double)
         for (int k = 0; k < n_voices; ++k) {
             self->ph_choir_drift[k] += inc_drift[k];
             if (self->ph_choir_drift[k] >= 1.0f) { self->ph_choir_drift[k] -= 1.0f; }
@@ -4591,8 +4804,23 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->ph_choir_amp[k] += inc_amp[k];
             if (self->ph_choir_amp[k] >= 1.0f) { self->ph_choir_amp[k] -= 1.0f; }
         }
-        self->ph_mod += inc_m;
-        if (self->ph_mod >= 1.0f) { self->ph_mod -= 1.0f; }
+        if (run_mod) {
+            self->ph_mod += inc_m;
+            if (self->ph_mod >= 1.0f) { self->ph_mod -= 1.0f; }
+        }
+    }
+
+    /* A block whose ramp has reached zero is no longer being worked out,
+       so nothing refreshes its state any more: clear it, the long lines
+       a slice at a time, or fitting it again an hour from now would fade
+       back in whatever it was holding when it stopped. */
+    for (int k = 0; k < (int)F_COUNT; ++k) {
+        if (self->fit[k] > 0.0f || fit_target[k] > 0.0f) { continue; }
+        if (!self->fit_done[k]) {
+            self->fit_done[k] = 1u;
+            self->fit_wipe[k] = fit_quiet(self, k);
+        }
+        if (self->fit_wipe[k]) { fit_wipe_slice(self, k); }
     }
 
     /* Land exactly on the targets rather than on what the ramp
