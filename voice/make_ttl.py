@@ -567,42 +567,48 @@ PRESETS = [
         "delay_repeats": 18.0, "delay_mix": 8.0, "delay_on": 0.0,
         "reverb": 50.0, "reverb_mix": 16.0}),
     ("choir", "Choir", "CHOIR", {
-        "low_cut": 100.0, "gate": -46.0, "comp": 28.0, "de_ess": 30.0,
+        "harm_1": 12.0, "harm_2": -12.0, "harm_3": 7.0, "harm_mix": 38.0,
+        "harm_on": 1.0, "harm_spread": 55.0, "low_cut": 100.0, "gate": -46.0, "comp": 28.0, "de_ess": 30.0,
         "body": 1.0, "air": 2.0, "drive": 15.0, "drive_on": 0.0,
         "doubler": 60.0, "voices": 4.0, "modulation": 45.0,
         "mod_speed": 0.35, "delay_time": 350.0, "delay_repeats": 20.0,
         "delay_mix": 8.0, "delay_on": 0.0, "reverb": 70.0,
         "reverb_mix": 18.0}),
     ("widechoir", "Wide Choir", "WIDECHOR", {
-        "low_cut": 100.0, "gate": -48.0, "comp": 28.0, "de_ess": 35.0,
+        "harm_1": 12.0, "harm_2": -12.0, "harm_3": 7.0, "harm_4": -5.0,
+        "harm_mix": 42.0, "harm_on": 1.0, "harm_spread": 85.0, "low_cut": 100.0, "gate": -48.0, "comp": 28.0, "de_ess": 35.0,
         "mid_freq": 2400.0, "presence": 1.0, "air": 3.0, "drive": 15.0,
         "drive_on": 0.0, "doubler": 65.0, "voices": 4.0, "spread": 100.0,
         "modulation": 35.0, "mod_speed": 0.3, "delay_time": 450.0,
         "delay_repeats": 25.0, "delay_mix": 10.0, "delay_on": 0.0,
         "reverb": 72.0, "reverb_mix": 22.0}),
     ("gospel", "Gospel Choir", "GOSPEL", {
-        "low_cut": 95.0, "gate": -46.0, "comp": 24.0, "de_ess": 30.0,
+        "harm_1": 4.0, "harm_2": -5.0, "harm_3": 12.0, "harm_4": -12.0,
+        "harm_mix": 48.0, "harm_on": 1.0, "harm_spread": 60.0, "low_cut": 95.0, "gate": -46.0, "comp": 24.0, "de_ess": 30.0,
         "body": 2.0, "mid_freq": 2000.0, "presence": 2.0, "air": 3.0,
         "drive": 15.0, "drive_on": 0.0, "doubler": 60.0, "voices": 4.0,
         "spread": 85.0, "modulation": 30.0, "mod_speed": 0.35,
         "delay_time": 400.0, "delay_repeats": 20.0, "delay_mix": 8.0,
         "delay_on": 0.0, "reverb": 65.0, "reverb_mix": 16.0}),
     ("gospelstack", "Gospel Stack", "GOSPSTAK", {
-        "low_cut": 110.0, "gate": -44.0, "comp": 24.0, "de_ess": 30.0,
+        "harm_1": 7.0, "harm_2": -12.0, "harm_3": 12.0, "harm_mix": 45.0,
+        "harm_on": 1.0, "harm_spread": 50.0, "low_cut": 110.0, "gate": -44.0, "comp": 24.0, "de_ess": 30.0,
         "body": 1.0, "mid_freq": 2000.0, "presence": 3.0, "air": 2.0,
         "drive": 20.0, "feedback": 40.0, "doubler": 58.0, "voices": 4.0,
         "spread": 70.0, "modulation": 25.0, "mod_on": 0.0,
         "delay_time": 330.0, "delay_repeats": 22.0, "delay_mix": 10.0,
         "reverb": 55.0, "reverb_mix": 14.0}),
     ("angel", "Angel Choir", "ANGEL", {
-        "low_cut": 110.0, "gate": -48.0, "comp": 26.0, "de_ess": 35.0,
+        "harm_1": 12.0, "harm_2": 7.0, "harm_3": 5.0, "harm_4": -12.0,
+        "harm_mix": 40.0, "harm_on": 1.0, "harm_spread": 95.0, "low_cut": 110.0, "gate": -48.0, "comp": 26.0, "de_ess": 35.0,
         "air": 4.0, "mid_freq": 3000.0, "presence": 1.0, "drive": 15.0,
         "drive_on": 0.0, "pitch": 12.0, "pitch_mix": 22.0, "doubler": 65.0,
         "voices": 4.0, "spread": 95.0, "modulation": 35.0,
         "mod_speed": 0.3, "delay_time": 550.0, "delay_repeats": 35.0,
         "delay_mix": 12.0, "reverb": 90.0, "reverb_mix": 24.0}),
     ("seraphim", "Seraphim", "SERAPHIM", {
-        "low_cut": 115.0, "gate": -48.0, "comp": 26.0, "de_ess": 40.0,
+        "harm_1": 12.0, "harm_2": 7.0, "harm_3": -12.0, "harm_mix": 36.0,
+        "harm_on": 1.0, "harm_spread": 100.0, "low_cut": 115.0, "gate": -48.0, "comp": 26.0, "de_ess": 40.0,
         "body": -1.0, "mid_freq": 3200.0, "air": 5.0, "drive": 14.0,
         "drive_on": 0.0, "doubler": 70.0, "voices": 4.0, "spread": 90.0,
         "modulation": 30.0, "mod_speed": 0.25, "delay_time": 600.0,
@@ -680,7 +686,7 @@ PRESETS = [
     ("third", "Third Up", "THIRD", {
         "low_cut": 100.0, "gate": -44.0, "comp": 34.0, "de_ess": 40.0,
         "body": 1.0, "mid_freq": 2400.0, "presence": 3.0, "air": 2.0,
-        "harm_1": 4.0, "harm_2": 0.0, "harm_mix": 45.0, "harm_on": 1.0,
+        "harm_1": 4.0, "harm_2": 0.0, "harm_spread": 35.0, "harm_mix": 45.0, "harm_on": 1.0,
         "drive": 12.0, "drive_on": 0.0, "doubler": 20.0, "doubler_on": 0.0,
         "modulation": 20.0, "mod_on": 0.0, "delay_time": 350.0,
         "delay_repeats": 20.0, "delay_mix": 9.0, "reverb": 35.0,
@@ -688,7 +694,7 @@ PRESETS = [
     ("trio", "Trio", "TRIO", {
         "low_cut": 100.0, "gate": -44.0, "comp": 36.0, "de_ess": 40.0,
         "body": 0.0, "mid_freq": 2300.0, "presence": 2.0, "air": 2.0,
-        "harm_1": 4.0, "harm_2": -5.0, "harm_mix": 55.0, "harm_on": 1.0,
+        "harm_1": 4.0, "harm_2": -5.0, "harm_spread": 45.0, "harm_mix": 55.0, "harm_on": 1.0,
         "drive": 12.0, "drive_on": 0.0, "doubler": 22.0, "voices": 2.0,
         "spread": 40.0, "doubler_on": 0.0, "modulation": 20.0, "mod_on": 0.0,
         "delay_time": 380.0, "delay_repeats": 22.0, "delay_mix": 10.0,
@@ -696,7 +702,7 @@ PRESETS = [
     ("fifths", "Power Fifths", "FIFTHS", {
         "low_cut": 110.0, "gate": -40.0, "comp": 30.0, "de_ess": 30.0,
         "body": -1.0, "mid_freq": 2600.0, "presence": 4.0, "air": 0.0,
-        "harm_1": 7.0, "harm_2": -5.0, "harm_mix": 60.0, "harm_on": 1.0,
+        "harm_1": 7.0, "harm_2": -5.0, "harm_spread": 40.0, "harm_mix": 60.0, "harm_on": 1.0,
         "drive": 30.0, "drive_on": 1.0, "feedback": 60.0, "doubler": 20.0,
         "doubler_on": 0.0, "modulation": 20.0, "mod_on": 0.0,
         "delay_time": 300.0, "delay_repeats": 20.0, "delay_mix": 8.0,
@@ -704,7 +710,7 @@ PRESETS = [
     ("octaves", "Octaves", "OCTAVES", {
         "low_cut": 90.0, "gate": -44.0, "comp": 32.0, "de_ess": 35.0,
         "body": 2.0, "mid_freq": 2000.0, "presence": 2.0, "air": 1.0,
-        "harm_1": 12.0, "harm_2": -12.0, "harm_mix": 40.0, "harm_on": 1.0,
+        "harm_1": 12.0, "harm_2": -12.0, "harm_spread": 30.0, "harm_mix": 40.0, "harm_on": 1.0,
         "drive": 12.0, "drive_on": 0.0, "doubler": 20.0, "doubler_on": 0.0,
         "modulation": 20.0, "mod_on": 0.0, "delay_time": 400.0,
         "delay_repeats": 20.0, "delay_mix": 9.0, "reverb": 40.0,
@@ -1209,6 +1215,7 @@ SHORT_NAME = {
     "grille_mix": "GRIL MIX", "comp_level": "COMP LVL",
     "de_ess_level": "SS LVL", "eq_level": "EQ LVL",
     "drive_gate": "DRV GATE", "grille_gate": "GRI GATE",
+    "harm_3": "HARM 3", "harm_4": "HARM 4", "harm_spread": "HRM SPRD",
     "grille_width": "WIDTH", "grille_buzz": "BUZZ", "grille_tone": "TONE",
 }
 
@@ -1242,7 +1249,8 @@ PANEL = [
     ("GRILLE",   ["grille_on", "grille_width", "grille_buzz", "grille_tone",
                  "grille_mix", "grille_gate"]),
     ("PITCH",    ["pitch_on", "pitch", "pitch_mix"]),
-    ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_mix"]),
+    ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_3", "harm_4",
+                 "harm_mix", "harm_spread"]),
     ("DOUBLE",   ["doubler_on", "doubler", "spread", "voices"]),
     ("MOD",      ["mod_on", "modulation", "mod_speed"]),
     ("NO HOWL",  ["feedback_on", "feedback"]),
@@ -1345,6 +1353,24 @@ TAIL += [
   "amplifier pointed at the room between two phrases. It closes the "
   "grille's contribution only - the voice under it is untouched. 0 is off "
   "and costs nothing. Saved with the favourite."),
+ ("in", "harm_3", "HARM 3", -12.0, 12.0, 0.0, None,
+  ["lv2:integer", "pprops:hasStrictBounds"],
+  "A third harmony voice, in semitones from what you sing - the same "
+  "fixed intervals as HARM 1 and HARM 2. With four of them you can put a "
+  "chord behind the song rather than one interval: +4 and +7 and -12 is a "
+  "choir standing around you. At 0 it is silent and costs nothing."),
+ ("in", "harm_4", "HARM 4", -12.0, 12.0, 0.0, None,
+  ["lv2:integer", "pprops:hasStrictBounds"],
+  "A fourth harmony voice. At 0 it is silent and costs nothing."),
+ ("in", "harm_spread", "HARM SPREAD", 0.0, 100.0, 0.0, "pc", [],
+  "What turns the harmony voices into other SINGERS. At 0 they are what "
+  "they have always been: the same grain read from the same place, dead "
+  "in tune, dead centre - four of those is one voice played four times. "
+  "Turned up, each one gets its own detune, its own slow wander, its own "
+  "vibrato that swells and relaxes, its own throat, its own entry a few "
+  "milliseconds after you, and its own place left or right. 100 is a "
+  "choir that has never rehearsed; 30 to 50 is a section that has. At 0 "
+  "none of it is computed. Saved with the favourite."),
 ]
 
 # A line of explanation under a section, where the switches alone cannot

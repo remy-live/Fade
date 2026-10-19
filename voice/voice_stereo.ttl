@@ -1340,4 +1340,34 @@
         lv2:maximum 100.0 ;
         units:unit units:pc ;
         rdfs:comment "The same, for the grille. A narrow band with a buzz on it is an amplifier pointed at the room between two phrases. It closes the grille's contribution only - the voice under it is untouched. 0 is off and costs nothing. Saved with the favourite."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 121 ;
+        lv2:symbol "harm_3" ;
+        lv2:name "HARM 3" ;
+        lv2:portProperty lv2:integer , pprops:hasStrictBounds ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        rdfs:comment "A third harmony voice, in semitones from what you sing - the same fixed intervals as HARM 1 and HARM 2. With four of them you can put a chord behind the song rather than one interval: +4 and +7 and -12 is a choir standing around you. At 0 it is silent and costs nothing."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 122 ;
+        lv2:symbol "harm_4" ;
+        lv2:name "HARM 4" ;
+        lv2:portProperty lv2:integer , pprops:hasStrictBounds ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        rdfs:comment "A fourth harmony voice. At 0 it is silent and costs nothing."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 123 ;
+        lv2:symbol "harm_spread" ;
+        lv2:name "HARM SPREAD" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "What turns the harmony voices into other SINGERS. At 0 they are what they have always been: the same grain read from the same place, dead in tune, dead centre - four of those is one voice played four times. Turned up, each one gets its own detune, its own slow wander, its own vibrato that swells and relaxes, its own throat, its own entry a few milliseconds after you, and its own place left or right. 100 is a choir that has never rehearsed; 30 to 50 is a section that has. At 0 none of it is computed. Saved with the favourite."
     ] .

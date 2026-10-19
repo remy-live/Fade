@@ -217,6 +217,8 @@ on a device with no terminal is otherwise a guess.
 | **GRILLE MIX** | 0–100 %. How much of the grille is heard against the voice that went in. At 100 it is exactly what the switch alone used to do. Encoder 1 of the grille in the foot cycle. |
 | **DRIVE GATE** / **GRILLE GATE** | 0–100 %. A gate that listens to the voice and not to a number, on the two blocks that make hiss out of silence. At 0 it is off. See *A gate for the blocks that saturate* below. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
+| **HARM 3** / **HARM 4** | Two more harmony voices, same fixed intervals in semitones. Four of them is a chord behind the song rather than one interval: +12, −12 and +7 is a choir that is right in every key, because octaves and fifths have no third in them to be wrong about. At 0 a voice is silent and costs nothing. |
+| **HARM SPREAD** | 0–100 %. What turns the harmony voices into other **singers**. See *A choir, and the people in it* below. At 0 none of it is computed. |
 | **HARMONY** / **VOICE 1** / **VOICE 2** | Two more singers, at fixed intervals in semitones from what *you* sing — +4 a major third above, −5 a fourth below, ±12 an octave. Nothing detects your note, so they follow the song wherever it stays in one key, which is what a chorus usually does. A voice at 0 is silent and costs nothing. Both are counted from the sung note, not from where PITCH has put you: PITCH −12 with a third above gives you both. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
 | **VOICES** | 2, 3 or 4. Two is a straight double, three is thicker, four is a small choir. The level is held steady as the count changes, so this picks a texture and not a volume. In the stereo build they alternate left and right, with the odd one up the middle. |
@@ -756,6 +758,12 @@ them back in its own layout the next time SAVE is pressed. The new ports
 are, as always, at the end of the list — remove the VOICE block from the
 pedalboard and add it back, or NAV, VALIDATE and the grille reach nothing.
 
+**Coming from build 35:** three ports — HARM 3, HARM 4 and HARM SPREAD
+— at the end of the list as always. **Remove the VOICE block from the
+pedalboard and add it back.** Favourites from any earlier build are read
+column for column with the two new voices silent and the spread at 0,
+which is exactly the harmony they were saved with.
+
 **Coming from build 33:** two ports again — DRIVE GATE and GRILLE GATE —
 and the same rule: new ports go at the very end of the list, and a
 pedalboard remembers a block by port *index*. **Remove the VOICE block
@@ -1122,6 +1130,87 @@ layouts, newest first, and the next build to add a column adds one line.
 Either way a column a build never had comes back **at its own default**,
 which for every level above is the position where the knob does nothing.
 A favourite dialled last summer sounds exactly as it did.
+
+## A choir, and the people in it
+
+"It is not amazing — I would like to have a choir with me." The doubler
+was fine; measured again on a voice through the whole default rig, the
+peak goes from 0.38 dry to 0.80 with DOUBLE at 100 %. The trouble was
+somewhere else, and in two places.
+
+**The harmony voices were clones.** The doubler has known how to make
+people since the first build: each of its voices carries its own detune,
+its own slow wander, its own vibrato that swells and relaxes, its own
+throat, its own entry twenty-six to fifty-two milliseconds after you, and
+its own place in the room. The harmony voices had **none of it**. They
+read the same grain, from the same position, dead in tune, with no timbre
+of their own — and in stereo they both sat dead centre. Two of those is a
+harmoniser. Four would have been a harmoniser with four outputs.
+
+**And the presets named after a choir had no chord in them.** `Choir`,
+`Wide Choir`, `Gospel Choir`, `Gospel Stack`, `Angel Choir` and
+`Seraphim` all carried four unison doubles and not one harmony voice.
+Four copies of you singing your note is a double, however many there are
+of it. They have a chord now, and the chords are built out of **octaves
+and fifths** wherever the preset has to work in any key — a third is
+right or wrong depending on the chord under it, an octave never is.
+
+So: **HARM 3**, **HARM 4**, and **HARM SPREAD**.
+
+The spread is the whole of it, and it scales six things at once:
+
+| | at HARM SPREAD 100 |
+|---|---|
+| **detune** | a fixed offset each, −9, +13, −5, +17 cents, so even standing still they are four people |
+| **wander** | each drifts on its own slow LFO, 0.059 to 0.137 Hz — rates mutually prime with each other *and* with the doubler's, or the two blocks would breathe together and read as one wobble |
+| **vibrato** | 4.3 to 6.5 Hz, four to six cents, and the depth itself swells and relaxes on a slower LFO still |
+| **throat** | its own band, 140 Hz to 7.2 kHz for one, 190 Hz to 3.9 kHz for another: identical spectra fuse back into one object however far apart they are tuned, which was the whole trouble |
+| **entry** | 11, 19, 27 and 36 ms after you. Under forty, all of them — past that a harmony stops being somebody beside you and starts being a repeat |
+| **place** | a quarter of a decibel either side, alternating. Singers in a room are spread, not split, and this has to stay sane when the two channels are summed |
+
+30 to 50 is a section that has rehearsed. 100 is one that has not.
+
+**At 0 none of it is computed** — not one extra sine, not one extra
+filter — and the plugin is then bit for bit the build before: 921 600
+samples of the worst case rendered and subtracted, zero differences. That
+is what lets a favourite dialled last summer come back untouched, and it
+is why the default is 0 rather than something flattering.
+
+Two things had to be built underneath it:
+
+* **The level comes down as voices are added.** Decorrelated copies add
+  in power, so the gain goes as one over the root of the count — and the
+  first two entries of that table are left at exactly 0.70, which is what
+  one and two voices have always had. A board that never adds a third
+  voice is the build before this one, to the bit. Measured: adding HARM 3
+  and HARM 4 takes 2.98 dB off the two that were already there.
+* **A voice arriving fades in over one block.** A singer who appears at
+  full level in the middle of a phrase is a click, and a program that
+  brings three of them is three. The ramp is snapped to its target when
+  it is within a millionth, or a fade that lands a hair short would keep
+  a silent voice being computed for the rest of the evening.
+
+### What it costs
+
+Measured three times on a shared machine, so read the share and not the
+microseconds: four humanised voices are **a quarter to a third** of the
+new worst case, and the whole plugin at absolute full tilt — every block
+fitted, four doubles, four humanised harmony voices — goes from about
+3.7 % of one x86 core to about 5.3 %. The worst case is not a setting
+anybody plays; and because the spread is a column of a program, the cost
+is **opt in, per favourite**. A sound with two flat harmony voices costs
+exactly what it did.
+
+### Where the click test was wrong
+
+The bench has always checked that picking a program does not click, by
+comparing the biggest sample-to-sample step after the change against the
+quiet one before it. Giving `CHOIR` an octave above the singer made that
+test fail at 2.51 against a limit of 2.5 — and the step was not a click.
+An octave above you **doubles the slew rate of every sample, legitimately**.
+The test now measures the jump at the transition and compares it against
+how fast the new sound moves once it has settled, which is the thing it
+was always trying to say. It reads 0.74 now.
 
 ## A gate for the blocks that saturate
 

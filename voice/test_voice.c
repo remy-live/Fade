@@ -1861,17 +1861,25 @@ static void essai_boutons_sans_clic(void)
             }
         }
 
-        double saut = 0.0;
+        /* The jump is at the TRANSITION - the first fifty blocks - and
+           what it has to be compared against is how fast the new sound
+           moves once it has settled, not how fast the old one did. A
+           program that puts an octave above you in the chord doubles
+           the slew rate of every sample legitimately, and a test that
+           did not know it would call a choir a click. */
+        double saut = 0.0, calme_apres = 0.0;
         b.ctl[CTL_PROGRAM] = (float)programme_nomme("CHOIR");
         for (int k = 0; k < 400; ++k) {
             sinus(&b, 500.0, 0.3);
             tourner(&b);
             for (uint32_t i = 0; i < b.bloc; ++i) {
                 const double d = fabs((double)b.out[0][i] - precedent);
-                if (d > saut) { saut = d; }
+                if (k < 50  && d > saut)        { saut = d; }
+                if (k > 300 && d > calme_apres) { calme_apres = d; }
                 precedent = b.out[0][i];
             }
         }
+        if (calme_apres > calme) { calme = calme_apres; }
         if (getenv("TRACE_CLIC")) {
             printf("    PROGRAM: calme=%.6f saut=%.6f (x%.2f)\n",
                    calme, saut, saut / (calme > 0 ? calme : 1));
@@ -2830,6 +2838,200 @@ static void essai_non_fini(void)
    220 Hz, a third above lands on 277 and a fourth below on 165 - and
    nothing of either is there when the mix is down or the switch is off,
    because a harmony you cannot turn off is not a harmony, it is a fault. */
+/* ================================================================== */
+/* Four singers rather than one voice played four times                */
+/* ================================================================== */
+static void essai_choeur_humain(void)
+{
+    const double sr = 48000.0;
+    const uint32_t N = 128;
+    const size_t total = (size_t)(sr * 4.0);
+    float* out = (float*)malloc(total * sizeof(float));
+
+    /* --- 1. the two new voices really sing --- */
+    double quinte[2] = { 0.0, 0.0 }, octave[2] = { 0.0, 0.0 };
+    double somme[2]  = { 0.0, 0.0 };
+    for (int cas = 0; cas < 2; ++cas) {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_HARM_1]   = 4.0f;
+        b.ctl[CTL_HARM_2]   = -5.0f;
+        b.ctl[CTL_HARM_3]   = cas ? 7.0f  : 0.0f;
+        b.ctl[CTL_HARM_4]   = cas ? 12.0f : 0.0f;
+        b.ctl[CTL_HARM_MIX] = 100.0f;
+        b.ctl[CTL_HARM_ON]  = 1.0f;
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        size_t done = 0;
+        while (done + N <= total) {
+            for (uint32_t i = 0; i < N; ++i) {
+                b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+            }
+            ph += w * (double)N;
+            tourner(&b);
+            memcpy(out + done, b.out[0], N * sizeof(float));
+            done += N;
+        }
+        fermer(&b);
+        const size_t saute = (size_t)(sr * 1.0), n = total - saute;
+        quinte[cas] = energie_a(out + saute, n, 329.63, sr);   /* +7  */
+        octave[cas] = energie_a(out + saute, n, 440.00, sr);   /* +12 */
+        /* the two voices that were there all along, so the count gain
+           can be read off them rather than off a total the dry voice
+           dominates */
+        somme[cas] = energie_a(out + saute, n, 277.18, sr)      /* +4  */
+                   + energie_a(out + saute, n, 164.81, sr);     /* -5  */
+    }
+    verifie_vrai("a fifth on HARM 3 is really there",
+                 quinte[1] > quinte[0] * 100.0);
+    verifie_vrai("and an octave on HARM 4 with it",
+                 octave[1] > octave[0] * 100.0);
+    /* Decorrelated copies add in power, so the level has to come down as
+       voices are added, or a chord is a volume pedal. 0.70 for two and
+       0.495 for four is three decibels, and that is what the two voices
+       that were there all along must lose. */
+    {
+        const double db = 10.0 * log10(somme[1] / somme[0]);
+        verifie_entre("adding two more takes three decibels off the two there",
+                      db, -3.6, -2.4);
+    }
+
+    /* --- 2. a voice walked in by hand does not click --- */
+    {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_HARM_1]   = 4.0f;
+        b.ctl[CTL_HARM_2]   = -5.0f;
+        b.ctl[CTL_HARM_MIX] = 100.0f;
+        b.ctl[CTL_HARM_ON]  = 1.0f;
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        double precedent = 0.0, avant = 0.0, saut = 0.0, apres = 0.0;
+        for (int k = 0; k < 900; ++k) {
+            for (uint32_t i = 0; i < N; ++i) {
+                b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+            }
+            ph += w * (double)N;
+            /* nothing else moves: the MIX stays where it is, so the only
+               thing that can make a step is the voice itself arriving */
+            if (k == 600) { b.ctl[CTL_HARM_3] = 7.0f; }
+            tourner(&b);
+            for (uint32_t i = 0; i < N; ++i) {
+                const double d = fabs((double)b.out[0][i] - precedent);
+                if (k > 400 && k < 600 && d > avant) { avant = d; }
+                if (k >= 600 && k < 620 && d > saut)  { saut  = d; }
+                if (k > 800 && d > apres)             { apres = d; }
+                precedent = b.out[0][i];
+            }
+        }
+        fermer(&b);
+        const double calme = (apres > avant) ? apres : avant;
+        if (getenv("TRACE_CLIC")) {
+            printf("    HARM 3: calme=%.6f saut=%.6f (x%.2f)\n",
+                   calme, saut, saut / (calme > 0 ? calme : 1));
+        }
+        verifie_vrai("a harmony voice dialled in mid note does not click",
+                     saut < calme * 1.6);
+    }
+
+    /* --- 3. the spread puts them in different places --- */
+    {
+        double cote[2] = { 0.0, 0.0 };
+        for (int cas = 0; cas < 2; ++cas) {
+            Banc b;
+            ouvrir(&b, 1, sr, N, 0);
+            neutre(&b);
+            b.ctl[CTL_DOUBLER] = 0.0f;   /* the doubler spreads too */
+            b.ctl[CTL_MOD]     = 0.0f;
+            b.ctl[CTL_HARM_1]  = 4.0f;
+            b.ctl[CTL_HARM_2]  = -5.0f;
+            b.ctl[CTL_HARM_3]  = 7.0f;
+            b.ctl[CTL_HARM_4]  = 12.0f;
+            b.ctl[CTL_HARM_MIX]    = 100.0f;
+            b.ctl[CTL_HARM_ON]     = 1.0f;
+            b.ctl[CTL_HARM_SPREAD] = cas ? 90.0f : 0.0f;
+            double ph = 0.0;
+            const double w = 2.0 * PI * 220.0 / sr;
+            for (int k = 0; k < 900; ++k) {
+                for (uint32_t i = 0; i < N; ++i) {
+                    const float v = (float)(0.25 * sin(ph + w * (double)i));
+                    b.in[0][i] = v; b.in[1][i] = v;
+                }
+                ph += w * (double)N;
+                tourner(&b);
+                if (k > 600) {
+                    for (uint32_t i = 0; i < N; ++i) {
+                        const double d = (double)b.out[0][i] - (double)b.out[1][i];
+                        cote[cas] += d * d;
+                    }
+                }
+            }
+            fermer(&b);
+        }
+        verifie("with no spread both ears get the same harmony",
+                cote[0], 0.0, 1.0e-12);
+        verifie_vrai("and with it they do not", cote[1] > 1.0e-4);
+    }
+
+    /* --- 4. and they do not stand still --- */
+    {
+        Banc b;
+        ouvrir(&b, 0, sr, N, 0);
+        neutre(&b);
+        b.ctl[CTL_HARM_1]      = 4.0f;
+        b.ctl[CTL_HARM_2]      = 0.0f;
+        b.ctl[CTL_HARM_MIX]    = 100.0f;
+        b.ctl[CTL_HARM_ON]     = 1.0f;
+        b.ctl[CTL_HARM_SPREAD] = 100.0f;
+        double ph = 0.0;
+        const double w = 2.0 * PI * 220.0 / sr;
+        /* The third sits at 277.18 Hz dead in tune. Detuned and drifting,
+           the energy at that exact bin moves about from second to
+           second; a copy that stands still does not. */
+        double bas = 1.0e30, haut = 0.0;
+        for (int tranche = 0; tranche < 8; ++tranche) {
+            size_t done = 0;
+            const size_t n = (size_t)(sr * 0.5);
+            while (done + N <= n) {
+                for (uint32_t i = 0; i < N; ++i) {
+                    b.in[0][i] = (float)(0.25 * sin(ph + w * (double)i));
+                }
+                ph += w * (double)N;
+                tourner(&b);
+                memcpy(out + done, b.out[0], N * sizeof(float));
+                done += N;
+            }
+            if (tranche >= 2) {
+                const double e = energie_a(out, done, 277.18, sr);
+                if (e < bas)  { bas  = e; }
+                if (e > haut) { haut = e; }
+            }
+        }
+        fermer(&b);
+        verifie_vrai("a harmony voice with spread drifts instead of sitting still",
+                     haut > bas * 2.0);
+    }
+
+    /* --- 5. and the presets NAMED after a choir contain one --- */
+    {
+        const int p = programme_nomme("CHOIR");
+        const int c1 = program_col[CTL_HARM_1];
+        const int c2 = program_col[CTL_HARM_2];
+        const int c3 = program_col[CTL_HARM_3];
+        const int cs = program_col[CTL_HARM_SPREAD];
+        verifie_vrai("the CHOIR preset is a chord and not four copies of you",
+                     c1 >= 0 && c2 >= 0 && c3 >= 0 && cs >= 0
+                     && program_value[p][c1] != 0.0f
+                     && program_value[p][c2] != 0.0f
+                     && program_value[p][c3] != 0.0f
+                     && program_value[p][cs] > 0.0f);
+    }
+
+    free(out);
+}
+
 static void essai_harmonie(void)
 {
     const double sr = 48000.0;
@@ -5258,6 +5460,7 @@ static void essai_migration(void)
     const struct { uint32_t n_col, n_sw; const char* quoi; } vieux[] = {
         { 26u, 12u, "a build-29 slot file" },
         { 29u, 13u, "a build-30 slot file" },
+        { 35u, 13u, "a build-35 slot file" },
         { (uint32_t)N_PROGRAM_COL, (uint32_t)SW_COUNT, "its own slot file" },
     };
     for (size_t q = 0; q < sizeof(vieux) / sizeof(vieux[0]); ++q) {
@@ -5281,17 +5484,31 @@ static void essai_migration(void)
         verifie_vrai("its switches came back, the reverb off",
                      v->user[1].sw[SW_REVERB] == 0
                      && v->user[1].sw[SW_DELAY] == 1);
-        if (vieux[q].n_col < (uint32_t)N_PROGRAM_COL) {
-            /* columns that build never had come back at their OWN
-               defaults, which for every level added since is the
-               position where the knob does nothing at all */
+        /* A column that build never had comes back at its OWN default -
+           and whether it had it is decided COLUMN BY COLUMN, not by
+           whether the file is older: a build-35 file carries the grille
+           mix and does not carry the harmony spread. */
+        if ((uint32_t)program_col[CTL_EQ_LEVEL] >= vieux[q].n_col) {
             verifie("a level it never knew arrives where it does nothing",
                     (double)v->user[1].value[program_col[CTL_EQ_LEVEL]],
                     0.0, 0.001);
+        }
+        if ((uint32_t)program_col[CTL_GRILLE_MIX] >= vieux[q].n_col) {
             verifie("and the grille mix fully through, as the switch was",
                     (double)v->user[1].value[program_col[CTL_GRILLE_MIX]],
                     100.0, 0.001);
-        } else {
+        }
+        if ((uint32_t)program_col[CTL_HARM_SPREAD] >= vieux[q].n_col) {
+            /* a favourite made before the choir existed comes back with
+               its harmony exactly as flat as it was */
+            verifie("and the harmony spread at zero, as it was then",
+                    (double)v->user[1].value[program_col[CTL_HARM_SPREAD]],
+                    0.0, 0.001);
+            verifie("with no third voice invented for it",
+                    (double)v->user[1].value[program_col[CTL_HARM_3]],
+                    0.0, 0.001);
+        }
+        if (vieux[q].n_col >= (uint32_t)N_PROGRAM_COL) {
             /* its own layout: what the file says, not a default */
             verifie("its own layout is read column for column, not guessed",
                     (double)v->user[1].value[program_col[CTL_GRILLE_MIX]],
@@ -5341,6 +5558,7 @@ static void essai_migration(void)
     const struct { int n_col, n_sw; const char* quoi; } etats[] = {
         { 26, 12, "a build-29 state" },
         { 29, 13, "a build-30 state" },
+        { 35, 13, "a build-35 state" },
     };
     for (size_t q = 0; q < sizeof(etats) / sizeof(etats[0]); ++q) {
         int n = 0;
@@ -5432,6 +5650,7 @@ int main(int argc, char** argv)
     printf("Rubbish on the input:\n");      essai_non_fini();
     printf("Pitch:\n");                     essai_pitch();
     printf("Harmony:\n");                   essai_harmonie();
+    printf("The choir, and the people in it:\n"); essai_choeur_humain();
     printf("Mute:\n");                      essai_mute();
     printf("A/B:\n");                       essai_ab();
     printf("Names, and the cycle switch:\n"); essai_noms();

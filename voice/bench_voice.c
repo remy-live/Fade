@@ -39,6 +39,10 @@ static void charge_max(Banc* b)
     b->ctl[CTL_PITCH_MIX] = 100.0f;
     b->ctl[CTL_HARM_ON] = 1.0f;   b->ctl[CTL_HARM_1] = 4.0f;
     b->ctl[CTL_HARM_2] = -5.0f;   b->ctl[CTL_HARM_MIX] = 60.0f;
+    /* The worst case is a CHOIR: four singers, each with its own
+       detune, wander, vibrato, throat and place. */
+    b->ctl[CTL_HARM_3] = 7.0f;    b->ctl[CTL_HARM_4] = -12.0f;
+    b->ctl[CTL_HARM_SPREAD] = 100.0f;
     b->ctl[CTL_DOUBLER_ON] = 1.0f; b->ctl[CTL_DOUBLER] = 60.0f;
     b->ctl[CTL_VOICES] = 4.0f;    b->ctl[CTL_SPREAD] = 60.0f;
     b->ctl[CTL_MOD_ON] = 1.0f;    b->ctl[CTL_MOD] = 50.0f;
@@ -63,6 +67,7 @@ static void charge_min(Banc* b)
     b->ctl[CTL_DRIVE_ON] = 0.0f;
     b->ctl[CTL_PITCH] = 0.0f;
     b->ctl[CTL_HARM_1] = 0.0f; b->ctl[CTL_HARM_2] = 0.0f;
+    b->ctl[CTL_HARM_3] = 0.0f; b->ctl[CTL_HARM_4] = 0.0f;
 }
 
 static double mesure(int stereo, void (*regler)(Banc*), int blocs, double* somme)
@@ -104,7 +109,14 @@ static void sans_pitch(Banc* b)   { b->ctl[CTL_PITCH_ON] = 0.0f;
                                     b->ctl[CTL_PITCH] = 0.0f; }
 static void sans_harm(Banc* b)    { b->ctl[CTL_HARM_ON] = 0.0f;
                                     b->ctl[CTL_HARM_1] = 0.0f;
-                                    b->ctl[CTL_HARM_2] = 0.0f; }
+                                    b->ctl[CTL_HARM_2] = 0.0f;
+                                    b->ctl[CTL_HARM_3] = 0.0f;
+                                    b->ctl[CTL_HARM_4] = 0.0f; }
+/* What the humanising costs on its own: the same four voices, flat. */
+static void sans_humain(Banc* b)  { b->ctl[CTL_HARM_SPREAD] = 0.0f; }
+/* And the two voices that did not exist before it. */
+static void sans_voix34(Banc* b)  { b->ctl[CTL_HARM_3] = 0.0f;
+                                    b->ctl[CTL_HARM_4] = 0.0f; }
 /* The seven that are FITTED or not: their ON switch only multiplies the
    output, so it is the USE port that actually stops the arithmetic. */
 static void sans_reverb(Banc* b)  { b->ctl[CTL_USE_REVERB] = 0.0f; }
@@ -132,7 +144,9 @@ static const Organe organes[] = {
     { "LES SEPT (USE)",       sans_les_sept },
     { "doubleur 4 -> 2 voix", sans_voix4 },
     { "pitch",                sans_pitch },
-    { "harmonies (x2)",       sans_harm },
+    { "harmonies (x4, humaines)", sans_harm },
+    { "  dont l'humanisation",    sans_humain },
+    { "  dont les voix 3 et 4",   sans_voix34 },
     { "reverbe",              sans_reverb },
     { "delay",                sans_delay },
     { "chorus",               sans_mod },

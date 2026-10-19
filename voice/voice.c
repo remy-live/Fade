@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD35_AARCH64_20261019";
+static const volatile char build_tag[] = "VOICE_BUILD36_AARCH64_20261019";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -464,7 +464,13 @@ typedef enum {
     /* A gate for the two blocks that saturate. See SatGate. */
     CTL_DRIVE_GATE    = 115,
     CTL_GRILLE_GATE   = 116,
-    CTL_COUNT         = 117
+    /* Two more harmony voices, and the one control that turns four
+       pitch-shifted copies of you into four other singers. See
+       HARM_HUMAN below. */
+    CTL_HARM_3        = 117,
+    CTL_HARM_4        = 118,
+    CTL_HARM_SPREAD   = 119,
+    CTL_COUNT         = 120
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -606,6 +612,9 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "eq_level",     -12.0f,   12.0f,     0.0f },
     { "drive_gate",     0.0f,  100.0f,     0.0f },
     { "grille_gate",    0.0f,  100.0f,     0.0f },
+    { "harm_3",       -12.0f,   12.0f,     0.0f },
+    { "harm_4",       -12.0f,   12.0f,     0.0f },
+    { "harm_spread",    0.0f,  100.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -888,6 +897,55 @@ static const float double_gain[MAX_VOICES + 1]    = { 0.0f, 0.0f, 0.760f, 0.620f
 static const float double_gain_st[MAX_VOICES + 1] = { 0.0f, 0.0f, 1.170f, 0.960f, 0.830f };
 
 /* ------------------------------------------------------------------ */
+/* HARM_HUMAN - what turns a harmoniser into other singers             */
+/*                                                                     */
+/* The doubler has known how to make people since the beginning: its    */
+/* voices each carry their own detune, their own wander, their own      */
+/* vibrato, their own throat and their own place in the room. The       */
+/* harmony voices never did. They read the SAME grain, from the SAME    */
+/* position, with no drift and no vibrato and no timbre of their own,   */
+/* and in stereo they both sat dead centre. Four of those is not a      */
+/* choir, it is one voice played four times at four pitches - which is  */
+/* exactly what it sounded like.                                        */
+/*                                                                     */
+/* So the same machinery, with its own numbers: mutually prime against  */
+/* the doubler's, or the two blocks would breathe together and the      */
+/* whole thing would read as one wobble again.                          */
+/*                                                                     */
+/* HARM SPREAD scales every one of them at once, and at 0 NONE of it    */
+/* is computed: the plugin is then bit for bit the one before, which is */
+/* what lets a favourite dialled last summer come back untouched.       */
+/* ------------------------------------------------------------------ */
+#define N_HARM 4
+/* A fixed offset each, so even standing still they are four people and
+   not one. Smaller than the doubler's: these voices are already a
+   distance apart in pitch, and a choir sings in tune. */
+static const float harm_cents[N_HARM]     = {  -9.0f,  13.0f,  -5.0f,  17.0f };
+/* Nobody holds a note dead still. Rates mutually prime with each other
+   AND with the doubler's, so no two of the eight ever line up. */
+static const float harm_drift[N_HARM]     = {   5.5f,   6.5f,   7.0f,   6.0f };
+static const float harm_drift_hz[N_HARM]  = { 0.059f, 0.089f, 0.137f, 0.113f };
+static const float harm_vib[N_HARM]       = {   4.0f,   5.5f,   4.8f,   6.2f };
+static const float harm_vib_hz[N_HARM]    = {  5.1f,   4.3f,   6.5f,   5.9f };
+static const float harm_swell_hz[N_HARM]  = { 0.037f, 0.071f, 0.047f, 0.097f };
+static const float harm_amp_hz[N_HARM]    = { 0.061f, 0.043f, 0.091f, 0.071f };
+/* Each through its own throat. Darker than the doubler's on the whole:
+   a harmony that is as bright as the lead competes with the word. */
+static const float harm_tone[N_HARM]      = { 7200.0f, 4800.0f, 6000.0f, 3900.0f };
+static const float harm_cut[N_HARM]       = { 140.0f, 190.0f, 120.0f, 165.0f };
+/* And nobody comes in exactly with you. Under forty milliseconds, all of
+   them: past that a harmony stops being a singer beside you and starts
+   being a repeat. The pitch line is 180 ms long and the grain reaches
+   57 ms back into it, so there is room for this and to spare. */
+static const float harm_late_ms[N_HARM]   = {  11.0f,  19.0f,  27.0f,  36.0f };
+/* Decorrelated copies add in power, so the gain goes as one over the
+   root of the count - and the first two entries are LEFT AT 0.70, which
+   is what one and two voices have always had. A board that never adds a
+   third voice and leaves the spread at zero is the build before this
+   one, to the bit. */
+static const float harm_gain[N_HARM + 1]  = { 0.0f, 0.70f, 0.70f, 0.5715f, 0.4950f };
+
+/* ------------------------------------------------------------------ */
 /* The anti-Larsen hunter                                              */
 /*                                                                     */
 /* A distorted guitar in front of its own monitor howls, and a noise   */
@@ -981,6 +1039,8 @@ typedef struct {
     Ring    pitchline;       /* what the shifter reads at another rate */
     float   choir_lp[MAX_VOICES];   /* each voice its own throat */
     float   choir_hp[MAX_VOICES];
+    float   harm_lp[N_HARM];        /* and so does each harmony voice */
+    float   harm_hp[N_HARM];
     Ring    delay;
     float   dly_lp, dly_hp;  /* tone shaping inside the feedback path */
     SVF     notch[N_NOTCH];  /* the same four frequencies on every channel */
@@ -1011,6 +1071,11 @@ typedef enum {
        favourite made before these knobs existed therefore sounds
        exactly as it did, which is checked by subtracting two renders. */
     SM_GRILLE_WET, SM_COMP_LVL, SM_DE_LVL, SM_EQ_LVL,
+    /* Decorrelated copies add in power, so the harmony's level has to
+       come down as voices are added - and a program that adds two of
+       them at once would step the two that were already there by nearly
+       two decibels. Walked like everything else. */
+    SM_HARM_G,
     SM_COUNT
 } SmoothIndex;
 
@@ -1294,8 +1359,17 @@ typedef struct {
            image would drift apart --- */
     float pitch_phase;
     int   pitch_was_moving;   /* so crossing zero can restart the grain */
-    float harm_phase[2];      /* the two harmony voices, same shifter */
-    int   harm_was[2];
+    float harm_phase[N_HARM];  /* the four harmony voices, same shifter */
+    int   harm_was[N_HARM];
+    /* 0 to 1 across one block when a voice comes in or goes out. A
+       singer who appears at full level mid-phrase is a click, and a
+       program that brings three of them is three. */
+    float hg[N_HARM];
+    /* and what makes each of them a person rather than a copy */
+    float ph_harm_drift[N_HARM];
+    float ph_harm_vib[N_HARM];
+    float ph_harm_swell[N_HARM];
+    float ph_harm_amp[N_HARM];
 
     /* --- the four slots the player fills in. Saved with the pedalboard
            through the State extension, which is the only reason this
@@ -2320,6 +2394,20 @@ static int voices_of(const Voice* self)
     return n;
 }
 
+/* How many harmony voices are actually singing: an interval of zero is
+   silence, and silence must not pull the level of the others down. */
+static int harm_count_of(const Voice* self)
+{
+    static const int ctl[N_HARM] = { CTL_HARM_1, CTL_HARM_2,
+                                     CTL_HARM_3, CTL_HARM_4 };
+    int n = 0;
+    for (int h = 0; h < N_HARM; ++h) {
+        const float d = param_read(self, ctl[h]);
+        if (d > 0.01f || d < -0.01f) { ++n; }
+    }
+    return n;
+}
+
 static float voice_gain_of(const Voice* self, uint32_t n_ch)
 {
     const int n = voices_of(self);
@@ -2502,6 +2590,7 @@ activate(LV2_Handle instance)
     self->sm[SM_MOD_DEPTH]  = 0.5f + 3.5f * param_read(self, CTL_MOD) * 0.01f;
     self->sm[SM_VOICE_GAIN] = voice_gain_of(self, self->n_ch);
     self->sm[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
+    self->sm[SM_HARM_G]     = harm_gain[harm_count_of(self)];
     self->sm[SM_GRILLE_PRE] = drive_pre_of(param_read(self, CTL_GRILLE_BUZZ));
     self->sm[SM_GRILLE_POST]= drive_post_of(self->sm[SM_GRILLE_PRE]);
     self->sm[SM_GRILLE_MIX] = param_read(self, CTL_GRILLE_BUZZ) * 0.01f;
@@ -2581,9 +2670,27 @@ activate(LV2_Handle instance)
     self->ph_mod       = 0.0f;
     self->pitch_phase  = 0.0f;
     self->pitch_was_moving = 0;
-    for (int h = 0; h < 2; ++h) {
-        self->harm_phase[h] = (h == 0) ? 0.0f : 0.5f;
-        self->harm_was[h]   = 0;
+    /* The first two keep the phases they have always had, so a board with
+       two harmony voices and no spread starts exactly where it used to.
+       The other two come in a quarter turn apart from them. */
+    static const int   harm_ctl_init[N_HARM]  = { CTL_HARM_1, CTL_HARM_2,
+                                                  CTL_HARM_3, CTL_HARM_4 };
+    static const float depart_h[N_HARM]       = { 0.00f, 0.50f, 0.25f, 0.75f };
+    static const float depart_h_lent[N_HARM]  = { 0.19f, 0.71f, 0.43f, 0.07f };
+    static const float depart_h_vib[N_HARM]   = { 0.61f, 0.13f, 0.89f, 0.37f };
+    static const float depart_h_swell[N_HARM] = { 0.29f, 0.83f, 0.11f, 0.67f };
+    static const float depart_h_amp[N_HARM]   = { 0.73f, 0.41f, 0.03f, 0.59f };
+    for (int h = 0; h < N_HARM; ++h) {
+        /* Arrive at the level the ports already ask for: a board opening
+           with two harmony voices is not three of them fading in. */
+        const float demi = param_read(self, harm_ctl_init[h]);
+        self->hg[h]            = (demi > 0.01f || demi < -0.01f) ? 1.0f : 0.0f;
+        self->harm_phase[h]    = depart_h[h];
+        self->harm_was[h]      = 0;
+        self->ph_harm_drift[h] = depart_h_lent[h];
+        self->ph_harm_vib[h]   = depart_h_vib[h];
+        self->ph_harm_swell[h] = depart_h_swell[h];
+        self->ph_harm_amp[h]   = depart_h_amp[h];
     }
 
     self->screen_left = 1u;
@@ -4022,20 +4129,82 @@ run(LV2_Handle instance, uint32_t n_samples)
        not from where PITCH has put you, so PITCH at -12 with a third
        above gives an octave below AND a third above, which is a spread
        rather than a surprise. */
-    const int   harm_ctl[2]  = { CTL_HARM_1, CTL_HARM_2 };
-    float       harm_step[2];
-    int         harm_moves[2];
-    for (int h = 0; h < 2; ++h) {
+    const int   harm_ctl[N_HARM] = { CTL_HARM_1, CTL_HARM_2,
+                                     CTL_HARM_3, CTL_HARM_4 };
+    float       harm_step[N_HARM];
+    float       harm_ratio[N_HARM];
+    int         harm_moves[N_HARM];
+    int         n_harm = 0;
+    for (int h = 0; h < N_HARM; ++h) {
         const float demi = param_read(self, harm_ctl[h]);
         harm_moves[h] = (demi > 0.01f || demi < -0.01f);
-        harm_step[h]  = (1.0f - exp2_approx(demi * (1.0f / 12.0f))) / pitch_win;
+        harm_ratio[h] = exp2_approx(demi * (1.0f / 12.0f));
+        harm_step[h]  = (1.0f - harm_ratio[h]) / pitch_win;
         /* starting one has to start on the newest sample, or its first
            sample is spliced to one half a window old */
-        if (harm_moves[h] && !self->harm_was[h]) { self->harm_phase[h] = 0.0f; }
+        if (harm_moves[h] && !self->harm_was[h]) {
+            self->harm_phase[h] = 0.0f;
+            /* and its throat starts empty, or a voice brought back an
+               hour later fades in whatever it was holding */
+            for (uint32_t c = 0; c < n_ch; ++c) {
+                self->ch[c].harm_lp[h] = 0.0f;
+                self->ch[c].harm_hp[h] = 0.0f;
+            }
+        }
         self->harm_was[h] = harm_moves[h];
+        if (harm_moves[h]) { ++n_harm; }
+    }
+    /* A voice arriving or leaving walks over one block. Its phase has to
+       go on turning while it fades OUT, or the last sample it gives is
+       spliced to one half a window old. */
+    float hg_step[N_HARM];
+    int   harm_run[N_HARM];
+    int   any_harm = 0;
+    for (int h = 0; h < N_HARM; ++h) {
+        const float cible = harm_moves[h] ? 1.0f : 0.0f;
+        /* Snapped when it is within a millionth, or a ramp that lands a
+           hair short of its target keeps a silent voice being computed
+           for the rest of the evening. */
+        float d = cible - self->hg[h];
+        if (d < 1.0e-6f && d > -1.0e-6f) { self->hg[h] = cible; d = 0.0f; }
+        hg_step[h] = (n_samples > 0u) ? d / (float)n_samples : 0.0f;
+        harm_run[h] = harm_moves[h] || self->hg[h] > 0.0f
+                                    || hg_step[h] != 0.0f;
+        if (harm_run[h]) { any_harm = 1; }
     }
     const int harm_on = (self->sw_state[SW_HARM] || self->sw[SW_HARM] > 0.0f)
-                        && (harm_moves[0] || harm_moves[1]);
+                        && any_harm;
+
+    /* What turns the four copies into four singers. At 0 none of it is
+       worked out - not one extra sine, not one extra filter - and the
+       block is bit for bit what it was before this existed. */
+    const float hs = param_read(self, CTL_HARM_SPREAD) * 0.01f;
+    const int   harm_hum = (hs > 0.0f);
+    float harm_base[N_HARM], harm_lp_c[N_HARM], harm_hp_c[N_HARM];
+    float inc_h_drift[N_HARM], inc_h_vib[N_HARM];
+    float inc_h_swell[N_HARM], inc_h_amp[N_HARM];
+    float harm_pan[N_HARM][MAX_CH];
+    if (harm_hum) {
+        for (int h = 0; h < N_HARM; ++h) {
+            /* nobody comes in exactly with you */
+            harm_base[h]   = 2.0f + hs * harm_late_ms[h] * ms2n;
+            harm_lp_c[h]   = onepole_coef(harm_tone[h], rate);
+            harm_hp_c[h]   = onepole_coef(harm_cut[h],  rate);
+            inc_h_drift[h] = harm_drift_hz[h] / rate;
+            inc_h_vib[h]   = harm_vib_hz[h]   / rate;
+            inc_h_swell[h] = harm_swell_hz[h] / rate;
+            inc_h_amp[h]   = harm_amp_hz[h]   / rate;
+            /* and nobody stands in the same place. A quarter of a
+               decibel either side rather than a hard pan: singers in a
+               room are spread, not split, and this has to stay sane
+               when the two channels are summed back to mono. */
+            for (uint32_t c = 0; c < n_ch; ++c) {
+                harm_pan[h][c] = (n_ch == 1u) ? 1.0f
+                               : 1.0f + hs * (((uint32_t)(h & 1) == c)
+                                              ? 0.25f : -0.25f);
+            }
+        }
+    }
 
     const int n_voices = voices_of(self);
     const float out_db    = ctl_read(self, CTL_OUTPUT);
@@ -4282,6 +4451,7 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_MOD_DEPTH]  = 0.5f + 3.5f * mod_amt;
     target[SM_VOICE_GAIN] = voice_gain_of(self, n_ch);
     target[SM_HARM]       = param_read(self, CTL_HARM_MIX) * 0.01f;
+    target[SM_HARM_G]     = harm_gain[harm_count_of(self)];
     target[SM_GRILLE_PRE] = grille_pre;
     target[SM_GRILLE_POST]= grille_post;
     target[SM_GRILLE_MIX] = grille_buzz * 0.01f;
@@ -4782,24 +4952,75 @@ run(LV2_Handle instance, uint32_t n_samples)
                before PITCH moved it. Two of them at seven tenths, which
                is where two decorrelated copies add up to about one. --- */
         if (harm_on) {
-            const float g = sm[SM_HARM] * self->sw[SW_HARM] * 0.70f;
-            for (int h = 0; h < 2; ++h) {
-                if (!harm_moves[h]) { continue; }
+            const float g0 = sm[SM_HARM] * self->sw[SW_HARM] * sm[SM_HARM_G];
+            for (int h = 0; h < N_HARM; ++h) {
+                if (!harm_run[h]) { continue; }
+                const float g  = g0 * self->hg[h];
                 const float pa = self->harm_phase[h];
                 float pb = pa + 0.5f;
                 if (pb >= 1.0f) { pb -= 1.0f; }
                 const float wa = 0.5f - 0.5f * lfo_sin(pa + 0.25f);
-                for (uint32_t c = 0; c < n_ch; ++c) {
-                    Chan* ch = &self->ch[c];
-                    const float a = ring_read(&ch->pitchline, 2.0f + pa * pitch_win);
-                    const float b = ring_read(&ch->pitchline, 2.0f + pb * pitch_win);
-                    x[c] += g * (a * wa + b * (1.0f - wa));
+                if (harm_hum) {
+                    /* a singer leans in and backs off without meaning to */
+                    const float lean = 1.0f + 0.12f * hs
+                                     * lfo_sin(self->ph_harm_amp[h]);
+                    for (uint32_t c = 0; c < n_ch; ++c) {
+                        Chan* ch = &self->ch[c];
+                        const float a = ring_read(&ch->pitchline,
+                                                  harm_base[h] + pa * pitch_win);
+                        const float b = ring_read(&ch->pitchline,
+                                                  harm_base[h] + pb * pitch_win);
+                        float v = a * wa + b * (1.0f - wa);
+                        /* its own throat: identical spectra fuse back
+                           into one object however far apart they are
+                           tuned, which is the whole trouble here */
+                        ch->harm_lp[h] = flush(ch->harm_lp[h]
+                                             + harm_lp_c[h] * (v - ch->harm_lp[h]));
+                        ch->harm_hp[h] = flush(ch->harm_hp[h]
+                                             + harm_hp_c[h] * (ch->harm_lp[h]
+                                                             - ch->harm_hp[h]));
+                        v = ch->harm_lp[h] - ch->harm_hp[h];
+                        x[c] += g * lean * harm_pan[h][c] * v;
+                    }
+                } else {
+                    for (uint32_t c = 0; c < n_ch; ++c) {
+                        Chan* ch = &self->ch[c];
+                        const float a = ring_read(&ch->pitchline, 2.0f + pa * pitch_win);
+                        const float b = ring_read(&ch->pitchline, 2.0f + pb * pitch_win);
+                        x[c] += g * (a * wa + b * (1.0f - wa));
+                    }
                 }
             }
         }
-        for (int h = 0; h < 2; ++h) {
-            if (!harm_moves[h]) { continue; }
-            self->harm_phase[h] += harm_step[h];
+        for (int h = 0; h < N_HARM; ++h) {
+            if (!harm_run[h]) { continue; }
+            self->hg[h] += hg_step[h];
+            float step = harm_step[h];
+            if (harm_hum) {
+                /* 0.55 to 1.00 of the nominal depth, so the vibrato
+                   breathes rather than running like a motor */
+                const float swell = 0.775f
+                                  + 0.225f * lfo_sin(self->ph_harm_swell[h]);
+                const float cents = (harm_cents[h]
+                                   + harm_drift[h] * lfo_sin(self->ph_harm_drift[h])
+                                   + harm_vib[h]   * swell
+                                                   * lfo_sin(self->ph_harm_vib[h]))
+                                  * hs;
+                /* Divided, not multiplied by a reciprocal: the numerator
+                   moves every sample, so the two are not the same
+                   number. Same rule as the doubler. */
+                step = (1.0f - harm_ratio[h]
+                             * exp2_approx(cents * (1.0f / 1200.0f))) / pitch_win;
+                self->ph_harm_drift[h] += inc_h_drift[h];
+                if (self->ph_harm_drift[h] >= 1.0f) { self->ph_harm_drift[h] -= 1.0f; }
+                self->ph_harm_vib[h]   += inc_h_vib[h];
+                if (self->ph_harm_vib[h]   >= 1.0f) { self->ph_harm_vib[h]   -= 1.0f; }
+                self->ph_harm_swell[h] += inc_h_swell[h];
+                if (self->ph_harm_swell[h] >= 1.0f) { self->ph_harm_swell[h] -= 1.0f; }
+                self->ph_harm_amp[h]   += inc_h_amp[h];
+                if (self->ph_harm_amp[h]   >= 1.0f) { self->ph_harm_amp[h]   -= 1.0f; }
+            }
+            self->harm_phase[h] += step;
             if (self->harm_phase[h] >= 1.0f) { self->harm_phase[h] -= 1.0f; }
             if (self->harm_phase[h] <  0.0f) { self->harm_phase[h] += 1.0f; }
         }
@@ -5401,6 +5622,7 @@ state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve,
        IS the history. */
     static const struct { int n_col, n_sw; } passe[] = {
         { N_PROGRAM_COL, (int)SW_COUNT },   /* this build */
+        { 35,            13 },              /* builds 31..35 */
         { 29,            13 },              /* build 30: the grille */
         { 26,            12 },              /* up to build 29 */
     };

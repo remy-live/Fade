@@ -163,6 +163,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -326,6 +335,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -493,6 +511,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -656,6 +683,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -823,6 +859,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -986,6 +1031,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -1153,6 +1207,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1316,6 +1379,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -1483,6 +1555,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1646,6 +1727,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -1813,6 +1903,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1976,6 +2075,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -2143,6 +2251,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2306,6 +2423,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -2473,6 +2599,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2636,6 +2771,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -2803,6 +2947,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2966,6 +3119,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -3133,6 +3295,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3296,6 +3467,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -3463,6 +3643,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3626,6 +3815,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -3793,6 +3991,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3863,13 +4070,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 38.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -3958,6 +4165,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 7.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 55.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4028,13 +4244,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 42.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -4123,6 +4339,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 7.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -5.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 85.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4199,7 +4424,7 @@
         pset:value -5.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 48.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -4288,6 +4513,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 60.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4358,13 +4592,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 45.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -4453,6 +4687,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 50.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4523,13 +4766,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 40.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -4618,6 +4861,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 5.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 95.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4688,13 +4940,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 36.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -4782,6 +5034,15 @@
     ] , [
         lv2:symbol "grille_gate" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 100.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -4946,6 +5207,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -5113,6 +5383,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5276,6 +5555,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -5443,6 +5731,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5606,6 +5903,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -5773,6 +6079,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5936,6 +6251,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -6103,6 +6427,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6266,6 +6599,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -6433,6 +6775,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 35.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6597,6 +6948,15 @@
     ] , [
         lv2:symbol "grille_gate" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 45.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -6763,6 +7123,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 40.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6928,6 +7297,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 30.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7091,6 +7469,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -7258,6 +7645,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7421,6 +7817,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -7588,6 +7993,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7751,6 +8165,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -7918,6 +8341,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8081,6 +8513,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -8248,6 +8689,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8411,6 +8861,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -8578,6 +9037,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8741,6 +9209,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -8908,6 +9385,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9071,6 +9557,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -9238,6 +9733,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9401,6 +9905,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -9568,6 +10081,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9731,6 +10253,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -9898,6 +10429,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10061,6 +10601,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -10228,6 +10777,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10391,6 +10949,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -10558,6 +11125,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10721,6 +11297,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -10888,6 +11473,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11051,6 +11645,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -11218,6 +11821,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11381,6 +11993,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -11548,6 +12169,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11711,6 +12341,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -11878,6 +12517,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12041,6 +12689,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -12208,6 +12865,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12371,6 +13037,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -12538,6 +13213,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12701,6 +13385,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -12868,6 +13561,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13031,6 +13733,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -13198,6 +13909,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13361,6 +14081,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -13528,6 +14257,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13691,6 +14429,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -13858,6 +14605,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14021,6 +14777,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -14188,6 +14953,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14351,6 +15125,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -14518,6 +15301,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14681,6 +15473,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -14848,6 +15649,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15011,6 +15821,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -15178,6 +15997,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15341,6 +16169,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -15508,6 +16345,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15673,6 +16519,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15743,13 +16598,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 38.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -15838,6 +16693,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 7.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 55.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15908,13 +16772,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 42.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -16003,6 +16867,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 7.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -5.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 85.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16079,7 +16952,7 @@
         pset:value -5.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 48.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -16168,6 +17041,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 60.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16238,13 +17120,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value -12.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 45.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -16333,6 +17215,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 50.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16403,13 +17294,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 40.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -16498,6 +17389,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 5.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 95.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16568,13 +17468,13 @@
         pset:value 1.0
     ] , [
         lv2:symbol "harm_1" ;
-        pset:value 4.0
+        pset:value 12.0
     ] , [
         lv2:symbol "harm_2" ;
-        pset:value -5.0
+        pset:value 7.0
     ] , [
         lv2:symbol "harm_mix" ;
-        pset:value 0.0
+        pset:value 36.0
     ] , [
         lv2:symbol "doubler_on" ;
         pset:value 1.0
@@ -16662,6 +17562,15 @@
     ] , [
         lv2:symbol "grille_gate" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value -12.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 100.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -16826,6 +17735,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -16993,6 +17911,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17156,6 +18083,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -17323,6 +18259,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17486,6 +18431,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -17653,6 +18607,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17816,6 +18779,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -17983,6 +18955,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18146,6 +19127,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -18313,6 +19303,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 35.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18477,6 +19476,15 @@
     ] , [
         lv2:symbol "grille_gate" ;
         pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 45.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -18643,6 +19651,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 40.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18808,6 +19825,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 30.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18971,6 +19997,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -19138,6 +20173,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19301,6 +20345,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -19468,6 +20521,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19631,6 +20693,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -19798,6 +20869,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19961,6 +21041,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -20128,6 +21217,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20291,6 +21389,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -20458,6 +21565,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20621,6 +21737,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -20788,6 +21913,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20951,6 +22085,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -21118,6 +22261,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -21281,6 +22433,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -21448,6 +22609,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -21611,6 +22781,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -21778,6 +22957,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -21941,6 +23129,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -22108,6 +23305,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -22271,6 +23477,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -22438,6 +23653,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -22601,6 +23825,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -22768,6 +24001,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -22931,6 +24173,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -23098,6 +24349,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -23261,6 +24521,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
@@ -23428,6 +24697,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -23593,6 +24871,15 @@
         lv2:symbol "grille_gate" ;
         pset:value 0.0
     ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -23756,6 +25043,15 @@
         pset:value 0.0
     ] , [
         lv2:symbol "grille_gate" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_3" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_4" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "harm_spread" ;
         pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;

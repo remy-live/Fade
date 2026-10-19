@@ -342,6 +342,43 @@ A(Paragraph(
     NOTE))
 
 A(PageBreak())
+A(Paragraph("Un vrai chœur avec vous", H))
+A(Paragraph(
+    "Le doubleur sait faire des gens depuis toujours : chacune de ses "
+    "voix a son désaccord, sa dérive, son vibrato, sa gorge et sa place "
+    "dans la pièce. Les voix d’<b>HARMONY</b> n’avaient rien de tout "
+    "ça : le même grain, lu au même endroit, pile juste, et en stéréo "
+    "toutes les deux au centre. Des clones, pas des chanteurs.", P))
+A(tableau([
+    ("HARM 3 et HARM 4",
+     "Deux voix d’harmonie de plus, en demi-tons comme les deux "
+     "premières. À quatre, vous posez un <b>accord</b> derrière la "
+     "chanson. À 0, une voix est muette et ne coûte rien."),
+    ("HARM SPREAD",
+     "Ce qui en fait des <b>personnes</b> : désaccord propre, dérive "
+     "lente, vibrato qui enfle et se relâche, gorge à elle, entrée 11 à "
+     "36 ms après vous, et une place à gauche ou à droite. <b>30 à 50</b>, "
+     "c’est un pupitre qui a répété ; <b>100</b>, un qui n’a pas répété."),
+    ("À 0, rien n’est calculé",
+     "Pas un sinus de plus, pas un filtre de plus, et le son est "
+     "exactement celui d’avant — à l’échantillon près. C’est pour ça "
+     "que la valeur d’usine est zéro : un favori réglé l’été dernier "
+     "revient intact."),
+]))
+A(Spacer(1, 2*mm))
+A(encadre("Et les presets « chœur » n’avaient pas d’accord", [
+    "<b>Choir</b>, <b>Wide Choir</b>, <b>Gospel Choir</b>, <b>Gospel "
+    "Stack</b>, <b>Angel Choir</b> et <b>Seraphim</b> ne contenaient que "
+    "quatre doubles à l’unisson et <b>pas une seule voix d’harmonie</b>. "
+    "Quatre copies de vous sur votre note, c’est un double, pas un "
+    "chœur. Ils ont un accord maintenant.",
+    "Bâti sur des <b>octaves et des quintes</b> là où le preset doit "
+    "marcher dans toutes les tonalités : une tierce est juste ou fausse "
+    "selon l’accord d’en dessous, une octave ne l’est jamais. Essayez "
+    "<b>CHOIR</b> en premier.",
+]))
+
+A(PageBreak())
 A(Paragraph("La porte de bruit du DRIVE et de la GRILLE", H))
 A(Paragraph(
     "Un saturateur ne fait pas la différence entre une voix et le "
