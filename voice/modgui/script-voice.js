@@ -429,18 +429,6 @@ function (event, funcs) {
             var actif = nombre(valeur) > 0.5;
             icon.find('.voice-state').text(actif ? 'FX ON' : 'FX OFF')
                                      .toggleClass('actif', actif);
-        } else if (symbol === 'notches') {
-            var n = Math.round(nombre(valeur));
-            for (var i = 0; i < 4; i++) {
-                icon.find('.voice-notch-' + i).toggleClass('actif', i < n);
-            }
-        } else if (symbol === 'time_out') {
-            icon.find('.voice-time-value').text(Math.round(nombre(valeur)) + ' ms');
-        } else if (symbol === 'fx_now') {
-            /* which effect the foot cycle points at, under its encoders */
-            var NOMS = ['DOUBLE', 'HARMONY', 'PITCH', 'GRILLE', 'MOD', 'DELAY', 'REVERB'];
-            var p = Math.round(nombre(valeur));
-            icon.find('.voice-cycle-now').text('\u25B6 ' + (NOMS[p] || 'DOUBLE'));
         } else if (symbol === 'diag') {
             /* What the plugin sees, read out in words: a switch that does
                nothing has to be able to say why, and from inside a plugin
@@ -489,47 +477,48 @@ function (event, funcs) {
         }
     }
 
-    /* A switch lights the whole section it sits in, which is the thing the
-       default interface could not do. All twelve of them: HARMONY was
-       missing from this list and was the one section that never lit. */
-    var SECTIONS = ['gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'drive_on',
-                    'pitch_on', 'harm_on', 'doubler_on', 'mod_on',
-                    'feedback_on', 'delay_on', 'reverb_on', 'grille_on',
-                    /* NAV and VALIDATE light like switches: they are
-                       momentary, so the light is the press itself */
-                    'nav', 'validate'];
-
-    /* And one padlock per section, which lights only itself: a locked
-       block is not a block turned on, it is a block that has stopped
-       following the favourites. */
-    var VERROUS = ['lock_gate', 'lock_comp', 'lock_de_ess', 'lock_eq',
-                   'lock_drive', 'lock_pitch', 'lock_harm', 'lock_doubler',
-                   'lock_mod', 'lock_feedback', 'lock_delay', 'lock_reverb',
-                   'lock_grille'];
-
-    /* And whether each block is FITTED at all. Off, it is not computed -
-       so the whole section goes grey: a block that is not in the chain
-       must not look like one that is merely switched off, or a
-       soundcheck is spent wondering why a switch does nothing. */
-    var MONTES = ['use_eq', 'use_grille', 'use_drive', 'use_double',
-                  'use_mod', 'use_delay', 'use_reverb'];
+    /* The chain, cell by cell. Three different ports have something to
+       say about one block and they used to be found by walking the DOM
+       upwards from the switch, which tied the script to the shape of the
+       markup - and the markup has just changed shape. Each cell carries
+       its block's name instead, and everything is looked up by that. */
+    var CELLULE = {
+        gate_on: 'gate', comp_on: 'comp', de_ess_on: 'de_ess', eq_on: 'eq',
+        grille_on: 'grille', drive_on: 'drive', pitch_on: 'pitch',
+        harm_on: 'harm', doubler_on: 'doubler', mod_on: 'mod',
+        feedback_on: 'feedback', delay_on: 'delay', reverb_on: 'reverb'
+    };
+    var VERROU = {
+        lock_gate: 'gate', lock_comp: 'comp', lock_de_ess: 'de_ess',
+        lock_eq: 'eq', lock_grille: 'grille', lock_drive: 'drive',
+        lock_pitch: 'pitch', lock_harm: 'harm', lock_doubler: 'doubler',
+        lock_mod: 'mod', lock_feedback: 'feedback', lock_delay: 'delay',
+        lock_reverb: 'reverb'
+    };
+    var MONTE = {
+        use_eq: 'eq', use_grille: 'grille', use_drive: 'drive',
+        use_double: 'doubler', use_mod: 'mod', use_delay: 'delay',
+        use_reverb: 'reverb'
+    };
+    /* kept for the diagnostic line, which counts them */
+    var VERROUS = Object.keys(VERROU);
 
     function majSection(icon, symbol, valeur) {
-        var verrou = VERROUS.indexOf(symbol) >= 0;
-        var monte  = MONTES.indexOf(symbol) >= 0;
-        if (!verrou && !monte && SECTIONS.indexOf(symbol) < 0) { return; }
-        var sw = icon.find('[mod-port-symbol="' + symbol + '"]');
-        if (!sw.length) { return; }
         var on = nombre(valeur) > 0.5;
-        sw.toggleClass('on', on).toggleClass('off', !on);
-        if (verrou) { return; }
-        if (sw.parent && sw.parent().parent) {
-            if (monte) {
-                sw.parent().parent().toggleClass('horsjeu', !on);
-            } else {
-                sw.parent().parent().toggleClass('actif', on);
-            }
+        var bloc = CELLULE[symbol];
+        if (bloc) {
+            /* the switch draws itself, and the cell lights with it */
+            var sw = icon.find('[mod-port-symbol="' + symbol + '"]');
+            if (sw.length) { sw.toggleClass('on', on).toggleClass('off', !on); }
+        } else {
+            bloc = VERROU[symbol] || MONTE[symbol];
+            if (!bloc) { return; }
         }
+        var cell = icon.find('.voice-cell[data-bloc="' + bloc + '"]');
+        if (!cell.length) { return; }
+        if (CELLULE[symbol])      { cell.toggleClass('actif', on); }
+        else if (VERROU[symbol])  { cell.toggleClass('verrou', on); }
+        else                      { cell.toggleClass('horsjeu', !on); }
     }
 
     function pulse(icon, symbol, classe, cible, apres) {

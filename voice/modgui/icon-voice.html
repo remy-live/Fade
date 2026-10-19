@@ -1,3 +1,24 @@
+<!-- VOICE - the pedal.
+
+     It used to be the mixing desk as well: thirteen bordered boxes, each
+     with a title bar carrying a padlock, a fitting pip and a switch, plus
+     the pedal page, the foot cycle and thirty-five knobs. Nine hundred
+     and sixty pixels of it, every element the same size and the same
+     colour, so nothing was more important than anything else and the eye
+     had nowhere to land. The player called it heavy and unreadable, and
+     was right.
+
+     So it answers two questions now and no others. WHAT AM I PLAYING -
+     the name, big, and the favourites behind it. WHAT IS IN THE CHAIN -
+     thirteen cells, lit when the block is on, dimmed when it is not
+     fitted, marked when it is locked. Everything else is a hand on a
+     knob at a soundcheck, and that belongs in the settings panel, which
+     is GENERATED from the port list, carries every control there is, and
+     is checked for exactly that.
+
+     The three ports a name travels on stay here, hidden. They work, and
+     finding out whether they still would somewhere else is not a thing
+     to spend ten builds on twice. -->
 <div class="mod-pedal mod-pedal-voice{{{cns}}}">
 
     <div mod-role="drag-handle" class="mod-drag-handle"></div>
@@ -5,49 +26,25 @@
     <div class="voice-head{{{cns}}}">
         <span class="voice-brand{{{cns}}}">{{brand}}</span>
         <span class="voice-name{{{cns}}}">{{label}}</span>
+        <span class="voice-build{{{cns}}}">GUI 33</span>
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 32</div>
-
-    <!-- What the plugin SEES. A footswitch is a black box from inside a
-         plugin: whether its port is connected, how many favourites the
-         walk has to step over, what the screen announced. Read out here
-         in words rather than guessed at. -->
-    <div class="voice-diag{{{cns}}} voice-diag" title="What the plugin sees of the GO TO switch. Read it when a switch does not do what you expect."></div>
-
-    <!-- ---------------- the program list ---------------- -->
+    <!-- ---------------- what am I playing ---------------- -->
     <div class="voice-prog{{{cns}}}">
         <div class="voice-prog-nav{{{cns}}} voice-prev" title="Previous sound">&#9664;</div>
-
         <div class="voice-prog-box{{{cns}}}">
-            <div class="voice-prog-label{{{cns}}}">PROGRAM</div>
             <div class="voice-prog-value{{{cns}}} voice-prog-value"
                  mod-role="input-control-value"
                  mod-port-symbol="program"></div>
-            <!-- A label, not a button with a handler: mod-ui copies the
-                 icon after building it and any binding the script made is
-                 lost with the copy. Its checkbox sits beside the panel,
-                 further down, so that CSS alone can open it. -->
-            <label class="voice-fav-btn{{{cns}}} voice-fav-btn"
-                   for="voice-fav-open{{{cns}}}"
-                   title="The six favourites, by name. Tick one to go to it, type in a box to rename it.">FAVORIS &#9662;</label>
         </div>
-
         <div class="voice-prog-nav{{{cns}}} voice-next" title="Next sound">&#9654;</div>
-
-        <div class="voice-prog-dial{{{cns}}}"
-             mod-role="input-control-port"
-             mod-port-symbol="program"
-             mod-widget-rotation="270"></div>
-
-        <!-- The favourites, by name. mod-ui's own PROGRAM list can only
-             ever say USER 1 to USER 6 - the names live in the plugin, not
-             in the descriptor - so the page keeps its own list, fed by
-             the six names the plugin sends back one per second. -->
+        <label class="voice-fav-btn{{{cns}}} voice-fav-btn"
+               for="voice-fav-open{{{cns}}}"
+               title="The six favourites, by name. Tick one to go to it, &#10005; twice to throw it away.">FAVORIS &#9662;</label>
         <input type="checkbox" id="voice-fav-open{{{cns}}}"
                class="voice-fav-open{{{cns}}}">
-        <div class="voice-fav-panel{{{cns}}} voice-fav-panel">
+<div class="voice-fav-panel{{{cns}}} voice-fav-panel">
             <div class="voice-fav-head{{{cns}}}">FAVORIS</div>
             <div class="voice-fav-row{{{cns}}}">
                 <input type="radio" name="voice-fav-pick{{{cns}}}" data-slot="1"
@@ -133,7 +130,21 @@
                 name is in the slot as you type.</div>
         </div>
 
-        <!-- The two ports a name travels on: one character per change of
+        <div class="voice-meters{{{cns}}}">
+            <div class="voice-meter{{{cns}}}" title="Compressor gain reduction">
+                <span class="voice-meter-cap{{{cns}}}">GR</span>
+                <div class="voice-meter-bar{{{cns}}}">
+                    <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
+                </div>
+            </div>
+            <div class="voice-meter{{{cns}}}" title="Peak level leaving the plugin">
+                <span class="voice-meter-cap{{{cns}}}">OUT</span>
+                <div class="voice-meter-bar{{{cns}}}">
+                    <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
+                </div>
+            </div>
+        </div>
+<!-- The two ports a name travels on: one character per change of
              the strobe. Written by the script only - there is nothing here
              to turn by hand, but every control input has to be reachable. -->
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_char"></div>
@@ -141,68 +152,99 @@
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_slot"></div>
     </div>
 
-    <!-- ---------------- storing, comparing, cutting ---------------- -->
-    <div class="voice-bar{{{cns}}}">
-        <div class="voice-slot{{{cns}}}">
-            <div class="voice-slot-dial{{{cns}}}"
-                 mod-role="input-control-port"
-                 mod-port-symbol="user_slot"
-                 mod-widget-rotation="270"></div>
-            <div class="voice-slot-value{{{cns}}}"
-                 mod-role="input-control-value"
-                 mod-port-symbol="user_slot"></div>
-            <div class="voice-slot-cap{{{cns}}}">SAVE TO</div>
+    <!-- ---------------- what is in the chain ----------------
+         One cell per block, in the order the sound goes through them.
+         Lit means the block is on. Dimmed means it is not FITTED - not
+         computed at all - so its switch has nothing to switch, which is
+         the one state that used to send a player hunting. A dot means a
+         lock: that block is not following the favourites. -->
+    <div class="voice-chain{{{cns}}}">
+        <div class="voice-chain-cap{{{cns}}}">LA CHAINE</div>
+        <div class="voice-chain-row{{{cns}}}">
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="gate">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="gate_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">GATE</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="comp">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="comp_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">COMP</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="de_ess">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="de_ess_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">DE-ESS</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="eq">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="eq_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">EQ</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="grille">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">GRILLE</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="drive">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="drive_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">DRIVE</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="pitch">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="pitch_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">PITCH</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="harm">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="harm_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">HARMONY</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="doubler">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="doubler_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">DOUBLE</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="mod">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="mod_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">MOD</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="feedback">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="feedback_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">NO HOWL</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="delay">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="delay_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">DELAY</span>
+            </div>
+            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="reverb">
+                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="reverb_on" mod-widget="switch"></div>
+                <span class="voice-cell-name{{{cns}}}">REVERB</span>
+            </div>
         </div>
+        <div class="voice-chain-note{{{cns}}}">Éteint&nbsp;= coupé au pied&nbsp;·
+            grisé&nbsp;= pas monté, ne coûte rien&nbsp;· point&nbsp;= verrouillé.
+            Les réglages sont dans les paramètres du bloc.</div>
+    </div>
 
-        <div class="voice-slot{{{cns}}}"
-             title="Thirty-two ready-made names. Turning it names the USER slot on the left, there and then - it does not wait for SAVE. Type in FAVORIS for anything else.">
-            <div class="voice-slot-dial{{{cns}}}"
-                 mod-role="input-control-port"
-                 mod-port-symbol="slot_name"
-                 mod-widget-rotation="270"></div>
-            <div class="voice-slot-value{{{cns}}}"
-                 mod-role="input-control-value"
-                 mod-port-symbol="slot_name"></div>
-            <div class="voice-slot-cap{{{cns}}}">WORD</div>
-        </div>
-
-        <div class="voice-save{{{cns}}} voice-save" mod-port-symbol="save"
-             title="Store what you are hearing into the USER slot on the left. The sound only - it never renames the slot.">SAVE</div>
-
-        <div class="voice-ab{{{cns}}} voice-ab" mod-port-symbol="ab"
-             title="Back to the program you were on before this one">A/B</div>
-
-        <!-- How far the two walking switches go. Six favourites is what
-             the plugin holds; three is what a song needs, and a cycle
-             that steps over three empty slots to come back to the first
-             is three presses of nothing in front of an audience. -->
-        <div class="voice-slot{{{cns}}}"
-             title="How far USER &#9654; and GO TO walk: from the first favourite to this one and no further, still skipping the ones with nothing in them. The six GO switches ignore it and always reach their own.">
-            <div class="voice-slot-dial{{{cns}}}"
-                 mod-role="input-control-port"
-                 mod-port-symbol="cycle"
-                 mod-widget-rotation="270"></div>
-            <div class="voice-slot-value{{{cns}}}"
-                 mod-role="input-control-value"
-                 mod-port-symbol="cycle"></div>
-            <div class="voice-slot-cap{{{cns}}}">CYCLE</div>
-        </div>
-
-        <div class="voice-ab{{{cns}}} voice-cycle" mod-port-symbol="next_user"
-             title="Go to the next favourite that has something in it, inside the CYCLE beside this button">USER &#9654;</div>
-
-        <!-- The second footswitch. It is a foot's control - a tap walks,
-             a hold goes there - so the mouse only gets the tap; what it
-             is really for is the pedal. -->
-        <div class="voice-ab{{{cns}}} voice-browse" mod-port-symbol="fav_browse"
-             title="Walk the favourites WITHOUT hearing them: each press moves to the next and names it on the switch. On the pedal, HOLD it half a second to go there. It asks the Dwarf for Momentary On by itself.">GO TO &#9655;</div>
-
-        <!-- One switch per favourite. Six ports so six footswitches can
-             each own one: a press goes there, always, whatever was
-             pressed before. -->
+    <!-- ---------------- what is under the foot ---------------- -->
+    <div class="voice-foot{{{cns}}}">
+        <div class="voice-btn{{{cns}}} voice-save" mod-port-symbol="save"
+             title="Store what you are hearing into the USER slot chosen in the settings. The sound only - it never renames the slot.">SAVE</div>
+        <div class="voice-btn{{{cns}}} voice-ab" mod-port-symbol="ab"
+             title="Back to the sound you were on before this one">A/B</div>
+        <div class="voice-btn{{{cns}}} voice-cycle" mod-port-symbol="next_user"
+             title="The next favourite that has something in it, inside the CYCLE">USER &#9654;</div>
+        <div class="voice-btn{{{cns}}} voice-browse" mod-port-symbol="fav_browse"
+             title="Walk the favourites WITHOUT hearing them. On the pedal, HOLD it half a second to go there.">GO TO &#9655;</div>
+        <div class="voice-btn{{{cns}}} voice-tap" mod-port-symbol="tap"
+             title="Two presses set the delay time">TAP</div>
         <div class="voice-go{{{cns}}}">
-            <div class="voice-go-cap{{{cns}}}">ONE SWITCH PER FAVOURITE</div>
-            <div class="voice-go-row{{{cns}}}">
                 <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="1"
                      mod-port-symbol="fav_1" title="Go to USER 1">1</div>
                 <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="2"
@@ -215,564 +257,22 @@
                      mod-port-symbol="fav_5" title="Go to USER 5">5</div>
                 <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="6"
                      mod-port-symbol="fav_6" title="Go to USER 6">6</div>
-            </div>
         </div>
-
-        <div class="voice-bar-space{{{cns}}}"></div>
-
-        <!-- The pedal page. These three are meant for the encoders of
-             one Dwarf page, not for a mouse - but they have to be here
-             to be assignable, and the readout says where the page is. -->
-        <div class="voice-page{{{cns}}}">
-            <div class="voice-page-cap{{{cns}}}">PEDAL PAGE</div>
-            <div class="voice-page-knobs{{{cns}}}">
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="enc_slot"
-                     mod-widget-rotation="270"
-                     title="Encoder 1: the favourite, then the cursor"></div>
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="enc_param"
-                     mod-widget-rotation="270"
-                     title="Encoder 2: the parameter, then the letter"></div>
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="enc_value"
-                     mod-widget-rotation="270"
-                     title="Encoder 3: the value, then yes or no"></div>
-            </div>
-        </div>
-
-        <div class="voice-mute{{{cns}}}">
-            <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                 mod-port-symbol="mute" mod-widget="switch"></div>
-            <div class="voice-mute-cap{{{cns}}}">MUTE</div>
-        </div>
+        <div class="voice-foot-space{{{cns}}}"></div>
+        <div class="voice-sw{{{cns}}} voice-mute-sw" mod-role="input-control-port"
+             mod-port-symbol="mute" mod-widget="switch"
+             title="Cuts the sound between two songs. The tails go on decaying behind it."></div>
+        <span class="voice-foot-cap{{{cns}}}">MUTE</span>
+        <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+             mod-port-symbol="fx" mod-widget="switch"
+             title="Cuts the four effects at once, in forty milliseconds, and lets their tails ring out."></div>
+        <span class="voice-foot-cap{{{cns}}} voice-state">FX</span>
     </div>
 
-    <!-- ---------------- the channel strip ---------------- -->
-    <div class="voice-row{{{cns}}} voice-row-strip{{{cns}}}">
-        <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">GATE</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_gate" mod-widget="switch"
-                     title="Lock GATE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="gate_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="gate" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">THRESH</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="gate"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">COMP</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_comp" mod-widget="switch"
-                     title="Lock COMP to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="comp_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="comp" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="comp"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}" title="A trim on the compressor's output, on top of the makeup it works out for itself. For the favourite that wants two decibels more than right. At 0 it does nothing. Saved with the favourite.">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="comp_level" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="comp_level"></div>
-            </div>
-            <div class="voice-meter{{{cns}}} voice-meter-gr{{{cns}}}">
-                <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
-                <span class="voice-meter-cap{{{cns}}}">GR</span>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">DE-ESS</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_de_ess" mod-widget="switch"
-                     title="Lock DE-ESS to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="de_ess_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="de_ess" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="de_ess"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="de_ess_freq" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">S Hz</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="de_ess_freq"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}" title="A trim on the de-esser's output. The weakest of the four: it sits in series with COMP LEVEL and EQ LEVEL, so three in a row largely multiply. At 0 it does nothing. Saved with the favourite.">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="de_ess_level" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="de_ess_level"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">EQ</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_eq" mod-widget="switch"
-                     title="Lock EQ to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_eq" mod-widget="switch"
-                     title="Is EQ FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="eq_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="body" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">BODY</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="body"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="mid_freq" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MID Hz</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="mid_freq"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="presence" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MID dB</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="presence"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="air" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">AIR</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="air"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}" title="A trim on the tone stage. BODY, PRESENCE and AIR are bands ADDED to the voice, so three of them up is twelve decibels nobody asked for - this is where it is taken back. At 0 it does nothing. Saved with the favourite.">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="eq_level" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="eq_level"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ---------------- character ---------------- -->
-    <div class="voice-row{{{cns}}} voice-row-char{{{cns}}}">
-        <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">DRIVE</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_drive" mod-widget="switch"
-                     title="Lock DRIVE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_drive" mod-widget="switch"
-                     title="Is DRIVE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="drive_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="drive" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">AMOUNT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="drive"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w3{{{cns}}} voice-section-grille">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">GRILLE</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_grille" mod-widget="switch"
-                     title="Lock GRILLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_grille" mod-widget="switch"
-                     title="Is GRILLE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_width" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">WIDTH</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="grille_width"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_buzz" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">BUZZ</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="grille_buzz"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_tone" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">TONE</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="grille_tone"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}" title="How much of the grille is heard against the voice going into it. The switch was all there was - in or out, which is a telephone and never a voice ON a telephone. At 100 it is what the switch always did. Saved with the favourite.">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_mix" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="grille_mix"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">PITCH</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_pitch" mod-widget="switch"
-                     title="Lock PITCH to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="pitch_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="pitch" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">SEMI</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="pitch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="pitch_mix" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="pitch_mix"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w3{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">HARMONY</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_harm" mod-widget="switch"
-                     title="Lock HARMONY to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="harm_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="harm_1" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">VOICE 1</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="harm_1"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="harm_2" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">VOICE 2</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="harm_2"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="harm_mix" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="harm_mix"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ---------------- doubling ---------------- -->
-    <div class="voice-row{{{cns}}} voice-row-double{{{cns}}}">
-        <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">DOUBLE</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_doubler" mod-widget="switch"
-                     title="Lock DOUBLE to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_double" mod-widget="switch"
-                     title="Is DOUBLE FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="doubler_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="doubler" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="doubler"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="voices" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">VOICES</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="voices"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="spread" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">SPREAD</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="spread"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">MOD</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_mod" mod-widget="switch"
-                     title="Lock MOD to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_mod" mod-widget="switch"
-                     title="Is MOD FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="mod_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="modulation" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">DEPTH</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="modulation"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="mod_speed" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">SPEED</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="mod_speed"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ---------------- time ---------------- -->
-    <div class="voice-row{{{cns}}} voice-row-time{{{cns}}}">
-        <div class="voice-section{{{cns}}} voice-w4{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">DELAY</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_delay" mod-widget="switch"
-                     title="Lock DELAY to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_delay" mod-widget="switch"
-                     title="Is DELAY FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="delay_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="delay_time" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">TIME</div>
-                <div class="voice-knob-value{{{cns}}} voice-time-value"
-                     mod-role="input-control-value" mod-port-symbol="delay_time"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="delay_repeats" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">REPEATS</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="delay_repeats"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="delay_mix" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="delay_mix"></div>
-            </div>
-            <div class="voice-tap{{{cns}}} voice-tap" mod-port-symbol="tap"
-                 title="Tap twice to set the time">TAP</div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">REVERB</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_reverb" mod-widget="switch"
-                     title="Lock REVERB to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-fit{{{cns}}} voice-fit"
-                     mod-role="input-control-port"
-                     mod-port-symbol="use_reverb" mod-widget="switch"
-                     title="Is REVERB FITTED at all? Off, the block is not computed - it costs no processor and its ON switch has nothing left to switch. A rig decision, never a foot's: unfitting a block mid song would drop the load and refitting it would raise it again. No program and no favourite ever writes it."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="reverb_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="reverb" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">DECAY</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="reverb"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="reverb_mix" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">MIX</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="reverb_mix"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ---------------- levels and the master switches ---------------- -->
-    <div class="voice-row{{{cns}}} voice-row-out{{{cns}}}">
-        <div class="voice-section{{{cns}}} voice-w3{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">LEVELS</span>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="in_gain" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">IN</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="in_gain"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="low_cut" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">LOW CUT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="low_cut"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="output" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">OUT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="output"></div>
-            </div>
-            <div class="voice-meter{{{cns}}} voice-meter-out{{{cns}}}">
-                <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
-                <span class="voice-meter-cap{{{cns}}}">OUT</span>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w1{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">NO HOWL</span>
-                <div class="voice-lock{{{cns}}} voice-lock"
-                     mod-role="input-control-port"
-                     mod-port-symbol="lock_feedback" mod-widget="switch"
-                     title="Lock NO HOWL to what it is set to now: it stops following the favourites, and SAVE stops writing it into any slot that already has something in it. Its ON/OFF still follows them - what is locked is the setting. The room decides the reverb; the set list decides the rest."></div>
-                <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="feedback_on" mod-widget="switch"></div>
-            </div>
-            <div class="voice-knob{{{cns}}}">
-                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="feedback" mod-widget-rotation="270"></div>
-                <div class="voice-knob-title{{{cns}}}">HUNT</div>
-                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
-                     mod-port-symbol="feedback"></div>
-            </div>
-            <div class="voice-notches{{{cns}}} voice-notches">
-                <span class="voice-notch{{{cns}}} voice-notch-0"></span>
-                <span class="voice-notch{{{cns}}} voice-notch-1"></span>
-                <span class="voice-notch{{{cns}}} voice-notch-2"></span>
-                <span class="voice-notch{{{cns}}} voice-notch-3"></span>
-                <span class="voice-notch-cap{{{cns}}}">NOTCHES</span>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}} voice-section-cycle">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">FOOT CYCLE</span>
-                <span class="voice-cycle-now{{{cns}}} voice-cycle-now">&#9654; DOUBLE</span>
-            </div>
-            <!-- Two switches that reach seven effects the MFX way, and
-                 three encoders that follow the one pointed at. Here to
-                 be assignable; the readout names the effect, from FX NOW. -->
-            <div class="voice-cycle-row{{{cns}}}">
-                <div class="voice-cycle-sw{{{cns}}}">
-                    <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                         mod-port-symbol="nav" mod-widget="switch"
-                         title="NAV: short = next effect, held = previous, held on DELAY = tap"></div>
-                    <div class="voice-cycle-cap{{{cns}}}">NAV</div>
-                </div>
-                <div class="voice-cycle-sw{{{cns}}}">
-                    <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-                         mod-port-symbol="validate" mod-widget="switch"
-                         title="VALIDATE: the pointed effect on or off"></div>
-                    <div class="voice-cycle-cap{{{cns}}}">VALID</div>
-                </div>
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="fx_enc1"
-                     mod-widget-rotation="270"
-                     title="Encoder 1 of the pointed effect"></div>
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="fx_enc2"
-                     mod-widget-rotation="270"
-                     title="Encoder 2 of the pointed effect"></div>
-                <div class="voice-page-dial{{{cns}}}"
-                     mod-role="input-control-port"
-                     mod-port-symbol="fx_enc3"
-                     mod-widget-rotation="270"
-                     title="Encoder 3 of the pointed effect"></div>
-            </div>
-        </div>
-
-        <div class="voice-section{{{cns}}} voice-w2{{{cns}}} voice-section-fx{{{cns}}}">
-            <div class="voice-section-head{{{cns}}}">
-                <span class="voice-section-name{{{cns}}}">FX</span>
-            </div>
-            <div class="voice-fx{{{cns}}}">
-                <div class="voice-fx-sw{{{cns}}} voice-fx-a" mod-role="input-control-port"
-                     mod-port-symbol="fx" mod-widget="switch"></div>
-                <div class="voice-knob-title{{{cns}}}">FX</div>
-            </div>
-            <div class="voice-fx{{{cns}}}">
-                <div class="voice-fx-sw{{{cns}}} voice-fx-b" mod-role="input-control-port"
-                     mod-port-symbol="fx_2" mod-widget="switch"></div>
-                <div class="voice-knob-title{{{cns}}}">FX 2</div>
-            </div>
-            <div class="voice-state{{{cns}}} voice-state">FX ON</div>
-        </div>
-    </div>
+    <!-- What the plugin SEES. A footswitch is a black box from inside a
+         plugin, so it says so here in words rather than being guessed at. -->
+    <div class="voice-diag{{{cns}}} voice-diag"
+         title="What the plugin sees. Read it when something does not do what you expect."></div>
 
     <div class="mod-footswitch" mod-role="bypass"></div>
 

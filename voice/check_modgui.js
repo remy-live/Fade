@@ -105,13 +105,33 @@ say('every mod-port-symbol exists in the descriptor', inconnus.length === 0,
    buttons the script pulses rather than knobs that hold a value, so they
    carry mod-port-symbol without a mod-role: that attribute is inert to
    mod-ui and says here which port the button drives. */
+/* The pedal carries what is PLAYED, and the settings panel carries
+   everything - which is checked further down, and is what makes this
+   one narrower than it used to be. The pedal used to carry every port
+   there is: thirteen bordered boxes, thirty-five knobs, the pedal page
+   and the foot cycle, nine hundred and sixty pixels with every element
+   the same weight. A list of what belongs on a pedal is worth keeping
+   as a list: it is the thing that stops the wall growing back. */
 const pedale = doc.querySelector('.mod-pedal');
 const places = new Set([...pedale.querySelectorAll('[mod-port-symbol]')]
     .map(el => el.getAttribute('mod-port-symbol')));
-const manquants = ports.filter(p => p.control && p.input && !places.has(p.symbol))
-                       .map(p => p.symbol);
-say('every control input is reachable from the interface', manquants.length === 0,
+const AU_PIED = [
+    'program', 'save', 'ab', 'next_user', 'fav_browse', 'tap', 'fx', 'mute',
+    'fav_1', 'fav_2', 'fav_3', 'fav_4', 'fav_5', 'fav_6',
+    'gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'grille_on', 'drive_on',
+    'pitch_on', 'harm_on', 'doubler_on', 'mod_on', 'feedback_on',
+    'delay_on', 'reverb_on',
+    /* hidden, and staying hidden: a name travels on these and they work */
+    'web_slot', 'web_char', 'web_strobe',
+];
+const manquants = AU_PIED.filter(s => !places.has(s));
+say('everything played is on the pedal', manquants.length === 0,
     manquants.join(' '));
+/* the audio jacks name their ports too, and they are not controls */
+const audio = new Set(ports.filter(p => p.audio).map(p => p.symbol));
+const trop = [...places].filter(s => AU_PIED.indexOf(s) < 0 && !audio.has(s));
+say('and nothing else is, so the wall cannot grow back', trop.length === 0,
+    trop.join(' '));
 
 for (const p of data.effect.ports.audio.input) {
     say('jack for audio input ' + p.symbol,
@@ -224,10 +244,11 @@ if (typeof fn === 'function') {
 
     const sw = doc.querySelector('[mod-port-symbol="gate_on"]');
     say('a switch turned on lights up', sw !== null && sw.classList.contains('on'));
-    /* the switch sits in the section HEAD, and it is the section itself
-       that lights up - so climb two, rather than asking closest() for a
-       class prefix that both of them share */
-    const section = sw ? sw.parentElement.parentElement : null;
+    /* the switch sits in its block's CELL, and the cell lights with it:
+       found by the block's own name rather than by climbing the DOM,
+       which is what tied this to the shape of a markup that has now
+       changed twice */
+    const section = doc.querySelector('.voice-cell[data-bloc="gate"]');
     say('and lights the section it belongs to',
         section !== null && section.classList.contains('actif'));
 
