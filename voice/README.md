@@ -788,10 +788,34 @@ Nine digits, from the left:
 | **7** | the favourite the cursor is on, 0 for none. |
 | **8-9** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
 
-The readout turns amber in the three states where a control cannot do what
+### And the block that does absolutely nothing
+
+A block whose lamp is lit and which cannot be heard is the other black
+box, and it is worse than a dead footswitch because there is no fault to
+find. There are exactly two ways for it to happen, and both are states
+the player chose:
+
+* **`DOUBLE allume mais a 0`** — the switch is on and the amount is at
+  zero. Since the pedal carries only the switches, the amount lives in
+  the settings panel (and at the far end of the pedal page's ENC 2), and
+  several blocks arrive at zero on purpose: DOUBLE, PITCH MIX, HARM MIX,
+  MOD, DRIVE. A switch is not a level.
+* **`DOUBLE allume mais PAS MONTE`** — the block is unfitted, so it is
+  not computed and its ON switch has nothing left to switch. That is
+  exactly what unfitting is for, and it is the one state in which turning
+  the amount up changes nothing either. On the pedal its cell is pale and
+  **its name is struck through**.
+
+The line is rebuilt when any of those ports moves, not only when the
+plugin's own diagnostic word changes — a knob coming off zero stops the
+accusation at once. And a port this page has never been told about is not
+a port at zero: unknown says nothing, or the readout would invent a fault
+on a block it has not heard from yet.
+
+The readout turns amber in the four states where a control cannot do what
 is asked of it and it is not the control's fault: port not connected,
-fewer than two favourites saved, or padlocks lit in the page that the
-plugin is not receiving.
+fewer than two favourites saved, padlocks lit in the page that the plugin
+is not receiving, or a block lit and silent.
 
 ## The screen, and what it announces
 

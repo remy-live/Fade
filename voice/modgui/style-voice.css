@@ -449,6 +449,12 @@
    clickable, because finding it disabled with no reason given is how an
    hour goes. */
 .voice-cell{{{cns}}}.horsjeu { opacity: .33; }
+/* And it is said rather than hinted: a third of the opacity reads as a
+   dim room on a stage, and a block that is simply NOT THERE is the one
+   thing a player will otherwise spend a soundcheck hunting for. */
+.voice-cell{{{cns}}}.horsjeu .voice-cell-name{{{cns}}} {
+    text-decoration: line-through;
+}
 /* Locked: this block is not following the favourites. */
 .voice-cell{{{cns}}}.verrou::after {
     content: ""; position: absolute; top: 4px; right: 4px;

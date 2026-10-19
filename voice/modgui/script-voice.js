@@ -433,7 +433,20 @@ function (event, funcs) {
             /* What the plugin sees, read out in words: a switch that does
                nothing has to be able to say why, and from inside a plugin
                a footswitch is a black box. */
-            var n = Math.round(nombre(valeur));
+            etat(icon).diag = Math.round(nombre(valeur));
+            peindreDiag(icon);
+        }
+    }
+
+    /* Drawn from the STORED number rather than from the event, because
+       half of what this line says now comes from the other ports: a
+       block turned up stops being silent without the plugin's diagnostic
+       word changing at all, and a line that only refreshes when that
+       word moves would go on accusing it. */
+    function peindreDiag(icon) {
+        var d = etat(icon);
+        if (typeof d.diag === 'number') {
+            var n = d.diag;
             var caps  = n % 100;
             var cur   = Math.floor(n / 100) % 10;
             var plein = Math.floor(n / 1000) % 10;
@@ -471,9 +484,14 @@ function (event, funcs) {
                 dit.push(verr ? (verr + ' verrou(s), vu(s) par le plugin')
                               : 'aucun verrou');
             }
+            /* And the one question the pedal cannot answer by looking:
+               why is that block silent with its lamp lit. */
+            var muets = blocs_muets(icon);
+            if (muets.length) { dit.push(muets.join(', ')); }
             icon.find('.voice-diag')
                 .text(dit.join('  \u00b7  '))
-                .toggleClass('alerte', !bouge || plein < 2 || verr !== lus);
+                .toggleClass('alerte', !bouge || plein < 2 || verr !== lus
+                                       || muets.length > 0);
         }
     }
 
@@ -502,6 +520,80 @@ function (event, funcs) {
     };
     /* kept for the diagnostic line, which counts them */
     var VERROUS = Object.keys(VERROU);
+
+    /* "Ce bloc ne fait absolument rien." There are exactly two ways for
+       that to be true with its ON switch lit, and neither of them is
+       visible on the pedal: the block is NOT FITTED, so its switch has
+       nothing left to switch, or every control that decides how much of
+       it is heard sits at zero. Both are legitimate states - which is
+       precisely why they are worth saying out loud, rather than leaving
+       a player to go looking for a fault that is not there. */
+    var MUET = [
+        { on: 'comp_on',    nom: 'COMP',    dose: ['comp'] },
+        { on: 'de_ess_on',  nom: 'DE-ESS',  dose: ['de_ess'] },
+        { on: 'eq_on',      nom: 'EQ',      dose: ['body', 'presence', 'air'],
+          use: 'use_eq' },
+        { on: 'drive_on',   nom: 'DRIVE',   dose: ['drive'], use: 'use_drive' },
+        { on: 'grille_on',  nom: 'GRILLE',  dose: ['grille_mix'],
+          use: 'use_grille' },
+        { on: 'pitch_on',   nom: 'PITCH',   dose: ['pitch_mix'] },
+        { on: 'harm_on',    nom: 'HARMONY', dose: ['harm_mix'] },
+        { on: 'doubler_on', nom: 'DOUBLE',  dose: ['doubler'],
+          use: 'use_double' },
+        { on: 'mod_on',     nom: 'MOD',     dose: ['modulation'],
+          use: 'use_mod' },
+        { on: 'feedback_on', nom: 'NO HOWL', dose: ['feedback'] },
+        { on: 'delay_on',   nom: 'DELAY',   dose: ['delay_mix'],
+          use: 'use_delay' },
+        { on: 'reverb_on',  nom: 'REVERB',  dose: ['reverb_mix'],
+          use: 'use_reverb' }
+    ];
+
+    /* Every port the line above reads, so a change to one of them can
+       redraw it. Built from the table rather than typed out twice. */
+    var PORTS_MUETS = {};
+    for (var mi = 0; mi < MUET.length; mi++) {
+        PORTS_MUETS[MUET[mi].on] = 1;
+        if (MUET[mi].use) { PORTS_MUETS[MUET[mi].use] = 1; }
+        for (var mj = 0; mj < MUET[mi].dose.length; mj++) {
+            PORTS_MUETS[MUET[mi].dose[mj]] = 1;
+        }
+    }
+
+    /* A port this page has never been told about is NOT a port at zero,
+       and saying so would invent a fault. Unknown means say nothing. */
+    function connu(d, symbole) {
+        var v = d.ports[symbole];
+        return (typeof v === 'number' && v === v) ? v : null;
+    }
+
+    function blocs_muets(icon) {
+        var d = etat(icon);
+        var dits = [];
+        for (var i = 0; i < MUET.length; i++) {
+            var b = MUET[i];
+            var on = connu(d, b.on);
+            if (on === null || on <= 0.5) { continue; }
+            if (b.use) {
+                var u = connu(d, b.use);
+                if (u !== null && u <= 0.5) {
+                    dits.push(b.nom + ' allume mais PAS MONTE');
+                    continue;
+                }
+            }
+            var vu = 0, zero = 0;
+            for (var k = 0; k < b.dose.length; k++) {
+                var v = connu(d, b.dose[k]);
+                if (v === null) { continue; }
+                vu++;
+                if (Math.abs(v) < 0.001) { zero++; }
+            }
+            if (vu > 0 && vu === zero) {
+                dits.push(b.nom + ' allume mais a 0');
+            }
+        }
+        return dits;
+    }
 
     function majSection(icon, symbol, valeur) {
         var on = nombre(valeur) > 0.5;
@@ -676,6 +768,10 @@ function (event, funcs) {
         }
         majMetres(icon, symbol, valeur);
         majSection(icon, symbol, valeur);
+        /* A knob that was at zero and is not any more changes what the
+           diagnostic line has to say about its block, and nothing else
+           is going to tell it. */
+        if (PORTS_MUETS[symbol]) { peindreDiag(icon); }
     }
 
     if (event.type === 'start') {

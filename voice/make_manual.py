@@ -430,6 +430,15 @@ A(tableau([
      "ajoute des ports."),
     ("« GO TO JAMAIS VU<br/>BOUGER »",
      "Le switch n'est pas connecté : même remède."),
+    ("« DOUBLE allume<br/>mais a 0 »",
+     "Le bloc est allumé et son <b>dosage est à zéro</b> : il ne peut "
+     "rien faire. La pédale ne porte que les interrupteurs ; les "
+     "dosages sont dans <b>les paramètres</b>, et sur le Dwarf au bout "
+     "de l'<b>ENC 2</b>. DOUBLE, par exemple, arrive à <b>0 %</b>."),
+    ("« DOUBLE allume<br/>mais PAS MONTE »",
+     "Le bloc est <b>démonté</b> (section MONTÉ) : il n'est plus calculé "
+     "du tout, donc son interrupteur n'a plus rien à allumer. Sur la "
+     "pédale, sa case est pâle et son nom est <b>barré</b>. Remontez-le."),
     ("« AUCUN MAINTIEN VU »",
      "Le maintien de GO TO ne peut pas fonctionner : dans l'adressage du "
      "footswitch, il faut <b>Momentary On</b>."),

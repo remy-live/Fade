@@ -302,6 +302,39 @@ if (typeof fn === 'function') {
             ecrits.length === 1 && ecrits[0][0] === 'program'
             && ecrits[0][1] === premierUser2 + 2, JSON.stringify(ecrits));
 
+        /* --- "ce bloc ne fait absolument rien" ---
+           Two legitimate states look exactly like a fault from the
+           pedal: a block that is not FITTED, and a block whose amount
+           sits at zero. The diagnostic line is where the plugin gets to
+           say which, instead of a player going hunting. */
+        const diagTexte = () => doc.querySelector('.voice-diag').textContent;
+        const dire = (sym, val) =>
+            fn({ type: 'change', icon: icon, symbol: sym, value: val }, funcs);
+
+        dire('diag', 10110001);          /* a sane line to draw from */
+        say('nothing is accused before its ports have been heard from',
+            diagTexte().indexOf('allume mais') < 0, diagTexte());
+
+        dire('doubler_on', 1); dire('use_double', 1); dire('doubler', 0);
+        say('a block turned on with its amount at zero says so',
+            diagTexte().indexOf('DOUBLE allume mais a 0') >= 0, diagTexte());
+        say('and the line goes amber with it',
+            doc.querySelector('.voice-diag').classList.contains('alerte'));
+
+        dire('doubler', 60);
+        say('turning it up clears it, without the plugin saying anything new',
+            diagTexte().indexOf('DOUBLE allume') < 0, diagTexte());
+
+        dire('use_double', 0);
+        say('and an unfitted block says THAT instead, which is the other fault',
+            diagTexte().indexOf('DOUBLE allume mais PAS MONTE') >= 0, diagTexte());
+
+        dire('use_double', 1);
+        dire('doubler_on', 0); dire('doubler', 0);
+        say('a block that is simply switched off is nobody business',
+            diagTexte().indexOf('DOUBLE allume') < 0, diagTexte());
+        dire('doubler_on', 1); dire('doubler', 60);
+
         /* --- the favourites: the list mod-ui cannot draw ---
            Nothing here is clicked with a dispatched event, on purpose:
            in the pedalboard mod-ui copies the interface after building
