@@ -8,7 +8,7 @@
     </div>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
-    <div class="voice-build{{{cns}}}">GUI 31</div>
+    <div class="voice-build{{{cns}}}">GUI 32</div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a
          plugin: whether its port is connected, how many favourites the
@@ -289,6 +289,13 @@
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="comp"></div>
             </div>
+            <div class="voice-knob{{{cns}}}" title="A trim on the compressor's output, on top of the makeup it works out for itself. For the favourite that wants two decibels more than right. At 0 it does nothing. Saved with the favourite.">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="comp_level" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="comp_level"></div>
+            </div>
             <div class="voice-meter{{{cns}}} voice-meter-gr{{{cns}}}">
                 <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
                 <span class="voice-meter-cap{{{cns}}}">GR</span>
@@ -318,6 +325,13 @@
                 <div class="voice-knob-title{{{cns}}}">S Hz</div>
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="de_ess_freq"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}" title="A trim on the de-esser's output. The weakest of the four: it sits in series with COMP LEVEL and EQ LEVEL, so three in a row largely multiply. At 0 it does nothing. Saved with the favourite.">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="de_ess_level" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="de_ess_level"></div>
             </div>
         </div>
 
@@ -362,6 +376,13 @@
                 <div class="voice-knob-title{{{cns}}}">AIR</div>
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="air"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}" title="A trim on the tone stage. BODY, PRESENCE and AIR are bands ADDED to the voice, so three of them up is twelve decibels nobody asked for - this is where it is taken back. At 0 it does nothing. Saved with the favourite.">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="eq_level" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">LEVEL</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="eq_level"></div>
             </div>
         </div>
     </div>
@@ -425,6 +446,13 @@
                 <div class="voice-knob-title{{{cns}}}">TONE</div>
                 <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
                      mod-port-symbol="grille_tone"></div>
+            </div>
+            <div class="voice-knob{{{cns}}}" title="How much of the grille is heard against the voice going into it. The switch was all there was - in or out, which is a telephone and never a voice ON a telephone. At 100 it is what the switch always did. Saved with the favourite.">
+                <div class="voice-knob-body{{{cns}}}" mod-role="input-control-port"
+                     mod-port-symbol="grille_mix" mod-widget-rotation="270"></div>
+                <div class="voice-knob-title{{{cns}}}">MIX</div>
+                <div class="voice-knob-value{{{cns}}}" mod-role="input-control-value"
+                     mod-port-symbol="grille_mix"></div>
             </div>
         </div>
 

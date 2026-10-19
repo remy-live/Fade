@@ -145,6 +145,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -291,6 +303,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -439,6 +463,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -585,6 +621,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -733,6 +781,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -879,6 +939,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -1027,6 +1099,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1173,6 +1257,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -1321,6 +1417,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1467,6 +1575,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -1615,6 +1735,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -1761,6 +1893,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -1909,6 +2053,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2055,6 +2211,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -2203,6 +2371,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2349,6 +2529,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -2497,6 +2689,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2643,6 +2847,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -2791,6 +3007,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -2937,6 +3165,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -3085,6 +3325,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3231,6 +3483,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -3379,6 +3643,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3525,6 +3801,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -3673,6 +3961,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -3819,6 +4119,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -3967,6 +4279,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4113,6 +4437,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -4261,6 +4597,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4407,6 +4755,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -4555,6 +4915,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4701,6 +5073,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -4849,6 +5233,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -4995,6 +5391,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -5143,6 +5551,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5289,6 +5709,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -5437,6 +5869,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5583,6 +6027,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -5731,6 +6187,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -5877,6 +6345,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -6025,6 +6505,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6171,6 +6663,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -6319,6 +6823,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6465,6 +6981,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -6613,6 +7141,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -6759,6 +7299,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -6907,6 +7459,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7053,6 +7617,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -7201,6 +7777,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7347,6 +7935,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -7495,6 +8095,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7641,6 +8253,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -7789,6 +8413,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -7935,6 +8571,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -8083,6 +8731,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8229,6 +8889,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -8377,6 +9049,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8523,6 +9207,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -8671,6 +9367,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -8817,6 +9525,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -8965,6 +9685,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9111,6 +9843,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -9259,6 +10003,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9405,6 +10161,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -9553,6 +10321,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9699,6 +10479,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -9847,6 +10639,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -9993,6 +10797,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -10141,6 +10957,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10287,6 +11115,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -10435,6 +11275,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10581,6 +11433,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -10729,6 +11593,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -10875,6 +11751,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -11023,6 +11911,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11169,6 +12069,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -11317,6 +12229,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11463,6 +12387,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -11611,6 +12547,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -11757,6 +12705,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -11905,6 +12865,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12051,6 +13023,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -12199,6 +13183,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12345,6 +13341,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -12493,6 +13501,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12639,6 +13659,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -12787,6 +13819,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -12933,6 +13977,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -13081,6 +14137,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13227,6 +14295,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -13375,6 +14455,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13521,6 +14613,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -13669,6 +14773,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -13815,6 +14931,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -13963,6 +15091,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14109,6 +15249,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -14257,6 +15409,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14403,6 +15567,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -14551,6 +15727,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14697,6 +15885,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -14845,6 +16045,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -14991,6 +16203,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -15139,6 +16363,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15285,6 +16521,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -15433,6 +16681,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15579,6 +16839,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -15727,6 +16999,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -15873,6 +17157,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -16021,6 +17317,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16167,6 +17475,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -16315,6 +17635,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16461,6 +17793,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -16609,6 +17953,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -16755,6 +18111,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -16903,6 +18271,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17049,6 +18429,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -17197,6 +18589,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17343,6 +18747,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -17491,6 +18907,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17637,6 +19065,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -17785,6 +19225,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -17931,6 +19383,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -18079,6 +19543,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18225,6 +19701,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -18373,6 +19861,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18519,6 +20019,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -18667,6 +20179,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -18813,6 +20337,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -18961,6 +20497,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19107,6 +20655,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -19255,6 +20815,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19401,6 +20973,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -19549,6 +21133,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19695,6 +21291,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -19843,6 +21451,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -19989,6 +21609,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -20137,6 +21769,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20283,6 +21927,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -20431,6 +22087,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20577,6 +22245,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -20725,6 +22405,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -20871,6 +22563,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
@@ -21019,6 +22723,18 @@
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
     ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
+    ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0
     ] .
@@ -21165,6 +22881,18 @@
     ] , [
         lv2:symbol "grille_tone" ;
         pset:value 1800.0
+    ] , [
+        lv2:symbol "grille_mix" ;
+        pset:value 100.0
+    ] , [
+        lv2:symbol "comp_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "de_ess_level" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "eq_level" ;
+        pset:value 0.0
     ] , [
         lv2:symbol "grille_on" ;
         pset:value 0.0

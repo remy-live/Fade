@@ -5007,51 +5007,241 @@ static void essai_cycle_pied(void)
 /* BUILD30: what build 29 saved comes back                             */
 /* ================================================================== */
 
+/* A slots file as some past build wrote it. Written BY HAND from the
+   shape rather than through a struct, which is the whole point: the
+   plugin stopped carrying one struct per build, so neither does this. */
+static void ecrire_fichier_slots(uint32_t n_col, uint32_t n_sw)
+{
+    const uint32_t pas = slot_stride(n_col, n_sw);
+    const size_t   n   = (size_t)SLOTS_HEAD + (size_t)N_USER * (size_t)pas;
+    uint8_t* buf = (uint8_t*)calloc(1, n);
+    const uint32_t head[5] = { SLOTS_MAGIC, SLOTS_VERSION, (uint32_t)N_USER,
+                               n_col, n_sw };
+    memcpy(buf, head, sizeof(head));
+
+    uint8_t* p = buf + SLOTS_HEAD + pas;              /* the second slot */
+    float v = 333.0f;
+    memcpy(p + 4u * (uint32_t)program_col[CTL_DELAY_TIME], &v, sizeof(v));
+    v = 44.0f;
+    memcpy(p + 4u * (uint32_t)program_col[CTL_REVERB_MIX], &v, sizeof(v));
+    for (uint32_t k = 0; k < n_sw; ++k) { p[4u * n_col + k] = 1u; }
+    p[4u * n_col + (uint32_t)SW_REVERB] = 0u;
+    p[4u * n_col + n_sw] = 1u;                        /* filled */
+    memcpy(p + 4u * n_col + n_sw + 1u, "VIEUX", 6);
+
+    FILE* h = fopen("voice-slots.bin", "wb");
+    fwrite(buf, 1, n, h);
+    fclose(h);
+    free(buf);
+}
+
+/* ------------------------------------------------------------------ */
+/* A level for the four blocks that had none                           */
+/*                                                                     */
+/* Saved with the favourite, which is the whole point of them, and at   */
+/* the position they arrive in they do NOTHING - so every favourite     */
+/* made before they existed sounds exactly as it did.                   */
+/* ------------------------------------------------------------------ */
+static void essai_niveaux(void)
+{
+    Banc b;
+
+    /* --- the three trims, in decibels, measured --- */
+    const struct { int ctl_on; int ctl_lvl; int sw; const char* nom; } trois[] = {
+        { CTL_COMP_ON,   CTL_COMP_LEVEL,   SW_COMP,   "COMP" },
+        { CTL_DE_ESS_ON, CTL_DE_ESS_LEVEL, SW_DE_ESS, "DE-ESS" },
+        { CTL_EQ_ON,     CTL_EQ_LEVEL,     SW_EQ,     "EQ" },
+    };
+    for (size_t q = 0; q < 3; ++q) {
+        /* four measurements: the switch on and off, the trim at zero
+           and at six. Comparing the trim against the OTHER switch
+           position would measure the compressor, not the trim. */
+        double g[4];
+        for (int k = 0; k < 4; ++k) {
+            ouvrir(&b, 0, 48000.0, 256, 0);
+            neutre(&b);
+            b.ctl[trois[q].ctl_on]  = (k < 2) ? 1.0f : 0.0f;
+            b.ctl[trois[q].ctl_lvl] = (k & 1) ? 6.0f : 0.0f;
+            /* the block has to be DOING something, or it is skipped
+               whole and its trim with it - which is the behaviour, not
+               a fault: a trim belongs to its block */
+            b.ctl[CTL_COMP]   = 40.0f;
+            b.ctl[CTL_DE_ESS] = 40.0f;
+            g[k] = gain_db(&b, 700.0, 0.05, 60, 40);
+            fermer(&b);
+        }
+        char quoi[80];
+        snprintf(quoi, sizeof(quoi), "%s LEVEL at +6 dB is six decibels",
+                 trois[q].nom);
+        verifie(quoi, g[1] - g[0], 6.0, 0.25);
+        snprintf(quoi, sizeof(quoi), "and does nothing with %s switched off",
+                 trois[q].nom);
+        verifie(quoi, g[3] - g[2], 0.0, 0.1);
+    }
+
+    /* --- the grille mix: the one block that had no dosing at all --- */
+    {
+        float sec[256], zero[256], plein[256];
+        for (int k = 0; k < 3; ++k) {
+            ouvrir(&b, 0, 48000.0, 256, 0);
+            neutre(&b);
+            b.ctl[CTL_GRILLE_ON]  = (k == 0) ? 0.0f : 1.0f;
+            b.ctl[CTL_GRILLE_MIX] = (k == 1) ? 0.0f : 100.0f;
+            for (int j = 0; j < 200; ++j) { sinus(&b, 400.0, 0.3); tourner(&b); }
+            memcpy(k == 0 ? sec : (k == 1 ? zero : plein),
+                   b.out[0], sizeof(sec));
+            fermer(&b);
+        }
+        double ecart_zero = 0.0, ecart_plein = 0.0;
+        for (int i = 0; i < 256; ++i) {
+            double d = fabs((double)sec[i] - (double)zero[i]);
+            if (d > ecart_zero) { ecart_zero = d; }
+            d = fabs((double)sec[i] - (double)plein[i]);
+            if (d > ecart_plein) { ecart_plein = d; }
+        }
+        verifie_vrai("GRILLE MIX at 0 is the voice that went in, untouched",
+                     ecart_zero < 1.0e-6);
+        verifie_vrai("and at 100 it is the grille, which is another sound",
+                     ecart_plein > 0.01);
+    }
+
+    /* --- and all four travel with a favourite, which is what was asked
+           for: a level that is not saved with the setting is a level
+           that has to be dialled again at every song --- */
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_EQ_LEVEL]     = -5.0f;
+    b.ctl[CTL_COMP_LEVEL]   =  3.0f;
+    b.ctl[CTL_DE_ESS_LEVEL] =  2.0f;
+    b.ctl[CTL_GRILLE_MIX]   = 40.0f;
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_USER_SLOT] = 3.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 1.0f; silence(&b); tourner(&b);
+    b.ctl[CTL_SAVE] = 0.0f; silence(&b); tourner(&b);
+    {
+        Voice* v = (Voice*)b.h;
+        verifie("EQ LEVEL is stored in the slot",
+                (double)v->user[2].value[program_col[CTL_EQ_LEVEL]], -5.0, 0.01);
+        verifie("COMP LEVEL too",
+                (double)v->user[2].value[program_col[CTL_COMP_LEVEL]], 3.0, 0.01);
+        verifie("DE-ESS LEVEL too",
+                (double)v->user[2].value[program_col[CTL_DE_ESS_LEVEL]], 2.0, 0.01);
+        verifie("and the grille mix",
+                (double)v->user[2].value[program_col[CTL_GRILLE_MIX]], 40.0, 0.01);
+    }
+    /* walk away and come back */
+    b.ctl[CTL_PROGRAM] = 1.0f;
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    b.ctl[CTL_PROGRAM] = (float)(N_PROGRAM + 2);
+    for (int k = 0; k < 8; ++k) { silence(&b); tourner(&b); }
+    verifie("and coming back puts the trim on the knob again",
+            (double)b.ctl[CTL_EQ_LEVEL], -5.0, 0.01);
+    verifie("the grille mix with it",
+            (double)b.ctl[CTL_GRILLE_MIX], 40.0, 0.01);
+    fermer(&b);
+}
+
 static void essai_migration(void)
 {
-    /* the file on the disc, as build 29 wrote it */
-    SlotsFile29 f;
-    memset(&f, 0, sizeof(f));
-    f.magic = SLOTS_MAGIC; f.version = SLOTS_VERSION;
-    f.n_user = N_USER; f.n_col = N_PROGRAM_COL_29; f.n_switch = SW_COUNT_29;
-    for (int i = 0; i < SW_COUNT_29; ++i) { f.slot[1].sw[i] = 1u; }
-    f.slot[1].sw[SW_REVERB] = 0u;
-    f.slot[1].value[program_col[CTL_DELAY_TIME]] = 333.0f;
-    f.slot[1].value[program_col[CTL_REVERB_MIX]] = 44.0f;
-    f.slot[1].filled = 1u;
-    strcpy(f.slot[1].name, "VIEUX");
-    {
-        FILE* h = fopen("voice-slots.bin", "wb");
-        fwrite(&f, 1, sizeof(f), h);
-        fclose(h);
-    }
-    garder_disque = 1;
-    Banc b;
-    ouvrir(&b, 0, 48000.0, 128, 0);
-    garder_disque = 0;
-    Voice* v = (Voice*)b.h;
-    verifie_vrai("a build-29 slot file is read: the slot is there",
-                 v->user[1].filled && !strcmp(v->user[1].name, "VIEUX"));
-    verifie("its delay time came back", (double)v->user[1].value[program_col[CTL_DELAY_TIME]], 333.0, 0.01);
-    verifie("its reverb mix came back", (double)v->user[1].value[program_col[CTL_REVERB_MIX]], 44.0, 0.01);
-    verifie_vrai("its switches came back, the reverb off",
-                 v->user[1].sw[SW_REVERB] == 0 && v->user[1].sw[SW_DELAY] == 1);
-    verifie_vrai("and the grille it never knew is off, at its defaults",
-                 v->user[1].sw[SW_GRILLE] == 0
-                 && v->user[1].value[program_col[CTL_GRILLE_WIDTH]] == 50.0f
-                 && v->user[1].value[program_col[CTL_GRILLE_TONE]] == 1800.0f);
-    verifie_vrai("the other slots are empty", !v->user[0].filled && !v->user[2].filled);
-    /* and it plays */
-    b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 1.0f;
-    silence(&b); tourner(&b); silence(&b); tourner(&b);
-    verifie("entering it plays the saved time", (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
-    fermer(&b);
+    /* The stride the reader computes has to be the stride the compiler
+       lays out, or every file ever written is read at an offset. */
+    verifie("the stride formula matches the struct it replaced",
+            (double)(SLOTS_HEAD + (uint32_t)N_USER
+                     * slot_stride(N_PROGRAM_COL, SW_COUNT)),
+            (double)sizeof(SlotsFile), 0.5);
 
-    /* the LV2 state of a pedalboard saved by build 29 */
+    /* Every layout this plugin has ever written, read back in turn.
+       Columns a build never had come back at their own defaults - which
+       for all four levels added since is the position where they do
+       nothing, so a favourite dialled last summer sounds as it did. */
+    const struct { uint32_t n_col, n_sw; const char* quoi; } vieux[] = {
+        { 26u, 12u, "a build-29 slot file" },
+        { 29u, 13u, "a build-30 slot file" },
+        { (uint32_t)N_PROGRAM_COL, (uint32_t)SW_COUNT, "its own slot file" },
+    };
+    for (size_t q = 0; q < sizeof(vieux) / sizeof(vieux[0]); ++q) {
+        ecrire_fichier_slots(vieux[q].n_col, vieux[q].n_sw);
+        garder_disque = 1;
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        garder_disque = 0;
+        Voice* v = (Voice*)b.h;
+        char quoi[80];
+        snprintf(quoi, sizeof(quoi), "%s is read: the slot is there",
+                 vieux[q].quoi);
+        verifie_vrai(quoi, v->user[1].filled
+                     && !strcmp(v->user[1].name, "VIEUX"));
+        verifie("its delay time came back",
+                (double)v->user[1].value[program_col[CTL_DELAY_TIME]],
+                333.0, 0.01);
+        verifie("its reverb mix came back",
+                (double)v->user[1].value[program_col[CTL_REVERB_MIX]],
+                44.0, 0.01);
+        verifie_vrai("its switches came back, the reverb off",
+                     v->user[1].sw[SW_REVERB] == 0
+                     && v->user[1].sw[SW_DELAY] == 1);
+        if (vieux[q].n_col < (uint32_t)N_PROGRAM_COL) {
+            /* columns that build never had come back at their OWN
+               defaults, which for every level added since is the
+               position where the knob does nothing at all */
+            verifie("a level it never knew arrives where it does nothing",
+                    (double)v->user[1].value[program_col[CTL_EQ_LEVEL]],
+                    0.0, 0.001);
+            verifie("and the grille mix fully through, as the switch was",
+                    (double)v->user[1].value[program_col[CTL_GRILLE_MIX]],
+                    100.0, 0.001);
+        } else {
+            /* its own layout: what the file says, not a default */
+            verifie("its own layout is read column for column, not guessed",
+                    (double)v->user[1].value[program_col[CTL_GRILLE_MIX]],
+                    0.0, 0.001);
+        }
+        verifie_vrai("the other slots are empty",
+                     !v->user[0].filled && !v->user[2].filled);
+        /* and it plays */
+        b.ctl[CTL_PROGRAM] = (float)N_PROGRAM + 1.0f;
+        silence(&b); tourner(&b); silence(&b); tourner(&b);
+        verifie("entering it plays the saved time",
+                (double)b.ctl[CTL_TIME_OUT], 333.0, 0.01);
+        fermer(&b);
+    }
+
+    /* The grille of build 30, which only that layout carried */
+    ecrire_fichier_slots(29u, 13u);
+    {
+        garder_disque = 1;
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        garder_disque = 0;
+        Voice* v = (Voice*)b.h;
+        verifie_vrai("a build-30 file brings its grille with it",
+                     v->user[1].value[program_col[CTL_GRILLE_WIDTH]] == 0.0f
+                     || v->user[1].value[program_col[CTL_GRILLE_WIDTH]] == 50.0f);
+        fermer(&b);
+    }
+    /* and one from a build this one has never heard of is refused rather
+       than read at the wrong offset */
+    ecrire_fichier_slots(200u, 40u);
+    {
+        garder_disque = 1;
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        garder_disque = 0;
+        Voice* v = (Voice*)b.h;
+        verifie_vrai("a file wider than this build is left alone, not "
+                     "read at the wrong offset", !v->user[1].filled);
+        fermer(&b);
+    }
+
+    /* the LV2 state of a pedalboard saved by an older build */
     const LV2_Descriptor* d = lv2_descriptor(0);
     const LV2_State_Interface* st =
         (const LV2_State_Interface*)d->extension_data(LV2_STATE__interface);
-    {
+    const struct { int n_col, n_sw; const char* quoi; } etats[] = {
+        { 26, 12, "a build-29 state" },
+        { 29, 13, "a build-30 state" },
+    };
+    for (size_t q = 0; q < sizeof(etats) / sizeof(etats[0]); ++q) {
         int n = 0;
         memset(etat_buf, 0, sizeof(etat_buf));
         for (int u = 0; u < N_USER; ++u) {
@@ -5059,29 +5249,40 @@ static void essai_migration(void)
             etat_buf[n++] = plein ? 1.0f : 0.0f;
             const char* nom = plein ? "ANCIEN " : "       ";
             for (int k = 0; k < NAME_LEN; ++k) { etat_buf[n++] = (float)nom[k]; }
-            for (int i = 0; i < N_PROGRAM_COL_29; ++i) {
-                etat_buf[n++] = (plein && i == program_col[CTL_DELAY_TIME]) ? 222.0f : 0.0f;
+            for (int i = 0; i < etats[q].n_col; ++i) {
+                etat_buf[n++] = (plein && i == program_col[CTL_DELAY_TIME])
+                              ? 222.0f : 0.0f;
             }
-            for (int k = 0; k < SW_COUNT_29; ++k) { etat_buf[n++] = 1.0f; }
+            for (int k = 0; k < etats[q].n_sw; ++k) { etat_buf[n++] = 1.0f; }
         }
         etat_taille = sizeof(float) * (size_t)n;
         etat_cle = f_map(NULL, VOICE_SLOTS_URI);
         etat_type = f_map(NULL, LV2_ATOM__Chunk);
+
+        Banc b;
+        ouvrir(&b, 0, 48000.0, 128, 0);
+        Voice* v = (Voice*)b.h;
+        char quoi[80];
+        snprintf(quoi, sizeof(quoi), "%s is restored without complaint",
+                 etats[q].quoi);
+        verifie_vrai(quoi,
+                     st->restore(b.h, f_retrieve, NULL, 0, NULL)
+                     == LV2_STATE_SUCCESS);
+        verifie_vrai("its slot is there, by name",
+                     v->user[4].filled && !strcmp(v->user[4].name, "ANCIEN"));
+        verifie("with its time",
+                (double)v->user[4].value[program_col[CTL_DELAY_TIME]],
+                222.0, 0.01);
+        verifie("and a level it never knew does nothing",
+                (double)v->user[4].value[program_col[CTL_COMP_LEVEL]],
+                0.0, 0.001);
+        /* saved again, it goes out in the new layout and comes back whole */
+        etat_taille = 0;
+        verifie_vrai("saved again by this build",
+                     st->save(b.h, f_store, NULL, 0, NULL) == LV2_STATE_SUCCESS
+                     && etat_taille == sizeof(float) * STATE_FLOATS);
+        fermer(&b);
     }
-    ouvrir(&b, 0, 48000.0, 128, 0);
-    v = (Voice*)b.h;
-    verifie_vrai("a build-29 state is restored without complaint",
-                 st->restore(b.h, f_retrieve, NULL, 0, NULL) == LV2_STATE_SUCCESS);
-    verifie_vrai("its slot is there, by name",
-                 v->user[4].filled && !strcmp(v->user[4].name, "ANCIEN"));
-    verifie("with its time", (double)v->user[4].value[program_col[CTL_DELAY_TIME]], 222.0, 0.01);
-    verifie_vrai("and the grille off", v->user[4].sw[SW_GRILLE] == 0);
-    /* saved again, it goes out in the new layout and comes back whole */
-    etat_taille = 0;
-    verifie_vrai("saved again by this build",
-                 st->save(b.h, f_store, NULL, 0, NULL) == LV2_STATE_SUCCESS
-                 && etat_taille == sizeof(float) * STATE_FLOATS);
-    fermer(&b);
 }
 
 /* ================================================================== */
@@ -5158,6 +5359,7 @@ int main(int argc, char** argv)
                                            essai_etat();
     printf("Screen - the list:\n");         essai_ecran_programme();
     printf("Fitted, or not in the chain:\n"); essai_montage();
+    printf("A level for the four that had none:\n"); essai_niveaux();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
     printf("Stereo variant:\n");           essai_stereo();

@@ -1205,6 +1205,9 @@ SHORT_NAME = {
     "pitch_mix": "PIT MIX", "modulation": "MOD", "mod_speed": "SPEED",
     "harm_mix": "HARMONY", "doubler": "DOUBLE", "feedback": "NO HOWL",
     "low_cut": "LOW CUT", "presence": "PRESENCE",
+    # the four levels of build 32: eight characters on the device screen
+    "grille_mix": "GRIL MIX", "comp_level": "COMP LVL",
+    "de_ess_level": "SS LVL", "eq_level": "EQ LVL",
     "grille_width": "WIDTH", "grille_buzz": "BUZZ", "grille_tone": "TONE",
 }
 
@@ -1230,11 +1233,13 @@ PANEL = [
                                   "fav_4", "fav_5", "fav_6"]),
     ("IN AND OUT", ["in_gain", "output", "mute", "fx", "fx_2", "tap"]),
     ("GATE",     ["gate_on", "gate"]),
-    ("COMP",     ["comp_on", "comp"]),
-    ("DE-ESS",   ["de_ess_on", "de_ess", "de_ess_freq"]),
-    ("EQ",       ["eq_on", "low_cut", "body", "mid_freq", "presence", "air"]),
+    ("COMP",     ["comp_on", "comp", "comp_level"]),
+    ("DE-ESS",   ["de_ess_on", "de_ess", "de_ess_freq", "de_ess_level"]),
+    ("EQ",       ["eq_on", "low_cut", "body", "mid_freq", "presence", "air",
+                 "eq_level"]),
     ("DRIVE",    ["drive_on", "drive"]),
-    ("GRILLE",   ["grille_on", "grille_width", "grille_buzz", "grille_tone"]),
+    ("GRILLE",   ["grille_on", "grille_width", "grille_buzz", "grille_tone",
+                 "grille_mix"]),
     ("PITCH",    ["pitch_on", "pitch", "pitch_mix"]),
     ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_mix"]),
     ("DOUBLE",   ["doubler_on", "doubler", "spread", "voices"]),
@@ -1272,6 +1277,41 @@ TAIL += [
      "GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: "
      "each already stops dead when its own control reaches zero." % nom)
     for sym, nom, _sec in FITTED
+]
+
+# A level for the four blocks that had none, appended last like every
+# port since build 12. They go into their own PANEL section, which is
+# what makes them part of a favourite: a control that sits in a section a
+# lock is named after becomes a column of a program, so these are stored
+# in a USER slot and recalled with it, which is the whole point of them.
+TAIL += [
+ ("in", "grille_mix", "GRILLE MIX", 0.0, 100.0, 100.0, "pc", [],
+  "How much of the grille is heard, against the voice going into it. The "
+  "switch was all there was: in or out, nothing in between, which is a "
+  "telephone and never a voice ON a telephone. At 100 it is what the "
+  "switch always did, so a favourite made before this knob existed sounds "
+  "exactly as it did. Saved with the favourite."),
+ ("in", "comp_level", "COMP LEVEL", -12.0, 12.0, 0.0, "db", [],
+  "A trim on the compressor's own output, on top of the makeup it works "
+  "out for itself. The automatic one keeps a voice at the same level "
+  "whatever the knob says, which is right; this is for the favourite that "
+  "wants two decibels more than right. At 0 nothing is done at all. It "
+  "follows the COMP switch, so switching the block off takes its trim "
+  "with it. Saved with the favourite."),
+ ("in", "de_ess_level", "DE-ESS LEVEL", -12.0, 12.0, 0.0, "db", [],
+  "A trim on the de-esser's output. The weakest of the four and worth "
+  "saying so: the de-esser only ever takes away, and this trim sits in "
+  "series with COMP LEVEL and EQ LEVEL with nothing between them but "
+  "their own detectors - so three of them in a row largely multiply. What "
+  "it does buy is a different pair of ears downstream: raising it here "
+  "makes the EQ and everything after it work on a louder signal. At 0 "
+  "nothing is done. Saved with the favourite."),
+ ("in", "eq_level", "EQ LEVEL", -12.0, 12.0, 0.0, "db", [],
+  "A trim on the tone stage's output. The one of the three that is really "
+  "needed: BODY, PRESENCE and AIR are parallel bands ADDED to the voice, "
+  "so three of them up is twelve decibels of level that was never asked "
+  "for, and this is where it is taken back. At 0 nothing is done. It "
+  "follows the EQ switch. Saved with the favourite."),
 ]
 
 # A line of explanation under a section, where the switches alone cannot

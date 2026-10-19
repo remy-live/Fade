@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD31_AARCH64_20261016";
+static const volatile char build_tag[] = "VOICE_BUILD32_AARCH64_20261019";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -453,7 +453,15 @@ typedef enum {
     CTL_USE_MOD       = 108,
     CTL_USE_DELAY     = 109,
     CTL_USE_REVERB    = 110,
-    CTL_COUNT         = 111
+    /* A level for the four blocks that had none. Stored in a favourite
+       like any other setting - they sit in their own panel section, and
+       a control in a section a lock is named after is a column of a
+       program. See LEVELS below for how they are applied. */
+    CTL_GRILLE_MIX    = 111,
+    CTL_COMP_LEVEL    = 112,
+    CTL_DE_ESS_LEVEL  = 113,
+    CTL_EQ_LEVEL      = 114,
+    CTL_COUNT         = 115
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -589,6 +597,10 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "use_mod",        0.0f,    1.0f,     1.0f },
     { "use_delay",      0.0f,    1.0f,     1.0f },
     { "use_reverb",     0.0f,    1.0f,     1.0f },
+    { "grille_mix",     0.0f,  100.0f,   100.0f },
+    { "comp_level",   -12.0f,   12.0f,     0.0f },
+    { "de_ess_level", -12.0f,   12.0f,     0.0f },
+    { "eq_level",     -12.0f,   12.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -608,10 +620,6 @@ typedef enum {
     SW_COUNT
 } SwitchIndex;
 
-/* The twelve switches and twenty-six columns of build 29, for reading
-   back what that build saved - on the disc and in a pedalboard. */
-#define SW_COUNT_29      12
-#define N_PROGRAM_COL_29 26
 
 /* The seven blocks that are FITTED or not. Their ON/OFF switch is a
    foot's control - it fades the block out and leaves the tail ringing,
@@ -985,6 +993,14 @@ typedef enum {
     SM_MAKEUP, SM_COMP_THR, SM_COMP_SLOPE, SM_SPREAD, SM_MOD_DEPTH,
     SM_VOICE_GAIN, SM_HARM,
     SM_GRILLE_PRE, SM_GRILLE_POST, SM_GRILLE_MIX,   /* the buzz, like the drive */
+    /* LEVELS. All four are smoothed as LINEAR gains rather than as
+       decibels, and that is what makes them free when they are not
+       being used: at the position they arrive in - 100 % of grille,
+       0 dB of trim - the smoothed number is exactly 1.0f, and a
+       multiply by exactly one changes not one bit of the sample. A
+       favourite made before these knobs existed therefore sounds
+       exactly as it did, which is checked by subtracting two renders. */
+    SM_GRILLE_WET, SM_COMP_LVL, SM_DE_LVL, SM_EQ_LVL,
     SM_COUNT
 } SmoothIndex;
 
@@ -2028,6 +2044,16 @@ static void zero_slice(float* buf, uint32_t len, uint32_t total, uint32_t n)
     for (uint32_t i = deb; i < fin; ++i) { buf[i] = 0.0f; }
 }
 
+/* A trim, as the gain it stands for. EXACTLY one at zero decibels: the
+   approximation behind db_to_lin lands on 0.99999977 there, which is
+   inaudible and is still not one, and a multiply by not-quite-one on
+   every sample of every favourite ever made is not a thing to let in
+   for the sake of four lines saved. */
+static float level_gain(float db)
+{
+    return (db == 0.0f) ? 1.0f : db_to_lin(db);
+}
+
 /* A block whose ramp has reached zero has stopped being computed, so
    its state is no longer refreshed. Everything small is cleared at once
    here; the long lines are counted out and cleared a slice at a time by
@@ -2397,6 +2423,10 @@ activate(LV2_Handle instance)
     self->sm[SM_GRILLE_PRE] = drive_pre_of(param_read(self, CTL_GRILLE_BUZZ));
     self->sm[SM_GRILLE_POST]= drive_post_of(self->sm[SM_GRILLE_PRE]);
     self->sm[SM_GRILLE_MIX] = param_read(self, CTL_GRILLE_BUZZ) * 0.01f;
+    self->sm[SM_GRILLE_WET] = param_read(self, CTL_GRILLE_MIX) * 0.01f;
+    self->sm[SM_COMP_LVL]   = level_gain(param_read(self, CTL_COMP_LEVEL));
+    self->sm[SM_DE_LVL]     = level_gain(param_read(self, CTL_DE_ESS_LEVEL));
+    self->sm[SM_EQ_LVL]     = level_gain(param_read(self, CTL_EQ_LEVEL));
     {
         const int n = voices_of(self);
         for (int k = 0; k < MAX_VOICES; ++k) {
@@ -4160,6 +4190,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     target[SM_GRILLE_PRE] = grille_pre;
     target[SM_GRILLE_POST]= grille_post;
     target[SM_GRILLE_MIX] = grille_buzz * 0.01f;
+    target[SM_GRILLE_WET] = param_read(self, CTL_GRILLE_MIX) * 0.01f;
+    target[SM_COMP_LVL]   = level_gain(param_read(self, CTL_COMP_LEVEL));
+    target[SM_DE_LVL]     = level_gain(param_read(self, CTL_DE_ESS_LEVEL));
+    target[SM_EQ_LVL]     = level_gain(param_read(self, CTL_EQ_LEVEL));
 
     float sm[SM_COUNT], sm_step[SM_COUNT];
     for (int k = 0; k < (int)SM_COUNT; ++k) {
@@ -4464,7 +4498,12 @@ run(LV2_Handle instance, uint32_t n_samples)
                             * self->sw[SW_COMP];
             if (red > gr_worst) { gr_worst = red; }
 
-            const float g = db_to_lin(sm[SM_MAKEUP] * self->sw[SW_COMP] - red);
+            /* The trim rides on the switch, like everything else the
+               block does: switching COMP off takes its trim with it,
+               and at 0 dB the factor below is exactly one. */
+            const float g = db_to_lin(sm[SM_MAKEUP] * self->sw[SW_COMP] - red)
+                          * (1.0f + (sm[SM_COMP_LVL] - 1.0f)
+                                    * self->sw[SW_COMP]);
             for (uint32_t c = 0; c < n_ch; ++c) {
                 x[c] *= g;
             }
@@ -4492,6 +4531,11 @@ run(LV2_Handle instance, uint32_t n_samples)
                     x[c] -= (1.0f - g) * hf[c];        /* the band, quieter */
                 }
             }
+            const float de_lvl = 1.0f + (sm[SM_DE_LVL] - 1.0f)
+                                        * self->sw[SW_DE_ESS];
+            if (de_lvl != 1.0f) {
+                for (uint32_t c = 0; c < n_ch; ++c) { x[c] *= de_lvl; }
+            }
         }
 
         /* --- tone: three bands taken from the same signal, added back ---
@@ -4507,11 +4551,17 @@ run(LV2_Handle instance, uint32_t n_samples)
             ch->eq_mid_lo = flush(ch->eq_mid_lo + eq_ml_c  * (v - ch->eq_mid_lo));
             ch->eq_air    = flush(ch->eq_air    + eq_air_c * (v - ch->eq_air));
 
-            x[c] = v + self->sw[SW_EQ] * self->fit[F_EQ]
-                       * (sm[SM_BODY]     * ch->eq_low
-                        + sm[SM_PRESENCE] * mid_gain
-                                          * (ch->eq_mid_hi - ch->eq_mid_lo)
-                        + sm[SM_AIR]      * (v - ch->eq_air));
+            /* The three bands are ADDED to the voice, so three of them
+               up is twelve decibels nobody asked for: the trim is where
+               that is taken back. One at 0 dB, and it rides the switch
+               and the fitting like the bands themselves. */
+            x[c] = (v + self->sw[SW_EQ] * self->fit[F_EQ]
+                        * (sm[SM_BODY]     * ch->eq_low
+                         + sm[SM_PRESENCE] * mid_gain
+                                           * (ch->eq_mid_hi - ch->eq_mid_lo)
+                         + sm[SM_AIR]      * (v - ch->eq_air)))
+                 * (1.0f + (sm[SM_EQ_LVL] - 1.0f)
+                           * self->sw[SW_EQ] * self->fit[F_EQ]);
         }
 
         /* --- the grille: what a voice sounds like through the speaking
@@ -4533,7 +4583,12 @@ run(LV2_Handle instance, uint32_t n_samples)
             a += self->gr_bell_gain * svf_bp(&ch->gr_bell, &self->gr_coef, a);
             const float sat = softclip(a * sm[SM_GRILLE_PRE]) * sm[SM_GRILLE_POST];
             a = (a + sm[SM_GRILLE_MIX] * (sat - a)) * grille_makeup;
-            x[c] = v + self->sw[SW_GRILLE] * self->fit[F_GRILLE] * (a - v);
+            /* How much of the grille is heard against the voice that
+               went into it. The switch was all there was - in or out,
+               nothing between - which is a telephone and never a voice
+               ON a telephone. At 100 % this is what the switch did. */
+            x[c] = v + self->sw[SW_GRILLE] * self->fit[F_GRILLE]
+                       * sm[SM_GRILLE_WET] * (a - v);
         }
 
         /* --- drive, then a DC blocker: saturation on a signal that
@@ -5058,25 +5113,6 @@ static void slots_to_disk(const Voice* self)
     else                { remove(tmp); }
 }
 
-/* The file as build 29 wrote it: twenty-six columns, twelve switches.
-   Read back column for column and switch for switch - the new ones were
-   APPENDED, which is the whole reason they can be - with the grille's
-   three settings at their defaults and its switch off. Six favourites
-   dialled over a summer are not something a build may throw away. */
-typedef struct {
-    uint32_t magic;
-    uint32_t version;
-    uint32_t n_user;
-    uint32_t n_col;
-    uint32_t n_switch;
-    struct {
-        float   value[N_PROGRAM_COL_29];
-        uint8_t sw[SW_COUNT_29];
-        uint8_t filled;
-        char    name[NAME_LEN + 1];
-        uint8_t pad[3];
-    } slot[N_USER];
-} SlotsFile29;
 
 /* One slot, from however many columns and switches the file carried.
    Columns it lacks read their control's default; switches it lacks read
@@ -5103,36 +5139,68 @@ static void slot_take(Voice* self, int u, const float* value, int n_col,
     name_set(self->user[u].name, name);
 }
 
+static uint32_t slot_stride(uint32_t n_col, uint32_t n_sw)
+{
+    const uint32_t n = 4u * n_col + n_sw + 1u + (uint32_t)(NAME_LEN + 1) + 3u;
+    return (n + 3u) & ~3u;
+}
+
+#define SLOTS_HEAD 20u          /* five uint32 before the first slot */
+
+/* The file says how wide it is - n_col and n_switch sit in its header -
+   so it is read with the stride IT describes rather than through a
+   struct per build. Three builds in a row added a column, and each one
+   added a struct and another branch to this function; this ends that.
+   A slot record is the floats, then the bytes, then padding out to the
+   alignment of a float, which is what the compiler does to the struct
+   above and therefore what every file this plugin has ever written
+   contains. test_voice.c checks the formula against sizeof() for the
+   layout of the day, so it cannot drift. */
 static void slots_from_disk(Voice* self)
 {
     if (!self->slots_path[0]) { return; }
     FILE* h = fopen(self->slots_path, "rb");
     if (!h) { return; }
-    /* the bigger of the two layouts holds either */
-    union { SlotsFile now; SlotsFile29 old; } f;
-    memset(&f, 0, sizeof(f));
-    const size_t n = fread(&f, 1, sizeof(f), h);
+    /* The layout of the day is the widest there has ever been, so this
+       holds any older file whole. */
+    uint8_t buf[sizeof(SlotsFile)];
+    const size_t n = fread(buf, 1, sizeof(buf), h);
     fclose(h);
-    if (f.now.magic != SLOTS_MAGIC || f.now.version != SLOTS_VERSION
-        || f.now.n_user != (uint32_t)N_USER) {
+    if (n < (size_t)SLOTS_HEAD) { return; }
+
+    uint32_t head[5];
+    memcpy(head, buf, sizeof(head));
+    if (head[0] != SLOTS_MAGIC || head[1] != SLOTS_VERSION
+        || head[2] != (uint32_t)N_USER) {
         return;                       /* not ours, or from another build */
     }
-    if (n == sizeof(f.now) && f.now.n_col == (uint32_t)N_PROGRAM_COL
-        && f.now.n_switch == (uint32_t)SW_COUNT) {
-        for (int u = 0; u < N_USER; ++u) {
-            f.now.slot[u].name[NAME_LEN] = '\0';
-            slot_take(self, u, f.now.slot[u].value, N_PROGRAM_COL,
-                      f.now.slot[u].sw, (int)SW_COUNT,
-                      f.now.slot[u].filled, f.now.slot[u].name);
-        }
-    } else if (n == sizeof(f.old) && f.old.n_col == (uint32_t)N_PROGRAM_COL_29
-               && f.old.n_switch == (uint32_t)SW_COUNT_29) {
-        for (int u = 0; u < N_USER; ++u) {
-            f.old.slot[u].name[NAME_LEN] = '\0';
-            slot_take(self, u, f.old.slot[u].value, N_PROGRAM_COL_29,
-                      f.old.slot[u].sw, SW_COUNT_29,
-                      f.old.slot[u].filled, f.old.slot[u].name);
-        }
+    const uint32_t n_col = head[3], n_sw = head[4];
+    if (n_col == 0u || n_col > 256u || n_sw == 0u || n_sw > 64u) { return; }
+    const uint32_t pas = slot_stride(n_col, n_sw);
+    if (n < (size_t)SLOTS_HEAD + (size_t)N_USER * (size_t)pas) {
+        return;                       /* truncated, or wider than we know */
+    }
+
+    /* Columns this build does not have are simply not read; ones it has
+       and the file has not are filled with their own defaults by
+       slot_take, so a favourite saved before a knob existed comes back
+       with that knob where it arrives from the factory - which is the
+       position at which it does nothing. */
+    const uint32_t prend  = (n_col < (uint32_t)N_PROGRAM_COL)
+                          ? n_col : (uint32_t)N_PROGRAM_COL;
+    const uint32_t prends = (n_sw < (uint32_t)SW_COUNT)
+                          ? n_sw : (uint32_t)SW_COUNT;
+    for (int u = 0; u < N_USER; ++u) {
+        const uint8_t* p = buf + SLOTS_HEAD + (uint32_t)u * pas;
+        float   value[N_PROGRAM_COL];
+        uint8_t sw[SW_COUNT];
+        char    nom[NAME_LEN + 1];
+        memcpy(value, p, (size_t)prend * sizeof(float));
+        memcpy(sw, p + 4u * n_col, (size_t)prends);
+        const uint8_t filled = p[4u * n_col + n_sw];
+        memcpy(nom, p + 4u * n_col + n_sw + 1u, (size_t)NAME_LEN + 1u);
+        nom[NAME_LEN] = '\0';
+        slot_take(self, u, value, (int)prend, sw, (int)prends, filled, nom);
     }
 }
 
@@ -5208,15 +5276,35 @@ state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve,
     /* Ours, from this build - or from build 29, which saved twenty-six
        columns and twelve switches per slot and is read back column for
        column, exactly like the file on the disc. */
-    int n_col = N_PROGRAM_COL, n_sw = (int)SW_COUNT;
-    if (data && size == sizeof(float)
-                        * (size_t)(N_USER * (1 + NAME_LEN + N_PROGRAM_COL_29
-                                             + SW_COUNT_29))) {
-        n_col = N_PROGRAM_COL_29;
-        n_sw  = SW_COUNT_29;
-    } else if (!data || size != sizeof(float) * STATE_FLOATS) {
+    /* A flat array of floats carries no header, so its SIZE is the only
+       thing that says how wide a slot was when it was written. Every
+       layout this plugin has ever saved is listed here, newest first,
+       and the next build to add a column adds one line. The file on the
+       disc says its own shape and needs no table; this one cannot be
+       made to without breaking every board already saved, so the table
+       IS the history. */
+    static const struct { int n_col, n_sw; } passe[] = {
+        { N_PROGRAM_COL, (int)SW_COUNT },   /* this build */
+        { 29,            13 },              /* build 30: the grille */
+        { 26,            12 },              /* up to build 29 */
+    };
+    int n_col = 0, n_sw = 0;
+    if (data) {
+        for (size_t q = 0; q < sizeof(passe) / sizeof(passe[0]); ++q) {
+            if (size == sizeof(float)
+                        * (size_t)(N_USER * (1 + NAME_LEN + passe[q].n_col
+                                             + passe[q].n_sw))) {
+                n_col = passe[q].n_col;
+                n_sw  = passe[q].n_sw;
+                break;
+            }
+        }
+    }
+    if (!n_col) {
         return LV2_STATE_ERR_BAD_TYPE;   /* nothing saved, or not ours */
     }
+    if (n_col > N_PROGRAM_COL) { n_col = N_PROGRAM_COL; }
+    if (n_sw  > (int)SW_COUNT) { n_sw  = (int)SW_COUNT; }
 
     const float* buf = (const float*)data;
     int n = 0;

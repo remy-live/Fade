@@ -314,6 +314,24 @@ A(Paragraph(
     "droite oui</b>. Quinze secondes sans rien toucher et il abandonne "
     "tout seul : un silence n'est pas une décision.", P))
 
+A(Spacer(1, 5*mm))
+A(Paragraph("Doser un effet", H2))
+A(Paragraph(
+    "Chaque effet a de quoi se doser, et <b>ça se sauve dans le favori</b> : "
+    "PIT MIX, HARM MIX, le MIX du doubleur, DEPTH pour le chorus, DLY MIX, "
+    "REV MIX, et AMOUNT pour le drive qui est un mélange sec/saturé.", P))
+A(Paragraph(
+    "Quatre blocs n'avaient rien et l'ont maintenant : <b>GRILLE MIX</b> "
+    "(0 à 100 %, la grille n'avait qu'un interrupteur), et un <b>LEVEL</b> "
+    "en décibels pour <b>EQ</b>, <b>COMP</b> et <b>DE-ESS</b>. À 0 dB ils ne "
+    "font rien du tout, et ils s'éteignent avec l'interrupteur de leur bloc.",
+    P))
+A(Paragraph(
+    "Le plus utile des trois est EQ LEVEL : BODY, PRESENCE et AIR "
+    "s'<i>ajoutent</i> à la voix, donc les trois en l'air font douze "
+    "décibels que personne n'a demandés, et c'est là qu'on les reprend.",
+    NOTE))
+
 A(PageBreak())
 A(Paragraph("MONTÉ — ce que ce pedalboard utilise", H))
 A(Paragraph(

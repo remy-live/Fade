@@ -14,7 +14,10 @@
 .mod-pedal-voice{{{cns}}} {
     position: relative;
     width: 720px;
-    height: 820px;
+    /* Grown with the plugin, and only ever from a measurement:
+       make_screenshot.js refuses to write an image that overflows, and
+       says by how many pixels. Build 32's four level knobs cost 134. */
+    height: 960px;
     box-sizing: border-box;
     border-radius: 14px;
     padding: 0 14px;

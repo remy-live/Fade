@@ -1280,4 +1280,44 @@
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
         rdfs:comment "Is the REVERB block FITTED at all? Off, it is not computed - it costs nothing, and its ON switch has nothing left to switch. This is a rig decision and not a performance one: NEVER put it under a foot, or the processor load will jump in the middle of a song. It is what the pedalboard is for, so no program and no favourite ever writes it. Unfitting fades the block out over forty milliseconds and lets its tail run down before the arithmetic stops, so it costs no click. GATE, COMP, DE-ESS, PITCH, HARMONY and NO HOWL need no switch here: each already stops dead when its own control reaches zero."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 115 ;
+        lv2:symbol "grille_mix" ;
+        lv2:name "GRILLE MIX" ;
+        lv2:default 100.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+        units:unit units:pc ;
+        rdfs:comment "How much of the grille is heard, against the voice going into it. The switch was all there was: in or out, nothing in between, which is a telephone and never a voice ON a telephone. At 100 it is what the switch always did, so a favourite made before this knob existed sounds exactly as it did. Saved with the favourite."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 116 ;
+        lv2:symbol "comp_level" ;
+        lv2:name "COMP LEVEL" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "A trim on the compressor's own output, on top of the makeup it works out for itself. The automatic one keeps a voice at the same level whatever the knob says, which is right; this is for the favourite that wants two decibels more than right. At 0 nothing is done at all. It follows the COMP switch, so switching the block off takes its trim with it. Saved with the favourite."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 117 ;
+        lv2:symbol "de_ess_level" ;
+        lv2:name "DE-ESS LEVEL" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "A trim on the de-esser's output. The weakest of the four and worth saying so: the de-esser only ever takes away, and this trim sits in series with COMP LEVEL and EQ LEVEL with nothing between them but their own detectors - so three of them in a row largely multiply. What it does buy is a different pair of ears downstream: raising it here makes the EQ and everything after it work on a louder signal. At 0 nothing is done. Saved with the favourite."
+    ] , [
+        a lv2:ControlPort , lv2:InputPort ;
+        lv2:index 118 ;
+        lv2:symbol "eq_level" ;
+        lv2:name "EQ LEVEL" ;
+        lv2:default 0.0 ;
+        lv2:minimum -12.0 ;
+        lv2:maximum 12.0 ;
+        units:unit units:db ;
+        rdfs:comment "A trim on the tone stage's output. The one of the three that is really needed: BODY, PRESENCE and AIR are parallel bands ADDED to the voice, so three of them up is twelve decibels of level that was never asked for, and this is where it is taken back. At 0 nothing is done. It follows the EQ switch. Saved with the favourite."
     ] .

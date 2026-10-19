@@ -1069,6 +1069,51 @@ ringing into the gap that follows it.
 - Cost: about 1.5 % of one core of an x86-64 build machine for the stereo
   variant with every effect on. Not measured on the device.
 
+## A level for the four blocks that had none
+
+Six blocks already carry their own level and always did — PIT MIX, HARM
+MIX, DOUBLE's MIX, MOD's DEPTH, DLY MIX, REV MIX, and DRIVE's AMOUNT,
+which is a blend. All of them are columns of a program, so they travel
+with a favourite. Four did not:
+
+| | |
+|---|---|
+| **GRILLE MIX** | 0–100 %. The real gap: the grille had a switch and nothing between in and out, which is a telephone and never a voice *on* a telephone. At 100 it is exactly what the switch always did. |
+| **EQ LEVEL** | ±12 dB. The one of the three trims that is really needed: BODY, PRESENCE and AIR are parallel bands **added** to the voice, so three of them up is twelve decibels that was never asked for. |
+| **COMP LEVEL** | ±12 dB, on top of the makeup the compressor measures for itself — for the favourite that wants two decibels more than right. |
+| **DE-ESS LEVEL** | ±12 dB, and the weakest of the four, which is worth saying: the de-esser only ever takes away, and this sits in series with the other two trims with nothing between them but their own detectors, so three in a row largely multiply. What it does buy is a louder signal for the EQ downstream. |
+
+All four are **saved with the favourite**, which was the requirement:
+they sit in their own panel section, and a control in a section a lock is
+named after is a column of a program.
+
+Each rides its block's switch and its fitting, so switching the block off
+takes its trim with it. And each is smoothed as a **linear gain** rather
+than as decibels, which is what makes it free when it is not in use: at
+the position it arrives in — 100 % of grille, 0 dB of trim — the smoothed
+number is exactly `1.0f`, and a multiply by exactly one changes not one
+bit. Checked by rendering 921 600 samples of the worst case before and
+after and subtracting: zero differences.
+
+### Reading back what older builds saved
+
+Three builds in a row added a column, and each one added a struct and
+another branch to the reader. That is over. **The file on the disc says
+its own shape** — `n_col` and `n_switch` are in its header — so it is now
+read at the stride *it* describes, and the stride is computed rather than
+taken from a struct. `test_voice.c` checks that formula against
+`sizeof()` for the layout of the day, and reads back a file from every
+layout this plugin has ever written.
+
+The **LV2 state** of a pedalboard cannot be made self-describing without
+breaking every board already saved — a flat array of floats carries no
+header, and its size is the only clue. So there it is a table of past
+layouts, newest first, and the next build to add a column adds one line.
+
+Either way a column a build never had comes back **at its own default**,
+which for every level above is the position where the knob does nothing.
+A favourite dialled last summer sounds exactly as it did.
+
 ## Fitted, or not in the chain at all
 
 Every effect has an **ON/OFF** switch, and it is a foot's control: it
