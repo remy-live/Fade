@@ -166,10 +166,19 @@ What the three encoders turn:
 | DOUBLE | amount | spread | voices |
 | HARMONY | voice 1 | voice 2 | mix |
 | PITCH | semitones | mix | — |
-| GRILLE | width | buzz | tone |
+| GRILLE | mix | width | buzz |
 | MOD | depth | speed | — |
 | DELAY | time | repeats | mix |
 | REVERB | tail | mix | — |
+
+A page of the Dwarf holds **three** encoders and no more, so a fourth
+setting on an effect cannot have one: a fourth encoder means a second
+page, and a second page means looking at the screen, which is the one
+thing the foot cycle exists to avoid. When the grille gained a MIX it was
+the MIX that took encoder 1 — the level is what a foot reaches for
+mid-song — and TONE came off the cycle. Nothing is out of reach for all
+that: the **pedal page's ENC 2 walks every control of the plugin**, the
+grille's TONE, the four levels and the two gates with them.
 
 On the screen, **NAV** carries one mark per effect — seven letters,
 `DHPGMLR`, a letter when the effect is on and a dash when it is off — with
@@ -205,6 +214,8 @@ on a device with no terminal is otherwise a guess.
 | **AIR** | ±12 dB above ~6 kHz. |
 | **DRIVE** | 0–100 %. Soft saturation that measures itself either side of the saturator, twice a second, and corrects the difference: the colour changes, how loud you are does not — at any input level, which a fixed reference could not do. |
 | **GRILLE** / **WIDTH** / **BUZZ** / **TONE** | The speaking grille at a counter, as a block. WIDTH opens both ends at once: 0 is a telephone (640 Hz to 2.8 kHz), 50 the Hygiaphone (320 to 6000 Hz), 100 nearly the whole voice (160 Hz to 12 kHz). TONE is where it rings, a +8 dB bell from 800 Hz to 3 kHz; BUZZ is the DRIVE saturation on what gets through, level-matched the same way. It starts **off**: a grille is a sound, not a setting. |
+| **GRILLE MIX** | 0–100 %. How much of the grille is heard against the voice that went in. At 100 it is exactly what the switch alone used to do. Encoder 1 of the grille in the foot cycle. |
+| **DRIVE GATE** / **GRILLE GATE** | 0–100 %. A gate that listens to the voice and not to a number, on the two blocks that make hiss out of silence. At 0 it is off. See *A gate for the blocks that saturate* below. |
 | **… ON** | One switch per effect — GATE, COMP, DE-ESS, DRIVE, DOUBLE, MOD, DELAY, REVERB — each sitting immediately in front of the controls it switches. Made for footswitches. DELAY and REVERB cut what goes *in*, so their tails ring out. |
 | **HARMONY** / **VOICE 1** / **VOICE 2** | Two more singers, at fixed intervals in semitones from what *you* sing — +4 a major third above, −5 a fourth below, ±12 an octave. Nothing detects your note, so they follow the song wherever it stays in one key, which is what a chorus usually does. A voice at 0 is silent and costs nothing. Both are counted from the sung note, not from where PITCH has put you: PITCH −12 with a third above gives you both. |
 | **DOUBLE** | 0–100 %. How much of the doubled voices is heard. They arrive 26 to 52 ms late, each held a constant few cents off the lead, each with its own drift, its own vibrato — which swells and relaxes on a cycle of its own — and its own throat, brighter or darker than the lead. |
@@ -745,6 +756,13 @@ them back in its own layout the next time SAVE is pressed. The new ports
 are, as always, at the end of the list — remove the VOICE block from the
 pedalboard and add it back, or NAV, VALIDATE and the grille reach nothing.
 
+**Coming from build 33:** two ports again — DRIVE GATE and GRILLE GATE —
+and the same rule: new ports go at the very end of the list, and a
+pedalboard remembers a block by port *index*. **Remove the VOICE block
+from the pedalboard and add it back** after installing, or the two gates
+reach nothing. Favourites saved by any earlier build are read column for
+column with both gates at 0, which is off.
+
 ## When a switch does nothing: DIAG
 
 From inside a plugin a footswitch is a black box. Whether its port is even
@@ -1080,6 +1098,61 @@ layouts, newest first, and the next build to add a column adds one line.
 Either way a column a build never had comes back **at its own default**,
 which for every level above is the position where the knob does nothing.
 A favourite dialled last summer sounds exactly as it did.
+
+## A gate for the blocks that saturate
+
+A saturator does not know the difference between a voice and the hiss of
+the microphone preamplifier: it lifts whatever reaches it, and between
+two phrases what reaches it is the room. The grille does the same, and
+worse, because the band it keeps is exactly where hiss lives. So **DRIVE
+GATE** and **GRILLE GATE**, 0–100 %, off at 0.
+
+Three things make it a gate worth leaving on.
+
+**It closes the effect, not the voice.** Both blocks are written as a
+blend — the dry signal plus some amount of what the block made of it —
+and the gate multiplies *that amount* and nothing else. Shut, the voice
+goes through untouched; it is the saturation that stops. A gate that cut
+the voice would have to be dialled against the quietest note anybody will
+ever sing, and would eat the end of a line. This one cannot: at worst it
+takes a little grit off a very quiet word.
+
+**The threshold is relative, which is what makes it intelligent.** It is
+not a level in decibels that has to be found again for every singer,
+every microphone and every room — and that is how a gate ends up switched
+off with the hiss kept. Two detectors run: the voice *now* (1 ms up,
+80 ms down) and **the loudest this singer has been over the last three
+seconds** (instant up, a three-second decay). The knob is the distance
+between the two: 1 % opens at 45 dB below the recent loudest, 100 % at
+18 dB below. Sing louder and the whole thing moves up with you; back off
+the microphone and it follows you down. There is one absolute in it, a
+floor at −80 dBFS, because the ratio of two numbers that small means
+nothing and a performance is not happening down there.
+
+**It listens in front of the block, never to its own output.** The
+detector is the peak of the channels *going in*. A gate that listened
+after the saturator would hear the noise it is lifting, open on it, and
+chatter.
+
+It opens in five milliseconds and closes in a hundred and fifty: fast
+enough that no consonant is late, slow enough that the grit fades out of
+a word's tail instead of being cut off it. The gain walks there a sample
+at a time — there is no branch in the audio path that switches a block in
+or out.
+
+At 0 the gate is not computed at all and the gain is forced to exactly
+`1.0f`, so the default build is **bit-identical** to the one before: 921
+600 samples of the worst case rendered and subtracted, zero differences.
+Both ports sit in their block's panel section, so each is **a column of a
+program** and travels with the favourite — a crunchy sound can carry its
+own gate and a clean one carry none.
+
+The test bench plays two phrases with a hiss floor between them and
+checks both things that matter: the floor between the phrases comes down,
+and the phrase itself measures the same as with no gate at all. Plus the
+two that catch a gate pretending to work — a shut gate on a switched-off
+block changes nothing, and a loud singer and a quiet one are both let
+through with nobody touching the knob.
 
 ## Fitted, or not in the chain at all
 

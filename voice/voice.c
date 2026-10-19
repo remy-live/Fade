@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD33_AARCH64_20261019";
+static const volatile char build_tag[] = "VOICE_BUILD34_AARCH64_20261019";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -461,7 +461,10 @@ typedef enum {
     CTL_COMP_LEVEL    = 112,
     CTL_DE_ESS_LEVEL  = 113,
     CTL_EQ_LEVEL      = 114,
-    CTL_COUNT         = 115
+    /* A gate for the two blocks that saturate. See SatGate. */
+    CTL_DRIVE_GATE    = 115,
+    CTL_GRILLE_GATE   = 116,
+    CTL_COUNT         = 117
 } ControlIndex;
 
 /* Widest port count of the two variants: 4 audio + the controls. */
@@ -601,6 +604,8 @@ static const CtlSpec ctl_spec[CTL_COUNT] = {
     { "comp_level",   -12.0f,   12.0f,     0.0f },
     { "de_ess_level", -12.0f,   12.0f,     0.0f },
     { "eq_level",     -12.0f,   12.0f,     0.0f },
+    { "drive_gate",     0.0f,  100.0f,     0.0f },
+    { "grille_gate",    0.0f,  100.0f,     0.0f },
 };
 
 /* The built-in sounds, generated from the same table that writes
@@ -703,7 +708,12 @@ static const uint8_t fx_param[FX_N][3] = {
     { CTL_DOUBLER,      CTL_SPREAD,        CTL_VOICES      },
     { CTL_HARM_1,       CTL_HARM_2,        CTL_HARM_MIX    },
     { CTL_PITCH,        CTL_PITCH_MIX,     CTL_COUNT       },
-    { CTL_GRILLE_WIDTH, CTL_GRILLE_BUZZ,   CTL_GRILLE_TONE },
+    /* The grille has five settings and a Dwarf page has three encoders,
+       so three is what the cycle shows - the three a hand reaches for
+       between two songs. TONE is where the bell sits and GATE is a
+       room's business: both are set once, and encoder 2 of the pedal
+       page walks to them like it walks to everything else. */
+    { CTL_GRILLE_MIX,   CTL_GRILLE_WIDTH,  CTL_GRILLE_BUZZ },
     { CTL_MOD,          CTL_MOD_SPEED,     CTL_COUNT       },
     { CTL_DELAY_TIME,   CTL_DELAY_REPEATS, CTL_DELAY_MIX   },
     { CTL_REVERB,       CTL_REVERB_MIX,    CTL_COUNT       },
@@ -1090,6 +1100,71 @@ static const char alpha[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.";
 #define DELAY_MAX_MS 2000.0f
 #define FX_RAMP_MS     40.0f    /* switching the FX send in and out */
 
+/* ------------------------------------------------------------------ */
+/* A gate for the two blocks that SATURATE                             */
+/*                                                                     */
+/* Not the gate at the front. That one listens to the microphone and    */
+/* decides whether the singer is singing. This one listens to the same  */
+/* voice and decides whether the DISTORTION is worth having, because a  */
+/* saturator between two phrases is an amplifier pointed at the room,   */
+/* and the hiss it brings up was never in the performance.              */
+/*                                                                     */
+/* It never touches the voice. What it closes is the block's own        */
+/* CONTRIBUTION - the difference the block makes - so a breath or the   */
+/* tail of a word is never chopped: the dry voice goes through whatever */
+/* this does. That is the whole reason it can be fast without being     */
+/* heard.                                                               */
+/*                                                                     */
+/* And the threshold is RELATIVE: how far below the loudest this singer */
+/* has been over the last few seconds. An absolute one has to be        */
+/* dialled again for every singer, every microphone and every room -    */
+/* which is how a gate ends up switched off and the hiss kept.          */
+/* ------------------------------------------------------------------ */
+typedef struct {
+    float fast;    /* the voice now */
+    float slow;    /* the loudest it has been lately */
+    float gain;    /* 0 shut, 1 open, and it walks between the two */
+} SatGate;
+
+typedef struct {
+    float a_fast, r_fast;   /* the voice now: quick up, quick down */
+    float r_slow;           /* the loudest lately: instant up, seconds down */
+    float seuil;            /* how far below that one, as a ratio */
+    float ouvre, ferme;     /* and how fast the gate itself moves */
+} SatGateCoef;
+
+static void sat_gate_set(SatGateCoef* c, float amount, float rate)
+{
+    c->a_fast = 1.0f - 1.0f / (1.0f + 0.001f * rate);   /* 1 ms */
+    c->r_fast = 1.0f - 1.0f / (1.0f + 0.080f * rate);   /* 80 ms */
+    c->r_slow = 1.0f - 1.0f / (3.0f * rate);            /* 3 s */
+    /* 1 % is 45 dB below the loudest, 100 % is 18 dB below: the whole
+       knob is the distance, and nothing else about it is adjustable. */
+    c->seuil  = db_to_lin(-45.0f + 0.27f * amount);
+    c->ouvre  = 1.0f / (0.005f * rate);   /* open in five milliseconds */
+    c->ferme  = 1.0f / (0.150f * rate);   /* and close in a hundred and fifty */
+}
+
+static float sat_gate_step(SatGate* s, const SatGateCoef* c, float det)
+{
+    const float ce = (det > s->fast) ? c->a_fast : c->r_fast;
+    s->fast = flush(s->fast + ce * (det - s->fast));
+    s->slow = (det > s->slow) ? det : flush(s->slow * c->r_slow);
+    /* Below -80 dBFS nothing is a performance, and a ratio between two
+       numbers that small says nothing at all: shut, which costs the
+       voice nothing because the voice is not going through here. */
+    const float cible = (s->fast > s->slow * c->seuil && s->fast > 1.0e-4f)
+                      ? 1.0f : 0.0f;
+    if (s->gain < cible) {
+        s->gain += c->ouvre;
+        if (s->gain > cible) { s->gain = cible; }
+    } else if (s->gain > cible) {
+        s->gain -= c->ferme;
+        if (s->gain < cible) { s->gain = cible; }
+    }
+    return s->gain;
+}
+
 typedef struct {
     /* --- ports --- */
     uint32_t     n_ch;        /* 1 for mono, 2 for stereo */
@@ -1129,6 +1204,9 @@ typedef struct {
        the block out over the same forty milliseconds before the
        arithmetic stops, so taking a block out of the chain costs no
        click. While the ramp is above zero the block is still computed. */
+    /* One per saturating block: the drive and the grille. */
+    SatGate  sg_drive, sg_grille;
+
     float    fit[F_COUNT];
     uint8_t  fit_done[F_COUNT];   /* its state has been cleared since */
     uint32_t fit_wipe[F_COUNT];   /* samples of its lines left to clear */
@@ -2044,6 +2122,7 @@ static void zero_slice(float* buf, uint32_t len, uint32_t total, uint32_t n)
     for (uint32_t i = deb; i < fin; ++i) { buf[i] = 0.0f; }
 }
 
+
 /* A trim, as the gain it stands for. EXACTLY one at zero decibels: the
    approximation behind db_to_lin lands on 0.99999977 there, which is
    inaudible and is still not one, and a multiply by not-quite-one on
@@ -2359,6 +2438,9 @@ activate(LV2_Handle instance)
     self->browse_was        = (ctl_read(self, CTL_FAV_BROWSE) > 0.5f) ? 1 : 0;
     self->browse_bouge      = 0;
     self->browse_high       = 0u;
+    self->sg_drive.fast = self->sg_drive.slow = 0.0f;
+    self->sg_drive.gain = 1.0f;
+    self->sg_grille = self->sg_drive;
     self->browse_max        = 0u;
     self->browse_fait       = 0;
     for (int u = 0; u < N_USER; ++u) {
@@ -4163,6 +4245,19 @@ run(LV2_Handle instance, uint32_t n_samples)
     /* the band it keeps is quieter than the voice that went in */
     const float grille_makeup = 1.25f;
 
+    /* The two saturation gates. At zero the arithmetic is not run at
+       all and the gain is exactly one, so a sound made before they
+       existed is not changed by a single bit. */
+    const float dg_amt = param_read(self, CTL_DRIVE_GATE);
+    const float gg_amt = param_read(self, CTL_GRILLE_GATE);
+    const int   dg_on  = dg_amt > 0.5f;
+    const int   gg_on  = gg_amt > 0.5f;
+    SatGateCoef dg_coef, gg_coef;
+    if (dg_on) { sat_gate_set(&dg_coef, dg_amt, rate); }
+    else       { self->sg_drive.gain = 1.0f; }
+    if (gg_on) { sat_gate_set(&gg_coef, gg_amt, rate); }
+    else       { self->sg_grille.gain = 1.0f; }
+
     /* ---------------- smoothing ----------------
        Anything a hand can turn walks to its new value across the block. */
     float target[SM_COUNT];
@@ -4569,6 +4664,17 @@ run(LV2_Handle instance, uint32_t n_samples)
                bell, then the buzz - the DRIVE saturation, blended in the
                same way so BUZZ at zero is just the band. Its switch
                crossfades the whole block in and out over 40 ms. --- */
+        /* The gate listens to the voice going IN, and what it closes is
+           what the block ADDS - never the voice itself. */
+        float gg_g = 1.0f;
+        if (run_grille && gg_on) {
+            float det = 0.0f;
+            for (uint32_t c = 0; c < n_ch; ++c) {
+                const float a = absf(x[c]);
+                if (a > det) { det = a; }
+            }
+            gg_g = sat_gate_step(&self->sg_grille, &gg_coef, det);
+        }
         if (run_grille)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
@@ -4588,7 +4694,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                nothing between - which is a telephone and never a voice
                ON a telephone. At 100 % this is what the switch did. */
             x[c] = v + self->sw[SW_GRILLE] * self->fit[F_GRILLE]
-                       * sm[SM_GRILLE_WET] * (a - v);
+                       * sm[SM_GRILLE_WET] * gg_g * (a - v);
         }
 
         /* --- drive, then a DC blocker: saturation on a signal that
@@ -4599,6 +4705,15 @@ run(LV2_Handle instance, uint32_t n_samples)
                of a loud passage by nearly two decibels the moment the
                control leaves zero. --- */
         float dr_a = 0.0f, dr_b = 0.0f;
+        float dg_g = 1.0f;
+        if (run_drive && dg_on) {
+            float det = 0.0f;
+            for (uint32_t c = 0; c < n_ch; ++c) {
+                const float a = absf(x[c]);
+                if (a > det) { det = a; }
+            }
+            dg_g = sat_gate_step(&self->sg_drive, &dg_coef, det);
+        }
         if (run_drive)
         for (uint32_t c = 0; c < n_ch; ++c) {
             Chan* ch = &self->ch[c];
@@ -4610,7 +4725,8 @@ run(LV2_Handle instance, uint32_t n_samples)
                              * sm[SM_DRIVE_POST];
             const float sat  = brut * drive_fix;
             const float v    = x[c] + sm[SM_DRIVE_MIX] * self->sw[SW_DRIVE]
-                                      * self->fit[F_DRIVE] * (sat - x[c]);
+                                      * self->fit[F_DRIVE] * dg_g
+                                      * (sat - x[c]);
             {
                 const float a = absf(x[c]), b = absf(brut);
                 if (a > dr_a) { dr_a = a; }

@@ -1208,6 +1208,7 @@ SHORT_NAME = {
     # the four levels of build 32: eight characters on the device screen
     "grille_mix": "GRIL MIX", "comp_level": "COMP LVL",
     "de_ess_level": "SS LVL", "eq_level": "EQ LVL",
+    "drive_gate": "DRV GATE", "grille_gate": "GRI GATE",
     "grille_width": "WIDTH", "grille_buzz": "BUZZ", "grille_tone": "TONE",
 }
 
@@ -1237,9 +1238,9 @@ PANEL = [
     ("DE-ESS",   ["de_ess_on", "de_ess", "de_ess_freq", "de_ess_level"]),
     ("EQ",       ["eq_on", "low_cut", "body", "mid_freq", "presence", "air",
                  "eq_level"]),
-    ("DRIVE",    ["drive_on", "drive"]),
+    ("DRIVE",    ["drive_on", "drive", "drive_gate"]),
     ("GRILLE",   ["grille_on", "grille_width", "grille_buzz", "grille_tone",
-                 "grille_mix"]),
+                 "grille_mix", "grille_gate"]),
     ("PITCH",    ["pitch_on", "pitch", "pitch_mix"]),
     ("HARMONY",  ["harm_on", "harm_1", "harm_2", "harm_mix"]),
     ("DOUBLE",   ["doubler_on", "doubler", "spread", "voices"]),
@@ -1312,6 +1313,38 @@ TAIL += [
   "so three of them up is twelve decibels of level that was never asked "
   "for, and this is where it is taken back. At 0 nothing is done. It "
   "follows the EQ switch. Saved with the favourite."),
+]
+
+# A gate for the two blocks that SATURATE, and the reason it is not the
+# gate at the front: that one listens to the microphone and decides
+# whether the singer is singing. This one listens to the same voice and
+# decides whether the DISTORTION is worth having - because a saturator
+# between two phrases is an amplifier pointed at the room, and the hiss
+# it brings up was never in the performance.
+#
+# It never touches the voice. What it closes is the block's own
+# contribution, so a breath or the tail of a word is never chopped: the
+# dry voice goes through whatever this does.
+#
+# And the threshold is RELATIVE - how far below the loudest this singer
+# has been over the last few seconds, not an absolute number of
+# decibels. An absolute one has to be dialled again for every singer,
+# every microphone and every room. This one follows them.
+TAIL += [
+ ("in", "drive_gate", "DRIVE GATE", 0.0, 100.0, 0.0, "pc", [],
+  "Shuts the DRIVE between phrases, and nothing else: the voice goes "
+  "through untouched, it is only the saturation that comes and goes, so "
+  "no breath and no tail is ever chopped. The threshold is how far below "
+  "the loudest you have been in the last few seconds the signal has to "
+  "fall - relative, so it follows a quiet singer and a loud one without "
+  "being dialled again. 0 is off and costs nothing. It opens in five "
+  "milliseconds, so no syllable arrives dull, and closes in a hundred and "
+  "fifty. Saved with the favourite."),
+ ("in", "grille_gate", "GRILLE GATE", 0.0, 100.0, 0.0, "pc", [],
+  "The same, for the grille. A narrow band with a buzz on it is an "
+  "amplifier pointed at the room between two phrases. It closes the "
+  "grille's contribution only - the voice under it is untouched. 0 is off "
+  "and costs nothing. Saved with the favourite."),
 ]
 
 # A line of explanation under a section, where the switches alone cannot

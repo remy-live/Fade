@@ -327,10 +327,57 @@ A(Paragraph(
     "font rien du tout, et ils s'éteignent avec l'interrupteur de leur bloc.",
     P))
 A(Paragraph(
+    "<b>Au pied.</b> Une page du Dwarf tient <b>trois</b> encodeurs, pas "
+    "quatre : un quatrième réglage voudrait dire une deuxième page, donc "
+    "regarder l'écran, qui est justement ce que la boucle au pied évite. "
+    "Sur la grille, c'est donc le <b>MIX</b> qui a pris l'encodeur 1 — "
+    "mix, largeur, buzz — et TONE est sorti de la boucle. Rien n'est "
+    "perdu pour autant : l'<b>ENC 2</b> de la page du pédalier fait "
+    "défiler <i>tous</i> les réglages, TONE, les quatre niveaux et les "
+    "deux portes compris.", P))
+A(Paragraph(
     "Le plus utile des trois est EQ LEVEL : BODY, PRESENCE et AIR "
     "s'<i>ajoutent</i> à la voix, donc les trois en l'air font douze "
     "décibels que personne n'a demandés, et c'est là qu'on les reprend.",
     NOTE))
+
+A(PageBreak())
+A(Paragraph("La porte de bruit du DRIVE et de la GRILLE", H))
+A(Paragraph(
+    "Un saturateur ne fait pas la différence entre une voix et le "
+    "souffle du préampli : il monte ce qui lui arrive, et entre deux "
+    "phrases ce qui lui arrive, c'est la salle. La grille fait pire, "
+    "parce que la bande qu'elle garde est exactement là où vit le "
+    "souffle. D'où <b>DRIVE GATE</b> et <b>GRILLE GATE</b>, de 0 à "
+    "100 %, à <b>0 = éteint</b>.", P))
+A(tableau([
+    ("Elle ferme l'effet,<br/>pas la voix",
+     "Les deux blocs sont des mélanges sec/effet, et la porte n'agit que "
+     "sur la part d'effet. Fermée, votre voix passe intacte : c'est la "
+     "saturation qui s'arrête. Elle ne peut donc pas vous manger une fin "
+     "de phrase."),
+    ("Le seuil est relatif",
+     "Ce n'est pas un niveau en décibels à retrouver pour chaque chanteur, "
+     "chaque micro et chaque salle. Elle compare la voix <i>maintenant</i> "
+     "à <b>la plus forte que vous ayez été depuis trois secondes</b>. Le "
+     "bouton, c'est la distance entre les deux : 1 % ouvre 45 dB sous "
+     "cette pointe, 100 % ouvre 18 dB dessous."),
+    ("Elle écoute devant",
+     "Le détecteur lit ce qui <i>entre</i> dans le bloc, jamais ce qui en "
+     "sort : une porte qui s'écouterait elle-même entendrait le souffle "
+     "qu'elle vient de monter, s'ouvrirait dessus, et hacherait."),
+]))
+A(Spacer(1, 2*mm))
+A(encadre("Ce que ça donne au micro", [
+    "Chantez fort, elle monte avec vous ; reculez du micro, elle vous "
+    "suit. Personne ne touche au bouton de la soirée. Elle ouvre en "
+    "cinq millisecondes — aucune consonne n'arrive en retard — et ferme "
+    "en cent cinquante : le grain s'efface de la fin du mot au lieu "
+    "d'être coupé net.",
+    "Les deux portes sont des <b>colonnes de programme</b> : elles se "
+    "sauvent avec le favori. Un son crunch peut porter la sienne et un "
+    "son clair n'en avoir aucune.",
+]))
 
 A(PageBreak())
 A(Paragraph("MONTÉ — ce que ce pedalboard utilise", H))

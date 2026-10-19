@@ -4936,16 +4936,22 @@ static void essai_cycle_pied(void)
     presser(&b, CTL_NAV, 100.0);
     verifie("NAV: GRILLE", (double)b.ctl[CTL_FX_NOW], 3.0, 0.01);
     attendre(&b, 50.0);
-    verifie_vrai("encoder 3 on GRILLE is TONE",
-                 !strcmp(ecran.dernier_label, "TONE")
-                 && !strcmp(ecran.dernier_value, "1800")
-                 && !strcmp(ecran.dernier_unit, "HZ"));
-    cran(&b, CTL_FX_ENC3, +1);
-    verifie("one click: 1850 Hz", (double)b.ctl[CTL_GRILLE_TONE], 1850.0, 0.01);
+    /* The grille has five settings and a Dwarf page has three encoders.
+       The three the cycle shows are the three a hand reaches for between
+       two songs - MIX first, because how much grille there is matters
+       more on a stage than where its bell sits. TONE and GATE are set
+       once and live on the pedal page, like everything else. */
+    verifie_vrai("encoder 3 on GRILLE is BUZZ",
+                 !strcmp(ecran.dernier_label, "BUZZ")
+                 && !strcmp(ecran.dernier_unit, "%"));
     cran(&b, CTL_FX_ENC1, +1);
-    verifie("encoder 1 on GRILLE is WIDTH", (double)b.ctl[CTL_GRILLE_WIDTH], 51.0, 0.01);
-    cran(&b, CTL_FX_ENC2, -1);
-    verifie("encoder 2 on GRILLE is BUZZ", (double)b.ctl[CTL_GRILLE_BUZZ], 39.0, 0.01);
+    verifie("encoder 1 on GRILLE is MIX", (double)b.ctl[CTL_GRILLE_MIX], 100.0, 0.01);
+    cran(&b, CTL_FX_ENC1, -1);
+    verifie("and it comes down from the top", (double)b.ctl[CTL_GRILLE_MIX], 99.0, 0.01);
+    cran(&b, CTL_FX_ENC2, +1);
+    verifie("encoder 2 on GRILLE is WIDTH", (double)b.ctl[CTL_GRILLE_WIDTH], 51.0, 0.01);
+    cran(&b, CTL_FX_ENC3, -1);
+    verifie("encoder 3 turns BUZZ", (double)b.ctl[CTL_GRILLE_BUZZ], 39.0, 0.01);
     verifie_vrai("GRILLE is off until VALIDATE", v->sw_state[SW_GRILLE] == 0);
     presser(&b, CTL_VALIDATE, 50.0);
     verifie_vrai("VALIDATE turns the grille on", v->sw_state[SW_GRILLE] == 1
@@ -5139,6 +5145,101 @@ static void essai_niveaux(void)
     verifie("the grille mix with it",
             (double)b.ctl[CTL_GRILLE_MIX], 40.0, 0.01);
     fermer(&b);
+}
+
+/* ------------------------------------------------------------------ */
+/* The gate on the two blocks that saturate                            */
+/*                                                                     */
+/* Not the gate at the front: that one decides whether the singer is    */
+/* singing. This one decides whether the DISTORTION is worth having,    */
+/* and what it closes is the block's own contribution - never the       */
+/* voice, which is what lets it be fast without being heard.            */
+/* ------------------------------------------------------------------ */
+static void essai_porte_satu(void)
+{
+    /* A phrase, then room noise forty decibels under it. Without the
+       gate the drive brings that noise up; with it, it does not - and
+       the phrase itself has to come out the same either way. */
+    for (int quoi = 0; quoi < 2; ++quoi) {       /* 0 drive, 1 grille */
+        double souffle[2], phrase[2];
+        for (int porte = 0; porte < 2; ++porte) {
+            Banc b;
+            ouvrir(&b, 0, 48000.0, 128, 0);
+            neutre(&b);
+            if (quoi == 0) {
+                b.ctl[CTL_DRIVE_ON]   = 1.0f;
+                b.ctl[CTL_DRIVE]      = 90.0f;
+                b.ctl[CTL_DRIVE_GATE] = porte ? 60.0f : 0.0f;
+            } else {
+                b.ctl[CTL_GRILLE_ON]   = 1.0f;
+                b.ctl[CTL_GRILLE_BUZZ] = 90.0f;
+                b.ctl[CTL_GRILLE_GATE] = porte ? 60.0f : 0.0f;
+            }
+            /* two seconds of voice: the slow follower learns the level */
+            for (int k = 0; k < 750; ++k) { sinus(&b, 300.0, 0.35); tourner(&b); }
+            phrase[porte] = crete(b.out[0], b.bloc);
+            /* then nothing but noise, forty decibels down */
+            for (int k = 0; k < 400; ++k) { sinus(&b, 300.0, 0.0035); tourner(&b); }
+            souffle[porte] = crete(b.out[0], b.bloc);
+            fermer(&b);
+        }
+        const char* nom = quoi ? "the grille" : "the drive";
+        char quoi1[90], quoi2[90];
+        snprintf(quoi1, sizeof(quoi1),
+                 "%s: the gate takes the hiss down between phrases", nom);
+        verifie_vrai(quoi1, souffle[1] < souffle[0] * 0.75);
+        snprintf(quoi2, sizeof(quoi2),
+                 "%s: and the phrase itself is untouched", nom);
+        verifie_vrai(quoi2,
+                     fabs(phrase[1] - phrase[0]) < phrase[0] * 0.02);
+    }
+
+    /* It never cuts the VOICE, only what the block adds: with the block
+       switched off, the gate changes nothing at all - there is nothing
+       for it to close. */
+    {
+        float avec[128], sans[128];
+        for (int k = 0; k < 2; ++k) {
+            Banc b;
+            ouvrir(&b, 0, 48000.0, 128, 0);
+            neutre(&b);
+            b.ctl[CTL_DRIVE_ON]   = 0.0f;
+            b.ctl[CTL_DRIVE]      = 90.0f;
+            b.ctl[CTL_DRIVE_GATE] = k ? 90.0f : 0.0f;
+            for (int j = 0; j < 400; ++j) { sinus(&b, 300.0, 0.004); tourner(&b); }
+            memcpy(k ? avec : sans, b.out[0], sizeof(avec));
+            fermer(&b);
+        }
+        double ecart = 0.0;
+        for (int i = 0; i < 128; ++i) {
+            const double d = fabs((double)avec[i] - (double)sans[i]);
+            if (d > ecart) { ecart = d; }
+        }
+        verifie_vrai("a shut gate on a switched-off block changes nothing",
+                     ecart < 1.0e-7);
+    }
+
+    /* And the threshold is RELATIVE: a singer twenty decibels quieter
+       is gated the same way, with no knob touched. An absolute one
+       would hold the gate shut on them for the whole song. */
+    {
+        double ouvre[2];
+        for (int fort = 0; fort < 2; ++fort) {
+            Banc b;
+            ouvrir(&b, 0, 48000.0, 128, 0);
+            neutre(&b);
+            b.ctl[CTL_DRIVE_ON]   = 1.0f;
+            b.ctl[CTL_DRIVE]      = 90.0f;
+            b.ctl[CTL_DRIVE_GATE] = 60.0f;
+            const double a = fort ? 0.40 : 0.04;
+            for (int k = 0; k < 750; ++k) { sinus(&b, 300.0, a); tourner(&b); }
+            ouvre[fort] = (double)((Voice*)b.h)->sg_drive.gain;
+            fermer(&b);
+        }
+        verifie("a loud singer is let through", ouvre[1], 1.0, 0.01);
+        verifie("and a quiet one just the same, with no knob touched",
+                ouvre[0], 1.0, 0.01);
+    }
 }
 
 static void essai_migration(void)
@@ -5360,6 +5461,7 @@ int main(int argc, char** argv)
     printf("Screen - the list:\n");         essai_ecran_programme();
     printf("Fitted, or not in the chain:\n"); essai_montage();
     printf("A level for the four that had none:\n"); essai_niveaux();
+    printf("The gate on the saturating blocks:\n"); essai_porte_satu();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
     printf("Stereo variant:\n");           essai_stereo();
