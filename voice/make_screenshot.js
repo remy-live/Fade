@@ -91,6 +91,16 @@ document.querySelectorAll('[mod-role="input-control-value"]').forEach(function (
 });
 document.querySelector('.voice-gr-fill').style.width = '38%';
 document.querySelector('.voice-level-fill').style.width = '62%';
+/* The diagnostic line, filled with a REAL one - the longest this plugin
+   has ever printed, off a photograph of the pedal in mod-ui. Left empty
+   it took up no room, and a line that takes up no room cannot be seen
+   to run across the title. It did, for four builds. */
+document.querySelector('.voice-diag').textContent =
+  'GO TO JAMAIS VU BOUGER \u00b7 AUCUN MAINTIEN VU - le switch envoie des '
+  + 'impulsions \u00b7 0 favoris enregistres \u00b7 pas de parcours \u00b7 switch non '
+  + 'adresse \u00b7 aucun verrou \u00b7 FX OFF - DOUBLE, MOD, DELAY, REVERB ne '
+  + 'recoivent rien';
+document.querySelector('.voice-diag').classList.add('alerte');
 document.querySelector('.voice-state').textContent = 'FX ON';
 document.querySelector('.voice-state').classList.add('actif');
 document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}').classList.add('on');
@@ -123,6 +133,46 @@ document.querySelector('.voice-light${'_http___remy_live_github_io_lv2_voice'}')
                  w: Math.round(box.width), h: Math.round(box.height),
                  contenu: Math.round(fond) };   /* CONTENT_HEIGHT */
     });
+    /* Nothing may sit ON TOP of anything else. The overflow check above
+       only ever looked at the edges of the pedal, so a diagnostic line
+       printed straight across the VOICE title passed it every time. */
+    const dessus = await p.evaluate(() => {
+        const nom = (el) => (el.className || '').toString().split(' ')[0] || el.tagName;
+        /* The INK, not the box: a centred span is as wide as its row and
+           overlapping boxes would be reported on every line of the
+           pedal. A Range round the text gives where the letters
+           actually are. */
+        const encre = (el) => {
+            const r = document.createRange();
+            r.selectNodeContents(el);
+            return r.getBoundingClientRect();
+        };
+        const feuilles = [...document.querySelectorAll('.mod-pedal *')]
+            .filter(el => el.children.length === 0
+                       && (el.textContent || '').trim() !== ''
+                       && getComputedStyle(el).visibility !== 'hidden'
+                       && el.getBoundingClientRect().height > 0);
+        const mauvais = [];
+        for (let i = 0; i < feuilles.length; i++) {
+            for (let j = i + 1; j < feuilles.length; j++) {
+                const a = encre(feuilles[i]);
+                const b = encre(feuilles[j]);
+                const l = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+                const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+                if (l > 2 && h > 2) {
+                    mauvais.push(nom(feuilles[i]) + ' over ' + nom(feuilles[j])
+                                 + ' (' + Math.round(l) + 'x' + Math.round(h) + 'px)');
+                }
+            }
+        }
+        return mauvais;
+    });
+    if (dessus.length) {
+        console.error('two pieces of text sit on top of each other: '
+                      + dessus.join(', '));
+        await browser.close();
+        process.exit(1);
+    }
     if (debord.bas > 0 || debord.droite > 0) {
         console.error('the layout overflows the pedal by ' + debord.bas +
                       'px at the bottom and ' + debord.droite + 'px on the right');

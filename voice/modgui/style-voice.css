@@ -240,11 +240,20 @@
     font-size: 7.5px; letter-spacing: 1px; color: #53606e;
 }
 /* What the plugin sees, for the days a switch does nothing and there is
-   no way to ask it why. */
+   no way to ask it why.
+
+   It used to sit under the header at a fixed 300px, NOWRAP and with
+   nothing to clip it - so the day it had something long to say it said
+   it straight across the VOICE title. It lives at the BOTTOM now, in
+   the band beside the bypass footswitch, where the pedal had dead space
+   and where a line that grows has somewhere to grow. Two lines at most,
+   and then it is cut: a diagnostic that pushes the pedal out of shape
+   is a second fault to go looking for. */
 .voice-diag{{{cns}}} {
-    position: absolute; top: 20px; left: 12px;
-    font-size: 8px; letter-spacing: .5px; color: #5d6b7c;
-    max-width: 300px; white-space: nowrap;
+    position: absolute; left: 14px; right: 78px; bottom: 11px;
+    font-size: 8px; line-height: 11px; letter-spacing: .5px;
+    color: #5d6b7c;
+    max-height: 22px; overflow: hidden;
 }
 .voice-diag{{{cns}}}.alerte { color: #ffb347; }
 
@@ -323,6 +332,11 @@
     color: #2a1c00;
 }
 .voice-state{{{cns}}}.actif { color: #8df3bd; text-shadow: 0 0 8px rgba(70,224,138,.5); }
+/* FX OFF is not a quiet state. It stops FEEDING four blocks whose own
+   switches stay lit, so it has to shout rather than sit there grey. */
+.voice-state{{{cns}}} {
+    color: #f2c94c; text-shadow: 0 0 8px rgba(242,201,76,.55);
+}
 
 /* ---------- the jacks and the bypass switch ----------
    The jacks get ONLY their "top": their horizontal position comes from
@@ -455,6 +469,14 @@
 .voice-cell{{{cns}}}.horsjeu .voice-cell-name{{{cns}}} {
     text-decoration: line-through;
 }
+/* Starved: the block is computed, its switch is on and its lamp is
+   green - and the FX master is not sending it anything. Nothing else on
+   this pedal looks like this, because nothing else goes wrong this way. */
+.voice-cell{{{cns}}}.prive {
+    border-color: rgba(242,201,76,.55);
+    border-style: dashed;
+}
+.voice-cell{{{cns}}}.prive .voice-cell-name{{{cns}}} { color: #f2c94c; }
 /* Locked: this block is not following the favourites. */
 .voice-cell{{{cns}}}.verrou::after {
     content: ""; position: absolute; top: 4px; right: 4px;
@@ -541,7 +563,6 @@
 
 /* The diagnostic line, under everything, and empty until the plugin has
    something to say. */
-.voice-diag{{{cns}}} { margin-top: 8px; }
 
 /* Nothing in the foot row may shrink: a switch squeezed to a sliver is
    a switch nobody aims at, and the row has a spacer precisely so that

@@ -335,6 +335,65 @@ if (typeof fn === 'function') {
             diagTexte().indexOf('DOUBLE allume') < 0, diagTexte());
         dire('doubler_on', 1); dire('doubler', 60);
 
+        /* --- the FX master, which does not switch four blocks off but
+               stops FEEDING them. Measured: with it off, DELAY, REVERB,
+               DOUBLE and MOD put out NOTHING while DRIVE, GRILLE,
+               HARMONY and COMP carry on - and their own switches stay
+               lit through all of it. --- */
+        dire('mod_on', 1); dire('modulation', 50);
+        dire('delay_on', 1); dire('delay_mix', 30);
+        dire('reverb_on', 1); dire('reverb_mix', 30);
+        dire('use_mod', 1); dire('use_delay', 1); dire('use_reverb', 1);
+        dire('fx_state', 1);
+        say('with FX on nothing is said about the send',
+            diagTexte().indexOf('FX OFF') < 0, diagTexte());
+
+        dire('fx_state', 0);
+        say('FX off names the four blocks it starves',
+            /FX OFF[^\u00b7]*DOUBLE[^\u00b7]*MOD[^\u00b7]*DELAY[^\u00b7]*REVERB/
+                .test(diagTexte()), diagTexte());
+        say('and says it FIRST, before anything else on the line',
+            diagTexte().indexOf('FX OFF') === 0, diagTexte());
+        const cellule = (b) => doc.querySelector('.voice-cell[data-bloc="' + b + '"]');
+        say('the four starved blocks are marked on the chain itself',
+            ['doubler', 'mod', 'delay', 'reverb']
+                .every(b => cellule(b).classList.contains('prive')));
+        say('and the blocks that do not eat from the send are not',
+            ['drive', 'grille', 'harm', 'comp', 'eq']
+                .every(b => !cellule(b).classList.contains('prive')));
+        say('a starved block is not ALSO accused of being at zero',
+            diagTexte().indexOf('DELAY allume mais a 0') < 0, diagTexte());
+
+        dire('fx_state', 1);
+        say('and switching FX back on clears all of it',
+            diagTexte().indexOf('FX OFF') < 0
+            && !cellule('delay').classList.contains('prive'), diagTexte());
+
+        /* --- in SERIES or in PARALLEL, which is not the same question.
+               PITCH at 0 semitones is a straight wire however far up its
+               MIX is; the EQ is silent only when all three bands are. --- */
+        dire('pitch_on', 1); dire('pitch_mix', 100); dire('pitch', 0);
+        say('PITCH at zero semitones is silent whatever its MIX says',
+            diagTexte().indexOf('PITCH allume mais a 0') >= 0, diagTexte());
+        dire('pitch', 7);
+        say('and sings again as soon as it has an interval',
+            diagTexte().indexOf('PITCH allume') < 0, diagTexte());
+
+        dire('harm_on', 1); dire('harm_mix', 100);
+        dire('harm_1', 0); dire('harm_2', 0); dire('harm_3', 0); dire('harm_4', 0);
+        say('HARMONY with no voice in it says so',
+            diagTexte().indexOf('HARMONY allume mais a 0') >= 0, diagTexte());
+        dire('harm_2', 4);
+        say('and one voice is enough to stop saying it',
+            diagTexte().indexOf('HARMONY allume') < 0, diagTexte());
+
+        dire('eq_on', 1); dire('body', 0); dire('presence', 0); dire('air', 0);
+        say('the EQ is silent only when all three bands are flat',
+            diagTexte().indexOf('EQ allume mais a 0') >= 0, diagTexte());
+        dire('presence', 3);
+        say('and one band up is enough', diagTexte().indexOf('EQ allume') < 0,
+            diagTexte());
+
         /* --- the favourites: the list mod-ui cannot draw ---
            Nothing here is clicked with a dispatched event, on purpose:
            in the pedalboard mod-ui copies the interface after building

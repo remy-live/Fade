@@ -467,6 +467,12 @@ A(tableau([
      "ajoute des ports."),
     ("« GO TO JAMAIS VU<br/>BOUGER »",
      "Le switch n'est pas connecté : même remède."),
+    ("« FX OFF - DOUBLE,<br/>MOD, DELAY, REVERB<br/>ne recoivent rien »",
+     "<b>Le plus courant, et de loin.</b> FX n'éteint pas ces quatre "
+     "blocs : il arrête de les <b>alimenter</b>. Leurs interrupteurs "
+     "restent allumés, leurs lampes restent vertes, et il ne sort rien. "
+     "Appuyez sur <b>FX</b> et les quatre reviennent d'un coup. Sur la "
+     "pédale, leurs quatre cases ont un contour ambre en pointillés."),
     ("« DOUBLE allume<br/>mais a 0 »",
      "Le bloc est allumé et son <b>dosage est à zéro</b> : il ne peut "
      "rien faire. La pédale ne porte que les interrupteurs ; les "

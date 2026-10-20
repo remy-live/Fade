@@ -796,6 +796,33 @@ Nine digits, from the left:
 | **7** | the favourite the cursor is on, 0 for none. |
 | **8-9** | the screen capabilities the host announced for that switch, 99 if it is not addressed at all. |
 
+### FX OFF, and the four blocks it starves
+
+This is the one that cost a soundcheck. **FX does not switch four blocks
+off — it stops feeding them.** The doubler, the chorus, the delay and the
+reverb all eat out of the same send, and the send is what FX cuts, so
+their tails can ring out. With it off, their own switches stay lit, their
+lamps stay green, and nothing at all comes out of any of them.
+
+Measured on a voice, each block's own contribution:
+
+| | FX ON | FX OFF |
+|---|---|---|
+| **DELAY** | −3.32 dB | −0.001 dB — nothing |
+| **REVERB** | +0.68 dB | 0.000 dB — nothing |
+| **DOUBLE** | +2.19 dB | 0.000 dB — nothing |
+| **MOD** | +1.48 dB | 0.000 dB — nothing |
+| DRIVE | −0.98 dB | −0.98 dB |
+| GRILLE | −5.32 dB | −5.32 dB |
+| HARMONY | +2.03 dB | +2.03 dB |
+
+Four blocks silent at once with no switch touched, and the other six
+working normally — it reads exactly like a broken plugin. So the pedal
+says it now, at the front of the diagnostic line and in amber: `FX OFF -
+DOUBLE, MOD, DELAY, REVERB ne recoivent rien`, and those four cells get a
+dashed amber border on the chain. Nothing else on the pedal looks like
+that, because nothing else goes wrong that way.
+
 ### And the block that does absolutely nothing
 
 A block whose lamp is lit and which cannot be heard is the other black
@@ -804,7 +831,10 @@ find. There are exactly two ways for it to happen, and both are states
 the player chose:
 
 * **`DOUBLE allume mais a 0`** — the switch is on and the amount is at
-  zero. Since the pedal carries only the switches, the amount lives in
+  zero. In **series** or in **parallel**, which is not the same question
+  and was got wrong at first: PITCH at 0 semitones is a straight wire
+  however far up its MIX is (any one at zero is enough), while the EQ is
+  silent only when BODY *and* PRESENCE *and* AIR are all flat. Since the pedal carries only the switches, the amount lives in
   the settings panel (and at the far end of the pedal page's ENC 2), and
   several blocks arrive at zero on purpose: DOUBLE, PITCH MIX, HARM MIX,
   MOD, DRIVE. A switch is not a level.
@@ -824,6 +854,19 @@ The readout turns amber in the four states where a control cannot do what
 is asked of it and it is not the control's fault: port not connected,
 fewer than two favourites saved, padlocks lit in the page that the plugin
 is not receiving, or a block lit and silent.
+
+And it sits at the **bottom** of the pedal now. It used to live under the
+header at a fixed 300 px, `nowrap`, with nothing to clip it — so the day
+it had something long to say, it said it straight across the VOICE title.
+It had done that for four builds and no check caught it, because the
+screenshot test only ever looked at whether anything fell off the *edges*
+of the pedal. It now also checks that **no two pieces of text sit on top
+of each other**, comparing the ink (a `Range` round the text) rather than
+the boxes — a centred span is as wide as its row, and comparing boxes
+reports every line of the pedal. The harness fills the diagnostic line
+with a real one, off a photograph of the pedal running in mod-ui: a line
+left empty takes up no room, and a line that takes up no room cannot be
+seen to run across anything.
 
 ## The screen, and what it announces
 

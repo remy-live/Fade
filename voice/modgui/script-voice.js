@@ -487,7 +487,11 @@ function (event, funcs) {
             /* And the one question the pedal cannot answer by looking:
                why is that block silent with its lamp lit. */
             var muets = blocs_muets(icon);
-            if (muets.length) { dit.push(muets.join(', ')); }
+            /* At the FRONT. Everything else on this line is background -
+               how many favourites are saved, what the screen announced -
+               and this is the part that says why you cannot hear
+               something RIGHT NOW. It is read from the left. */
+            if (muets.length) { dit.unshift(muets.join(', ')); }
             icon.find('.voice-diag')
                 .text(dit.join('  \u00b7  '))
                 .toggleClass('alerte', !bouge || plein < 2 || verr !== lus
@@ -528,35 +532,46 @@ function (event, funcs) {
        it is heard sits at zero. Both are legitimate states - which is
        precisely why they are worth saying out loud, rather than leaving
        a player to go looking for a fault that is not there. */
+    /* Two ways to be at zero, and they are not the same question.
+       `porte` is in SERIES: any one of them at zero and nothing comes
+       out, whatever the others say - PITCH at 0 semitones is a straight
+       wire however far up its MIX is. `dose` is in PARALLEL: they are
+       summed, so it takes ALL of them at zero - the EQ is silent only
+       when BODY and PRESENCE and AIR are all flat.
+       `envoi` marks the four blocks that eat out of the FX send. */
     var MUET = [
-        { on: 'comp_on',    nom: 'COMP',    dose: ['comp'] },
-        { on: 'de_ess_on',  nom: 'DE-ESS',  dose: ['de_ess'] },
+        { on: 'comp_on',    nom: 'COMP',    porte: ['comp'] },
+        { on: 'de_ess_on',  nom: 'DE-ESS',  porte: ['de_ess'] },
         { on: 'eq_on',      nom: 'EQ',      dose: ['body', 'presence', 'air'],
           use: 'use_eq' },
-        { on: 'drive_on',   nom: 'DRIVE',   dose: ['drive'], use: 'use_drive' },
-        { on: 'grille_on',  nom: 'GRILLE',  dose: ['grille_mix'],
+        { on: 'drive_on',   nom: 'DRIVE',   porte: ['drive'], use: 'use_drive' },
+        { on: 'grille_on',  nom: 'GRILLE',  porte: ['grille_mix'],
           use: 'use_grille' },
-        { on: 'pitch_on',   nom: 'PITCH',   dose: ['pitch_mix'] },
-        { on: 'harm_on',    nom: 'HARMONY', dose: ['harm_mix'] },
-        { on: 'doubler_on', nom: 'DOUBLE',  dose: ['doubler'],
-          use: 'use_double' },
-        { on: 'mod_on',     nom: 'MOD',     dose: ['modulation'],
-          use: 'use_mod' },
-        { on: 'feedback_on', nom: 'NO HOWL', dose: ['feedback'] },
-        { on: 'delay_on',   nom: 'DELAY',   dose: ['delay_mix'],
-          use: 'use_delay' },
-        { on: 'reverb_on',  nom: 'REVERB',  dose: ['reverb_mix'],
-          use: 'use_reverb' }
+        { on: 'pitch_on',   nom: 'PITCH',   porte: ['pitch', 'pitch_mix'] },
+        { on: 'harm_on',    nom: 'HARMONY', porte: ['harm_mix'],
+          dose: ['harm_1', 'harm_2', 'harm_3', 'harm_4'] },
+        { on: 'doubler_on', nom: 'DOUBLE',  porte: ['doubler'],
+          use: 'use_double', envoi: 1 },
+        { on: 'mod_on',     nom: 'MOD',     porte: ['modulation'],
+          use: 'use_mod', envoi: 1 },
+        { on: 'feedback_on', nom: 'NO HOWL', porte: ['feedback'] },
+        { on: 'delay_on',   nom: 'DELAY',   porte: ['delay_mix'],
+          use: 'use_delay', envoi: 1 },
+        { on: 'reverb_on',  nom: 'REVERB',  porte: ['reverb_mix'],
+          use: 'use_reverb', envoi: 1 }
     ];
 
     /* Every port the line above reads, so a change to one of them can
        redraw it. Built from the table rather than typed out twice. */
-    var PORTS_MUETS = {};
+    var PORTS_MUETS = { fx_state: 1 };
     for (var mi = 0; mi < MUET.length; mi++) {
         PORTS_MUETS[MUET[mi].on] = 1;
         if (MUET[mi].use) { PORTS_MUETS[MUET[mi].use] = 1; }
-        for (var mj = 0; mj < MUET[mi].dose.length; mj++) {
-            PORTS_MUETS[MUET[mi].dose[mj]] = 1;
+        var listes = [MUET[mi].porte || [], MUET[mi].dose || []];
+        for (var ml = 0; ml < 2; ml++) {
+            for (var mj = 0; mj < listes[ml].length; mj++) {
+                PORTS_MUETS[listes[ml][mj]] = 1;
+            }
         }
     }
 
@@ -567,9 +582,37 @@ function (event, funcs) {
         return (typeof v === 'number' && v === v) ? v : null;
     }
 
+    /* Any of them at zero and the block is a wire. */
+    function une_a_zero(d, liste) {
+        for (var k = 0; k < (liste || []).length; k++) {
+            var v = connu(d, liste[k]);
+            if (v !== null && Math.abs(v) < 0.001) { return 1; }
+        }
+        return 0;
+    }
+    /* All of them at zero, and at least one actually known. */
+    function toutes_a_zero(d, liste) {
+        var vu = 0, zero = 0;
+        for (var k = 0; k < (liste || []).length; k++) {
+            var v = connu(d, liste[k]);
+            if (v === null) { continue; }
+            vu++;
+            if (Math.abs(v) < 0.001) { zero++; }
+        }
+        return vu > 0 && vu === zero;
+    }
+
     function blocs_muets(icon) {
         var d = etat(icon);
         var dits = [];
+        var prives = [];
+        /* The FX master does not switch these four off, it stops FEEDING
+           them: their own switch stays lit and their lamp stays green
+           while nothing at all comes out. Four blocks silent at once
+           with no switch touched is the single most confusing state this
+           plugin has, and it was the one thing the pedal never said. */
+        var fx = connu(d, 'fx_state');
+        var fx_coupe = (fx !== null && fx <= 0.5);
         for (var i = 0; i < MUET.length; i++) {
             var b = MUET[i];
             var on = connu(d, b.on);
@@ -581,18 +624,29 @@ function (event, funcs) {
                     continue;
                 }
             }
-            var vu = 0, zero = 0;
-            for (var k = 0; k < b.dose.length; k++) {
-                var v = connu(d, b.dose[k]);
-                if (v === null) { continue; }
-                vu++;
-                if (Math.abs(v) < 0.001) { zero++; }
-            }
-            if (vu > 0 && vu === zero) {
+            if (fx_coupe && b.envoi) { prives.push(b.nom); continue; }
+            if (une_a_zero(d, b.porte) || toutes_a_zero(d, b.dose)) {
                 dits.push(b.nom + ' allume mais a 0');
             }
         }
+        if (prives.length) {
+            dits.unshift('FX OFF - ' + prives.join(', ')
+                         + ' ne recoivent rien');
+        }
         return dits;
+    }
+
+    /* And the same four, marked on the chain itself. */
+    function marquer_prives(icon) {
+        var d = etat(icon);
+        var fx = connu(d, 'fx_state');
+        var coupe = (fx !== null && fx <= 0.5);
+        for (var i = 0; i < MUET.length; i++) {
+            if (!MUET[i].envoi) { continue; }
+            var bloc = CELLULE[MUET[i].on];
+            icon.find('.voice-cell[data-bloc="' + bloc + '"]')
+                .toggleClass('prive', coupe);
+        }
     }
 
     function majSection(icon, symbol, valeur) {
@@ -772,6 +826,7 @@ function (event, funcs) {
            diagnostic line has to say about its block, and nothing else
            is going to tell it. */
         if (PORTS_MUETS[symbol]) { peindreDiag(icon); }
+        if (symbol === 'fx_state') { marquer_prives(icon); }
     }
 
     if (event.type === 'start') {
