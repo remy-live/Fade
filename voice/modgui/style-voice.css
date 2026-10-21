@@ -1,106 +1,114 @@
 /* Voice — web UI.
  *
- * The pedal shows two things and no others: what is being played, and
- * what is in the chain. It used to show everything at once - thirteen
- * bordered boxes with a title bar each, thirty-five knobs, the pedal
- * page, the foot cycle, nine hundred and sixty pixels of it with every
- * element the same size and the same colour. Nothing was more important
- * than anything else, so the eye had nowhere to land. Every knob lives
- * in the settings panel now, which is generated from the port list and
- * carries all of them.
+ * Drawn in the same family as FADE beside it: dark, narrow, real knobs
+ * with a coloured pointer, no images. Third shape of this pedal - the
+ * first was a 960-pixel mixing desk, the second a 720-pixel strip of
+ * toggle switches; both were dashboards. This one is 480 wide and
+ * answers two questions: what am I playing, and what is on.
  *
  * Every class carries {{{cns}}}, written plainly with no escaping, or
  * mustache substitutes nothing and the whole sheet applies to no element.
  *
- * The palette is deliberately lighter than a stage pedal usually is. The
- * first version of this plugin had no web UI at all and mod-ui drew its
- * default one: near-black, with switches whose ON state was a faint
- * violet nobody could see across a room. Here ON is a bright green track
- * with a glow, the section it belongs to lights its border, and the OFF
- * state is a plain grey that cannot be mistaken for it.
+ * The height is only ever set from a measurement: make_screenshot.js
+ * refuses to write an image that overflows the pedal, says by how many
+ * pixels, and refuses one where two pieces of text sit on each other.
  */
 
 .mod-pedal-voice{{{cns}}} {
     position: relative;
-    width: 720px;
-    /* Grown with the plugin, and only ever from a measurement:
-       make_screenshot.js refuses to write an image that overflows, and
-       says by how many pixels. Build 32's four level knobs cost 134. */
-    height: 318px;
+    width: 480px;
+    height: 372px;
     box-sizing: border-box;
-    border-radius: 14px;
-    padding: 0 14px;
+    border-radius: 12px;
     background:
-        radial-gradient(130% 70% at 50% -12%, rgba(120,205,235,.20) 0%, rgba(0,0,0,0) 62%),
-        linear-gradient(168deg, #4a5666 0%, #38414f 48%, #2b323d 100%);
-    border: 1px solid #171c23;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 10px 22px rgba(0,0,0,.45);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #e9f0f7;
-    /* NO overflow: hidden here, ever. The jacks are positioned OUTSIDE the
-       panel on purpose - that is where a cable goes - so clipping the box
-       does not tidy the corners, it deletes the sockets and with them any
-       way of patching the plugin into a pedalboard. Nothing else overflows:
-       make_screenshot.js measures every child and refuses to write an image
-       if one does. */
+        radial-gradient(120% 80% at 50% -10%, rgba(90,190,220,.16) 0%, rgba(0,0,0,0) 60%),
+        linear-gradient(165deg, #33404e 0%, #1e252e 55%, #131920 100%);
+    border: 1px solid #0b0e12;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -18px 26px rgba(0,0,0,.35),
+        0 4px 12px rgba(0,0,0,.55);
+    font-family: Helvetica, Arial, sans-serif;
+    color: #d6e2ee;
+    /* NO overflow: hidden here, ever. The jacks are positioned OUTSIDE
+       the panel on purpose - that is where a cable goes - so clipping
+       the box deletes the sockets and with them any way of patching the
+       plugin in. */
+    overflow: visible;
 }
 
 .mod-pedal-voice{{{cns}}} .mod-drag-handle {
-    /* left and right rather than a width: absolute positioning measures
-       from the padding box, so a width equal to the pedal's own overflows
-       it by the border. */
     position: absolute; top: 0; left: 0; right: 0;
-    height: 40px;
+    height: 44px;
     cursor: move;
 }
 
 /* ---------- header ---------- */
 
 .voice-head{{{cns}}} {
-    position: relative; height: 44px; padding-top: 7px;
+    /* left and right rather than a width: absolute positioning measures
+       from the padding box, so a width equal to the pedal's own overflows
+       it by the border */
+    position: absolute; top: 9px; left: 0; right: 0;
     text-align: center;
 }
 .voice-brand{{{cns}}} {
-    display: block; font-size: 9px; letter-spacing: 5px; color: #9fb6c9;
+    display: block;
+    font-size: 9px; letter-spacing: 4px; color: #62788c;
 }
 .voice-name{{{cns}}} {
     display: block; margin-top: 1px;
-    font-size: 21px; font-weight: 700; letter-spacing: 4px; color: #f4f9ff;
+    font-size: 21px; font-weight: bold; letter-spacing: 3px; color: #eef5fb;
     text-shadow: 0 1px 2px rgba(0,0,0,.6);
 }
-.voice-light{{{cns}}} {
-    position: absolute; top: 15px; right: 18px;
-    width: 9px; height: 9px; border-radius: 50%;
-    background: #39434f; box-shadow: inset 0 0 2px #000;
+/* The build number of the INTERFACE, which the browser caches hard: a
+   version judged from a stale template is a version nobody was running. */
+.voice-build{{{cns}}} {
+    position: absolute; top: 12px; left: 14px;
+    font-size: 7.5px; letter-spacing: 1px; color: #4b5a68;
 }
+.voice-light{{{cns}}} {
+    position: absolute; top: 14px; right: 16px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #2c3742;
+    box-shadow: inset 0 0 2px #000;
+}
+/* "on" arrives when the plugin is RUNNING, not when it is bypassed. */
 .voice-light{{{cns}}}.on {
-    background: #46e08a; box-shadow: 0 0 9px rgba(70,224,138,.95);
+    background: #4ce3a0;
+    box-shadow: 0 0 8px #4ce3a0;
 }
 
-/* ---------- the program list ---------- */
+/* ---------- what am I playing: the display ---------- */
 
 .voice-prog{{{cns}}} {
-    display: flex; align-items: center; gap: 7px;
-    height: 52px; margin-bottom: 8px;
-    padding: 0 10px;
-    /* the favourites drop out of this bar */
-    position: relative;
-    border-radius: 9px;
-    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
-    border: 1px solid rgba(255,255,255,.14);
+    position: absolute; top: 50px; left: 14px; width: 452px; height: 30px;
+    display: flex; align-items: center; gap: 6px;
 }
-.voice-prog-nav{{{cns}}}:hover { background: linear-gradient(180deg, #7c8ca3 0%, #4d596b 100%); }
-
+.voice-prog-nav{{{cns}}} {
+    flex: 0 0 22px; height: 24px; line-height: 24px; text-align: center;
+    border-radius: 5px; cursor: pointer;
+    font-size: 10px; color: #c9d7e4;
+    background: linear-gradient(180deg, #4a5866 0%, #2a333d 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.14);
+    user-select: none;
+}
+.voice-prog-nav{{{cns}}}:hover { filter: brightness(1.2); }
+/* The display: the one thing on the pedal that is lit from behind. */
 .voice-prog-box{{{cns}}} {
-    /* Wide enough that the name box is still a box once SAVE, A/B, the
-       cycle switch and MUTE have taken their share of the bar: with the
-       row simply flexing, the input was squeezed to nothing. */
-    flex: 1; min-width: 300px;
-    display: flex; align-items: center; gap: 10px;
-    padding: 4px 10px; border-radius: 6px;
-    background: #1d232c;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.7);
-    min-width: 0;
+    flex: 1; min-width: 0; height: 28px;
+    display: flex; align-items: center;
+    padding: 0 10px; border-radius: 5px;
+    background: #0d1218;
+    border: 1px solid #0a0e13;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.9), 0 0 0 1px rgba(127,230,204,.08);
+}
+.voice-prog-value{{{cns}}} {
+    font-size: 15px; font-weight: bold; letter-spacing: 2.5px; color: #7fe6cc;
+    text-shadow: 0 0 6px rgba(127,230,204,.55);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-transform: uppercase;
 }
 
 /* ---------- the favourites ----------
@@ -110,15 +118,13 @@
    list, and the plugin sends the six names back one per second. */
 
 .voice-fav-btn{{{cns}}} {
-    /* A fixed width, not a share of the row: the readout beside it holds
-       the name of the sound in force and must not be squeezed out by a
-       button that only opens a list. */
-    flex: 0 0 148px; text-align: center;
-    padding: 4px 8px; border-radius: 5px; cursor: pointer;
-    font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #d7e2ee;
-    background: linear-gradient(180deg, #5a6779 0%, #39424f 100%);
-    border: 1px solid #171c23;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex: 0 0 92px; height: 24px; line-height: 24px; text-align: center;
+    border-radius: 5px; cursor: pointer;
+    font-size: 9px; font-weight: bold; letter-spacing: 1.5px; color: #d7e2ee;
+    background: linear-gradient(180deg, #4a5866 0%, #2a333d 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.14);
+    white-space: nowrap; overflow: hidden;
     user-select: none;
 }
 .voice-fav-btn{{{cns}}}:hover { filter: brightness(1.15); }
@@ -131,14 +137,13 @@
 
 .voice-fav-panel{{{cns}}} {
     display: none;
-    position: absolute; z-index: 20; left: 44px; top: 50px;
+    position: absolute; z-index: 20; left: 28px; top: 32px;
     width: 268px; padding: 8px 10px 6px;
     border-radius: 8px;
     background: #10151c;
     border: 1px solid rgba(255,255,255,.18);
     box-shadow: 0 8px 18px rgba(0,0,0,.65);
 }
-
 .voice-fav-head{{{cns}}} {
     font-size: 9px; letter-spacing: 2px; color: #8fa6ba; margin-bottom: 5px;
 }
@@ -163,11 +168,9 @@
     color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
 }
 /* Throwing a favourite away. The checkbox is hidden and is the thing
-   actually clicked - a form control keeps its own state where a handler
-   would be lost with the copy mod-ui makes of the interface - and the
-   cross beside it is what the eye sees. Ticked means ARMED: it goes red
-   and says SUR ?, and the click that unticks it is the confirmation.
-   Three seconds and the clock puts it back. */
+   actually clicked, and the cross beside it is what the eye sees. Ticked
+   means ARMED: it goes red and says SUR ?, and the click that unticks it
+   is the confirmation. Three seconds and the clock puts it back. */
 .voice-fav-del{{{cns}}} { position: absolute; opacity: 0; pointer-events: none; }
 .voice-fav-x{{{cns}}} {
     flex: 0 0 auto; min-width: 18px; text-align: center;
@@ -196,183 +199,273 @@
 .voice-fav-note{{{cns}}} {
     margin-top: 5px; font-size: 8px; line-height: 1.5; color: #7c8b9b;
 }
-
-/* The two ports the names travel on carry no widget: they are written a
+/* The ports the names travel on carry no widget: they are written a
    character at a time by the script, and there is nothing to turn. */
 .voice-wire{{{cns}}} { display: none; }
 
-.voice-save{{{cns}}} {
-    padding: 6px 14px; border-radius: 6px; cursor: pointer;
-    font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #10251c;
-    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
-    border: 1px solid #12351f;
-    user-select: none;
-}
-.voice-save{{{cns}}}:hover { filter: brightness(1.12); }
-.voice-save{{{cns}}}.flash {
-    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
-}
-.voice-save{{{cns}}}.off { opacity: .35; cursor: default; }
+/* ---------- two thin meters under the display ---------- */
 
-/* A/B is the same button in the greys of the panel: it compares two
-   sounds, it does not change anything. */
-.voice-ab{{{cns}}} {
-    padding: 6px 12px; border-radius: 6px; cursor: pointer;
-    font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #d7e2ee;
-    background: linear-gradient(180deg, #5a6779 0%, #39424f 100%);
-    border: 1px solid #171c23;
-    user-select: none;
+.voice-meters{{{cns}}} {
+    position: absolute; top: 86px; left: 14px; width: 452px; height: 10px;
+    display: flex; align-items: center; gap: 6px;
 }
-.voice-ab{{{cns}}}:hover { filter: brightness(1.15); }
-.voice-ab{{{cns}}}.flash {
-    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
-    color: #10251c;
+.voice-meter-cap{{{cns}}} {
+    flex: 0 0 24px; font-size: 7.5px; letter-spacing: 1px; color: #62788c;
+    text-align: right;
+}
+.voice-meter-bar{{{cns}}} {
+    flex: 1; height: 5px; border-radius: 3px;
+    background: #0d1218;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+    overflow: hidden;
+}
+.voice-meter-fill{{{cns}}} {
+    height: 5px; width: 0%;
+    background: linear-gradient(90deg, #2f7fbf 0%, #4cd0b4 100%);
+    box-shadow: 0 0 6px rgba(76,208,180,.45);
+    transition: width .08s linear;
 }
 
-/* MUTE stops the sound, so it is the one control on the panel allowed to
-   be red - and it is a switch, not a button, because it stays down. */
-/* The three encoders of a pedal page. Small on purpose: they are turned
-   with a foot's worth of attention on the pedal, not with a mouse. */
-/* The build number of the INTERFACE, which the browser caches hard: a
-   version judged from a stale template is a version nobody was running. */
-.voice-build{{{cns}}} {
-    position: absolute; top: 10px; right: 30px;
-    font-size: 7.5px; letter-spacing: 1px; color: #53606e;
-}
-/* What the plugin sees, for the days a switch does nothing and there is
-   no way to ask it why.
+/* ---------- what is on: thirteen lamps ----------
+   The lamp IS the switch - mod-ui's switchWidget sets .on and .off on
+   it and a click flips the port. Lit green is on. The cell round it
+   carries the states the switch alone cannot say. */
 
-   It used to sit under the header at a fixed 300px, NOWRAP and with
-   nothing to clip it - so the day it had something long to say it said
-   it straight across the VOICE title. It lives at the BOTTOM now, in
-   the band beside the bypass footswitch, where the pedal had dead space
-   and where a line that grows has somewhere to grow. Two lines at most,
-   and then it is cut: a diagnostic that pushes the pedal out of shape
-   is a second fault to go looking for. */
-.voice-diag{{{cns}}} {
-    position: absolute; left: 14px; right: 78px; bottom: 11px;
-    font-size: 8px; line-height: 11px; letter-spacing: .5px;
-    color: #5d6b7c;
-    max-height: 22px; overflow: hidden;
+.voice-chain{{{cns}}} {
+    position: absolute; top: 104px; left: 14px; width: 452px; height: 34px;
+    display: flex; justify-content: space-between; align-items: flex-start;
 }
-.voice-diag{{{cns}}}.alerte { color: #ffb347; }
-
-/* The foot cycle, beside the pedal page: two small switches and the three
-   encoders of the pointed effect, with its name under them. */
-
-/* One button per favourite, small: they are meant for feet, and are
-   here to be assignable and to be pressed with a mouse in a hurry. */
-/* Six switches, one favourite each, in the row they are pressed in. */
-.voice-go{{{cns}}} { display: flex; gap: 4px; align-items: center; }
-.voice-go-btn{{{cns}}} {
-    width: 24px; height: 26px; line-height: 24px; text-align: center;
-    border-radius: 5px; cursor: pointer;
-    font-size: 10px; font-weight: 600; color: #dbe6f0;
-    background: linear-gradient(180deg, #5b6879 0%, #3a4452 100%);
-    border: 1px solid #1b212a;
-    user-select: none;
-}
-.voice-go-btn{{{cns}}}:hover { filter: brightness(1.15); }
-.voice-go-btn{{{cns}}}.flash {
-    background: linear-gradient(180deg, #ffffff 0%, #7ff0b4 100%);
-    color: #10251c;
-}
-.voice-go-btn{{{cns}}}.actif {
-    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
-    color: #10251c; border-color: #12351f;
-}
-
-/* ---------- switches: the point of this whole stylesheet ---------- */
-
-.voice-sw{{{cns}}} {
+.voice-cell{{{cns}}} {
     position: relative;
-    width: 42px; height: 20px; border-radius: 10px; cursor: pointer;
-    background: #232a33;
-    border: 1px solid #10151b;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.8);
+    width: 33px; height: 32px; border-radius: 5px;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 4px; box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: opacity .12s ease;
+}
+.voice-cell-sw{{{cns}}} {
+    width: 11px; height: 11px; border-radius: 50%; cursor: pointer;
+    background: #2c3742;
+    box-shadow: inset 0 0 2px #000;
     transition: background .12s ease, box-shadow .12s ease;
 }
-.voice-sw{{{cns}}}::after {
-    content: ""; position: absolute; top: 2px; left: 2px;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: #8c9aa8;
-    transition: left .12s ease, background .12s ease;
+.voice-cell-sw{{{cns}}}.on {
+    background: #4ce3a0;
+    box-shadow: 0 0 7px rgba(76,227,160,.85);
 }
-/* switchWidget sets .on and .off. ON is a lit green track, a white knob
-   and a glow: visible from the other side of a stage. */
-.voice-sw{{{cns}}}.on {
-    background: linear-gradient(180deg, #35c47c 0%, #1d8f58 100%);
-    box-shadow: 0 0 10px rgba(70,224,138,.55), inset 0 1px 0 rgba(255,255,255,.25);
+.voice-cell-name{{{cns}}} {
+    margin-top: 4px;
+    font-size: 6.5px; letter-spacing: .3px; color: #6f8598;
+    white-space: nowrap;
+}
+.voice-cell{{{cns}}}.actif .voice-cell-name{{{cns}}} { color: #a9c3d4; }
+/* Not fitted: the block is not computed, so it is not greyed out as a
+   decoration - it is not there. The lamp stays clickable, because
+   finding it disabled with no reason given is how an hour goes. */
+.voice-cell{{{cns}}}.horsjeu { opacity: .33; }
+.voice-cell{{{cns}}}.horsjeu .voice-cell-name{{{cns}}} { text-decoration: line-through; }
+/* Locked: this block is not following the favourites. */
+.voice-cell{{{cns}}}.verrou::after {
+    content: ""; position: absolute; top: 2px; right: 3px;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: #f2c94c;
+    box-shadow: 0 0 4px rgba(242,201,76,.8);
+}
+/* Starved: computed, switched on, lamp lit - and the FX master is not
+   sending it anything. Nothing else on this pedal looks like this,
+   because nothing else goes wrong this way. */
+.voice-cell{{{cns}}}.prive {
+    border-color: rgba(242,201,76,.6);
+    border-style: dashed;
+}
+.voice-cell{{{cns}}}.prive .voice-cell-name{{{cns}}} { color: #f2c94c; }
+
+/* ---------- the six knobs ---------- */
+
+.voice-knobs{{{cns}}} {
+    position: absolute; top: 146px; left: 0; right: 0; height: 84px;
+}
+.voice-knob{{{cns}}} {
+    position: absolute; top: 0; width: 64px; text-align: center;
+}
+.voice-knob{{{cns}}}:nth-child(1) { left: 24px; }
+.voice-knob{{{cns}}}:nth-child(2) { left: 98px; }
+.voice-knob{{{cns}}}:nth-child(3) { left: 172px; }
+.voice-knob{{{cns}}}:nth-child(4) { left: 246px; }
+.voice-knob{{{cns}}}:nth-child(5) { left: 320px; }
+.voice-knob{{{cns}}}:nth-child(6) { left: 394px; }
+
+/* mod-widget-rotation rotates THIS element: the pointer is drawn inside
+   it and turns with it. rotation = round(value * 270) - 135 degrees. */
+.voice-knob-body{{{cns}}} {
+    position: relative;
+    width: 42px; height: 42px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 28%, #5d6b78 0%, #38434f 55%, #1d242c 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 5px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor: ns-resize;
+}
+.voice-knob-body{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 4px; left: 50%;
+    margin-left: -1.5px;
+    width: 3px; height: 13px; border-radius: 2px;
+    background: #7fe6cc;
+    box-shadow: 0 0 5px rgba(127,230,204,.8);
+}
+/* three colours, for three kinds of thing: the voices, the room, the gain */
+.voice-knob-voix{{{cns}}}::after  { background: #7fe6cc; box-shadow: 0 0 5px rgba(127,230,204,.8); }
+.voice-knob-salle{{{cns}}}::after { background: #8fb6ff; box-shadow: 0 0 5px rgba(143,182,255,.8); }
+.voice-knob-gain{{{cns}}}::after  { background: #f0c46a; box-shadow: 0 0 5px rgba(240,196,106,.8); }
+
+.voice-knob-title{{{cns}}} {
+    margin-top: 6px;
+    font-size: 8px; letter-spacing: 1px; color: #7b8fa1;
+}
+.voice-knob-value{{{cns}}} {
+    margin-top: 1px;
+    font-size: 9.5px; color: #dce7f1;
+}
+
+/* ---------- the six favourites, under the foot ---------- */
+
+.voice-go{{{cns}}} {
+    position: absolute; top: 240px; left: 14px; width: 452px; height: 50px;
+    display: flex; align-items: flex-start; gap: 7px;
+}
+.voice-go-btn{{{cns}}} {
+    flex: 0 0 38px; height: 38px; border-radius: 50%;
+    line-height: 36px; text-align: center; cursor: pointer;
+    font-size: 13px; font-weight: bold; color: #c9d7e4;
+    background:
+        radial-gradient(circle at 38% 28%, #71808e 0%, #3d4956 60%, #1f272f 100%);
+    border: 1px solid #0e131a;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.16);
+    user-select: none;
+    transition: box-shadow .1s ease, color .1s ease;
+}
+.voice-go-btn{{{cns}}}:hover { filter: brightness(1.15); }
+/* the one in force, and the one just pressed */
+.voice-go-btn{{{cns}}}.actif {
+    color: #10251c;
+    background: radial-gradient(circle at 38% 28%, #9ff5cf 0%, #4ce3a0 60%, #2a9a67 100%);
+    box-shadow: 0 0 9px rgba(76,227,160,.8), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.voice-go-btn{{{cns}}}.flash { box-shadow: 0 0 12px rgba(255,209,102,.95); }
+
+/* MUTE and FX sit at the end of the same row, as switches with a word */
+.voice-cmd{{{cns}}} {
+    flex: 0 0 auto; margin-left: 6px; text-align: center;
+}
+.voice-cmd{{{cns}}}:first-of-type { margin-left: auto; }
+.voice-sw{{{cns}}} {
+    position: relative;
+    width: 46px; height: 22px;
+    margin: 0 auto;
+    border-radius: 11px;
+    background: #0d1218;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+    cursor: pointer;
+}
+.voice-sw{{{cns}}}::after {
+    content: "";
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #8a98a5;
+    transition: left .13s ease, background .13s ease;
 }
 .voice-sw{{{cns}}}.on::after {
-    left: 24px; background: #ffffff;
-    box-shadow: 0 0 6px rgba(255,255,255,.8);
+    left: 27px;
+    background: #4cd0b4;
+    box-shadow: 0 0 7px rgba(76,208,180,.85);
 }
-
-/* ---------- meters ---------- */
-
-.voice-meter-bar{{{cns}}} {
-    position: relative; width: 86px; height: 7px; border-radius: 4px;
-    background: #141a21; overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.8);
+/* MUTE stops the sound, so it is the one control on the panel allowed
+   to be red when it is on. */
+.voice-mute-sw.on::after {
+    background: #e2626a;
+    box-shadow: 0 0 7px rgba(226,98,106,.85);
 }
-
-/* ---------- tap, fx, state ---------- */
-
-.voice-tap{{{cns}}} {
-    align-self: center; margin-left: 4px;
-    padding: 7px 12px; border-radius: 6px; cursor: pointer;
-    font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #f3f8ff;
-    background: linear-gradient(180deg, #66748a 0%, #414c5c 100%);
-    border: 1px solid #1b212a;
-    user-select: none;
+.voice-cmd-title{{{cns}}} {
+    margin-top: 4px;
+    font-size: 8px; letter-spacing: 2px; color: #6f8598;
 }
-.voice-tap{{{cns}}}.flash {
-    background: linear-gradient(180deg, #ffd98a 0%, #e0a52f 100%);
-    color: #2a1c00;
-}
-.voice-state{{{cns}}}.actif { color: #8df3bd; text-shadow: 0 0 8px rgba(70,224,138,.5); }
-/* FX OFF is not a quiet state. It stops FEEDING four blocks whose own
-   switches stay lit, so it has to shout rather than sit there grey. */
+/* FX OFF is not a quiet state: it stops FEEDING four blocks whose own
+   lamps stay lit, so it has to shout rather than sit there grey. */
 .voice-state{{{cns}}} {
     color: #f2c94c; text-shadow: 0 0 8px rgba(242,201,76,.55);
 }
+.voice-state{{{cns}}}.actif { color: #7fe6cc; text-shadow: 0 0 6px rgba(127,230,204,.5); }
 
-/* ---------- the jacks and the bypass switch ----------
+/* ---------- the rest of the foot: five pushes ---------- */
+
+.voice-foot{{{cns}}} {
+    position: absolute; top: 300px; left: 14px; width: 452px; height: 26px;
+    display: flex; align-items: center; gap: 6px;
+}
+.voice-btn{{{cns}}} {
+    flex: 0 0 auto; min-width: 48px; height: 24px; line-height: 24px;
+    padding: 0 10px; border-radius: 6px; text-align: center; cursor: pointer;
+    font-size: 9px; font-weight: bold; letter-spacing: 1.5px; color: #c9d7e4;
+    background: linear-gradient(180deg, #4a5866 0%, #2a333d 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.14);
+    white-space: nowrap; user-select: none;
+    transition: box-shadow .1s ease;
+}
+.voice-btn{{{cns}}}:hover { filter: brightness(1.15); }
+.voice-btn{{{cns}}}.flash { box-shadow: 0 0 10px rgba(255,209,102,.95); }
+/* SAVE writes something, and is the one push that is coloured */
+.voice-save{{{cns}}} {
+    background: linear-gradient(180deg, #4ce3a0 0%, #2a9a67 100%); color: #08140e;
+}
+/* the two that walk the list, lit while the walk is on */
+.voice-cycle{{{cns}}}.actif, .voice-browse{{{cns}}}.actif {
+    color: #10251c; background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
+}
+.voice-ab{{{cns}}}.actif {
+    color: #10251c; background: linear-gradient(180deg, #ffd166 0%, #c99a2e 100%);
+}
+.voice-tap{{{cns}}}.flash { box-shadow: 0 0 12px rgba(255,209,102,.95); }
+
+/* ---------- what the plugin sees ----------
+   At the bottom, in the band beside the bypass footswitch, where a line
+   that grows has somewhere to grow. Two lines at most, then it is cut. */
+.voice-diag{{{cns}}} {
+    position: absolute; left: 14px; right: 78px; bottom: 11px;
+    font-size: 7.5px; line-height: 10px; letter-spacing: .4px;
+    color: #5d6b7c;
+    max-height: 20px; overflow: hidden;
+}
+.voice-diag{{{cns}}}.alerte { color: #ffb347; }
+
+/* ---------- bypass footswitch and jacks ----------
    The jacks get ONLY their "top": their horizontal position comes from
    pedals.css, and overriding it drags them into the middle of the pedal. */
 
-.mod-pedal-voice{{{cns}}} .mod-input  { top: 264px; }
-.mod-pedal-voice{{{cns}}} .mod-input:nth-of-type(2)  { top: 322px; }
-.mod-pedal-voice{{{cns}}} .mod-output { top: 264px; }
-.mod-pedal-voice{{{cns}}} .mod-output:nth-of-type(2) { top: 322px; }
-
-/* A socket plate behind each jack, so it is obvious where the cable goes
-   even before one is plugged in. Purely decoration: the jack itself is
-   mod-ui's element, sitting on top of this. */
-.mod-pedal-voice{{{cns}}}::before,
-.mod-pedal-voice{{{cns}}}::after {
-    content: "";
-    position: absolute; top: 252px;
-    width: 13px; height: 96px;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #2b323d 0%, #1b212a 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-}
-.mod-pedal-voice{{{cns}}}::before { left: 0; }
-.mod-pedal-voice{{{cns}}}::after  { right: 0; }
-
 .mod-pedal-voice{{{cns}}} .mod-footswitch {
-    position: absolute; bottom: 10px; right: 18px;
+    position: absolute; bottom: 10px; right: 16px;
+    width: 46px; height: 46px; border-radius: 50%;
+    background:
+        radial-gradient(circle at 38% 28%, #71808e 0%, #3d4956 60%, #1f272f 100%);
+    border: 1px solid #0e131a;
+    box-shadow: 0 3px 7px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.16);
+    cursor: pointer;
 }
+
+.mod-pedal-voice{{{cns}}} .mod-input  { top: 150px; }
+.mod-pedal-voice{{{cns}}} .mod-input:nth-of-type(2)  { top: 208px; }
+.mod-pedal-voice{{{cns}}} .mod-output { top: 150px; }
+.mod-pedal-voice{{{cns}}} .mod-output:nth-of-type(2) { top: 208px; }
 
 /* ---------- the settings panel ----------
    mod-ui builds one of its own when a plugin ships no template, and that
    one has nowhere to type a name. This one is the same panel with the six
    boxes added; the classes below only dress those. */
 
-/* The panel is a column of named sections, not a wall of knobs in port
-   order - which is what mod-ui builds when a plugin ships no template. */
 .voice-set-grid{{{cns}}} { display: block; }
 .voice-set-sec{{{cns}}} {
     margin: 0 0 10px; padding: 6px 10px 8px;
@@ -390,7 +483,6 @@
 
 .voice-set-names{{{cns}}} {
     flex: 0 0 auto; margin: 8px 0 0; padding: 8px 10px;
-    border-radius: 8px;
     border-radius: 8px;
     background: rgba(0,0,0,.25);
     border: 1px solid rgba(255,255,255,.14);
@@ -417,155 +509,3 @@
     font-size: 10px; line-height: 1.6; color: #8b9bab;
 }
 .voice-set-note{{{cns}}} b { color: #cfe0ee; font-weight: 600; }
-
-/* ---------- the chain ----------
-   One cell per block, in the order the sound goes through them. Three
-   different ports have something to say about each, and all three say it
-   HERE rather than in three places: lit means the block is on, grey
-   means it is not fitted - not computed at all, so its switch has
-   nothing to switch - and a dot means a lock. That last pair was the
-   thing nobody could work out: a switch that does nothing looks broken
-   unless the interface says why. */
-.voice-chain{{{cns}}} {
-    margin: 0 0 9px;
-    padding: 7px 10px 8px;
-    border-radius: 9px;
-    background: rgba(0,0,0,.20);
-    border: 1px solid rgba(255,255,255,.09);
-}
-.voice-chain-cap{{{cns}}} {
-    font-size: 8.5px; letter-spacing: 2.4px; color: #8094a6;
-    margin-bottom: 6px;
-}
-.voice-chain-row{{{cns}}} {
-    display: flex; gap: 5px; align-items: stretch;
-}
-.voice-chain-note{{{cns}}} {
-    margin-top: 7px; font-size: 8.5px; line-height: 1.5; color: #76848f;
-}
-
-.voice-cell{{{cns}}} {
-    position: relative;
-    flex: 1 1 0; min-width: 0;
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    padding: 7px 2px 6px;
-    border-radius: 6px;
-    background: #222932;
-    border: 1px solid #141920;
-    transition: background .12s ease, opacity .12s ease;
-}
-.voice-cell{{{cns}}}.actif {
-    background: #223b31;
-    border-color: rgba(70,224,138,.45);
-}
-/* Not fitted: the block is not computed, so it is not greyed out as a
-   decoration - it is not there. The switch stays visible and stays
-   clickable, because finding it disabled with no reason given is how an
-   hour goes. */
-.voice-cell{{{cns}}}.horsjeu { opacity: .33; }
-/* And it is said rather than hinted: a third of the opacity reads as a
-   dim room on a stage, and a block that is simply NOT THERE is the one
-   thing a player will otherwise spend a soundcheck hunting for. */
-.voice-cell{{{cns}}}.horsjeu .voice-cell-name{{{cns}}} {
-    text-decoration: line-through;
-}
-/* Starved: the block is computed, its switch is on and its lamp is
-   green - and the FX master is not sending it anything. Nothing else on
-   this pedal looks like this, because nothing else goes wrong this way. */
-.voice-cell{{{cns}}}.prive {
-    border-color: rgba(242,201,76,.55);
-    border-style: dashed;
-}
-.voice-cell{{{cns}}}.prive .voice-cell-name{{{cns}}} { color: #f2c94c; }
-/* Locked: this block is not following the favourites. */
-.voice-cell{{{cns}}}.verrou::after {
-    content: ""; position: absolute; top: 4px; right: 4px;
-    width: 5px; height: 5px; border-radius: 50%;
-    background: #f2c94c;
-    box-shadow: 0 0 5px rgba(242,201,76,.8);
-}
-.voice-cell-name{{{cns}}} {
-    font-size: 8px; letter-spacing: .6px; color: #9fb0bf;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%;
-}
-.voice-cell{{{cns}}}.actif .voice-cell-name{{{cns}}} { color: #9df3c4; }
-/* A switch small enough that thirteen of them fit on one line and still
-   read as switches. */
-.voice-cell-sw{{{cns}}} {
-    position: relative;
-    width: 30px; height: 15px; border-radius: 8px; cursor: pointer;
-    background: #171d25;
-    border: 1px solid #0d1116;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.8);
-    transition: background .12s ease, box-shadow .12s ease;
-}
-.voice-cell-sw{{{cns}}}::after {
-    content: ""; position: absolute; top: 2px; left: 2px;
-    width: 9px; height: 9px; border-radius: 50%;
-    background: #76838f;
-    transition: left .12s ease, background .12s ease;
-}
-.voice-cell-sw{{{cns}}}.on {
-    background: linear-gradient(180deg, #35c47c 0%, #1d8f58 100%);
-    box-shadow: 0 0 8px rgba(70,224,138,.5), inset 0 1px 0 rgba(255,255,255,.22);
-}
-.voice-cell-sw{{{cns}}}.on::after { left: 17px; background: #ffffff; }
-
-/* ---------- what is under the foot ----------
-   The buttons a mouse presses here are the ones a foot presses there,
-   and nothing else is in this row. */
-.voice-foot{{{cns}}} {
-    display: flex; align-items: center; gap: 7px;
-    /* clear of the bypass footswitch, which mod-ui plants in the bottom
-       right corner of every pedal and which was sitting on FX ON */
-    padding: 0 64px 0 2px;
-}
-.voice-foot-space{{{cns}}} { flex: 1; }
-.voice-foot-cap{{{cns}}} {
-    font-size: 8.5px; letter-spacing: 1.4px; color: #8fa6ba;
-    margin-right: 4px;
-}
-.voice-btn{{{cns}}} {
-    padding: 7px 11px; border-radius: 6px; cursor: pointer;
-    font-size: 10px; font-weight: 600; letter-spacing: 1px; color: #dbe6f0;
-    background: linear-gradient(180deg, #66748a 0%, #414c5c 100%);
-    border: 1px solid #1b212a;
-    white-space: nowrap; user-select: none;
-}
-.voice-btn{{{cns}}}:hover { filter: brightness(1.15); }
-.voice-btn{{{cns}}}.flash {
-    background: linear-gradient(180deg, #7ff0b4 0%, #35b378 100%);
-    color: #10251c;
-}
-.voice-save{{{cns}}} { background: linear-gradient(180deg, #46c98a 0%, #227a52 100%); color: #08140e; }
-
-/* ---------- the two meters, side by side ---------- */
-.voice-meters{{{cns}}} {
-    display: flex; gap: 10px; align-items: center; margin-left: 10px;
-}
-.voice-meter{{{cns}}} { display: flex; align-items: center; gap: 5px; }
-.voice-meter-cap{{{cns}}} {
-    font-size: 8px; letter-spacing: 1.2px; width: 22px; text-align: right;
-}
-
-/* The chain names: thirteen of them on one line, and HARMONY is the
-   longest. Small enough to fit, large enough to read standing up. */
-.voice-cell-name{{{cns}}} { font-size: 7.5px; letter-spacing: .2px; }
-
-/* The two meters live at the right of the sound row, each with its own
-   word: a bare bar says nothing about what it is measuring. */
-.voice-meters{{{cns}}} { margin-left: auto; }
-
-/* FX ON / FX OFF on one line: the word changes under the switch and a
-   label that reflows when it does is a label that twitches. */
-.voice-foot-cap{{{cns}}} { white-space: nowrap; }
-
-/* The diagnostic line, under everything, and empty until the plugin has
-   something to say. */
-
-/* Nothing in the foot row may shrink: a switch squeezed to a sliver is
-   a switch nobody aims at, and the row has a spacer precisely so that
-   the slack is taken somewhere harmless. */
-.voice-foot{{{cns}}} > * { flex: 0 0 auto; }
-.voice-foot-space{{{cns}}} { flex: 1 1 auto; }

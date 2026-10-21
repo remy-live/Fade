@@ -1,24 +1,24 @@
 <!-- VOICE - the pedal.
 
-     It used to be the mixing desk as well: thirteen bordered boxes, each
-     with a title bar carrying a padlock, a fitting pip and a switch, plus
-     the pedal page, the foot cycle and thirty-five knobs. Nine hundred
-     and sixty pixels of it, every element the same size and the same
-     colour, so nothing was more important than anything else and the eye
-     had nowhere to land. The player called it heavy and unreadable, and
-     was right.
+     Third shape. The first was the mixing desk: thirteen boxes and
+     thirty-five knobs, nine hundred and sixty pixels, and the player
+     called it heavy and unreadable. The second was a 720-pixel strip of
+     thirteen toggle switches and a row of grey buttons - clearer, and
+     still a dashboard rather than a pedal. This one is drawn in the same
+     family as FADE beside it: dark, narrow, real knobs with a coloured
+     pointer for the six things a hand reaches for while singing, the
+     chain as a row of lamps, the six favourites as footswitch-sized
+     buttons, and the name of the sound in a display.
 
-     So it answers two questions now and no others. WHAT AM I PLAYING -
-     the name, big, and the favourites behind it. WHAT IS IN THE CHAIN -
-     thirteen cells, lit when the block is on, dimmed when it is not
-     fitted, marked when it is locked. Everything else is a hand on a
-     knob at a soundcheck, and that belongs in the settings panel, which
-     is GENERATED from the port list, carries every control there is, and
-     is checked for exactly that.
+     Still two questions and no others. WHAT AM I PLAYING - the display,
+     the arrows, the favourites behind FAVORIS. WHAT IS ON - the thirteen
+     lamps, each a click to turn its block off and on, dim and struck
+     through when the block is not fitted, dotted when it is locked,
+     dashed amber when the FX master is starving it. Everything else
+     lives in the settings panel, which is generated from the port list
+     and carries every control there is.
 
-     The three ports a name travels on stay here, hidden. They work, and
-     finding out whether they still would somewhere else is not a thing
-     to spend ten builds on twice. -->
+     The three ports a name travels on stay here, hidden. They work. -->
 <div class="mod-pedal mod-pedal-voice{{{cns}}}">
 
     <div mod-role="drag-handle" class="mod-drag-handle"></div>
@@ -26,8 +26,8 @@
     <div class="voice-head{{{cns}}}">
         <span class="voice-brand{{{cns}}}">{{brand}}</span>
         <span class="voice-name{{{cns}}}">{{label}}</span>
-        <span class="voice-build{{{cns}}}">GUI 37</span>
     </div>
+    <span class="voice-build{{{cns}}}">GUI 38</span>
     <div class="voice-light{{{cns}}}" mod-role="bypass-light"></div>
 
     <!-- ---------------- what am I playing ---------------- -->
@@ -129,110 +129,190 @@
                 plugin's settings: six boxes, seven letters each, and the
                 name is in the slot as you type.</div>
         </div>
-
-        <div class="voice-meters{{{cns}}}">
-            <div class="voice-meter{{{cns}}}" title="Compressor gain reduction">
-                <span class="voice-meter-cap{{{cns}}}">GR</span>
-                <div class="voice-meter-bar{{{cns}}}">
-                    <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
-                </div>
-            </div>
-            <div class="voice-meter{{{cns}}}" title="Peak level leaving the plugin">
-                <span class="voice-meter-cap{{{cns}}}">OUT</span>
-                <div class="voice-meter-bar{{{cns}}}">
-                    <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
-                </div>
-            </div>
-        </div>
-<!-- The two ports a name travels on: one character per change of
-             the strobe. Written by the script only - there is nothing here
-             to turn by hand, but every control input has to be reachable. -->
+        <!-- The three ports a name travels on: one character per change
+             of the strobe. Written by the script only - there is nothing
+             here to turn by hand, but every control input has to be
+             reachable. -->
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_char"></div>
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_strobe"></div>
         <div class="voice-wire{{{cns}}}" mod-port-symbol="web_slot"></div>
     </div>
 
-    <!-- ---------------- what is in the chain ----------------
-         One cell per block, in the order the sound goes through them.
-         Lit means the block is on. Dimmed means it is not FITTED - not
-         computed at all - so its switch has nothing to switch, which is
-         the one state that used to send a player hunting. A dot means a
-         lock: that block is not following the favourites. -->
-    <div class="voice-chain{{{cns}}}">
-        <div class="voice-chain-cap{{{cns}}}">LA CHAINE</div>
-        <div class="voice-chain-row{{{cns}}}">
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="gate">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="gate_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">GATE</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="comp">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="comp_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">COMP</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="de_ess">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="de_ess_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">DE-ESS</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="eq">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="eq_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">EQ</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="grille">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="grille_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">GRILLE</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="drive">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="drive_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">DRIVE</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="pitch">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="pitch_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">PITCH</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="harm">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="harm_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">HARMONY</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="doubler">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="doubler_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">DOUBLE</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="mod">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="mod_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">MOD</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="feedback">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="feedback_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">NO HOWL</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="delay">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="delay_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">DELAY</span>
-            </div>
-            <div class="voice-cell{{{cns}}} voice-cell" data-bloc="reverb">
-                <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
-                     mod-port-symbol="reverb_on" mod-widget="switch"></div>
-                <span class="voice-cell-name{{{cns}}}">REVERB</span>
-            </div>
+    <!-- two thin meters under the display -->
+    <div class="voice-meters{{{cns}}}">
+        <span class="voice-meter-cap{{{cns}}}">GR</span>
+        <div class="voice-meter-bar{{{cns}}}" title="Compressor gain reduction">
+            <div class="voice-meter-fill{{{cns}}} voice-gr-fill"></div>
         </div>
-        <div class="voice-chain-note{{{cns}}}">Éteint&nbsp;= coupé au pied&nbsp;·
-            grisé&nbsp;= pas monté, ne coûte rien&nbsp;· point&nbsp;= verrouillé.
-            Les réglages sont dans les paramètres du bloc.</div>
+        <span class="voice-meter-cap{{{cns}}}">OUT</span>
+        <div class="voice-meter-bar{{{cns}}}" title="Peak level leaving the plugin">
+            <div class="voice-meter-fill{{{cns}}} voice-level-fill"></div>
+        </div>
     </div>
 
-    <!-- ---------------- what is under the foot ---------------- -->
+    <!-- ---------------- what is on ----------------
+         One lamp per block, in the order the sound goes through them. The
+         lamp IS the switch: a click turns the block off and on. Lit means
+         on. Dim and struck through means not FITTED - not computed at
+         all. A dot means a lock. A dashed amber frame means the FX master
+         is not feeding it. -->
+    <div class="voice-chain{{{cns}}}">
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="gate">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="gate_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">GATE</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="comp">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="comp_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">COMP</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="de_ess">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="de_ess_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">DE-ESS</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="eq">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="eq_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">EQ</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="grille">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="grille_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">GRILLE</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="drive">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="drive_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">DRIVE</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="pitch">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="pitch_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">PITCH</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="harm">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="harm_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">HARM</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="doubler">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="doubler_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">DOUBLE</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="mod">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="mod_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">MOD</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="feedback">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="feedback_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">HOWL</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="delay">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="delay_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">DELAY</span>
+        </div>
+        <div class="voice-cell{{{cns}}} voice-cell" data-bloc="reverb">
+            <div class="voice-cell-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="reverb_on" mod-widget="switch"></div>
+            <span class="voice-cell-name{{{cns}}}">REVERB</span>
+        </div>
+    </div>
+
+    <!-- ---------------- the six knobs a hand reaches for ----------------
+         mod-widget-rotation turns the element itself; the pointer is drawn
+         inside it and turns with it. Everything else is in the settings. -->
+    <div class="voice-knobs{{{cns}}}">
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-voix{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="doubler"
+                 mod-widget-rotation="270"
+                 title="How much of the doubled voices is heard"></div>
+            <div class="voice-knob-title{{{cns}}}">DOUBLE</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="doubler"></div>
+        </div>
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-voix{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="harm_mix"
+                 mod-widget-rotation="270"
+                 title="How much of the harmony voices is heard"></div>
+            <div class="voice-knob-title{{{cns}}}">HARMONY</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="harm_mix"></div>
+        </div>
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-salle{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="delay_mix"
+                 mod-widget-rotation="270"
+                 title="How much of the delay is heard"></div>
+            <div class="voice-knob-title{{{cns}}}">DELAY</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="delay_mix"></div>
+        </div>
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-salle{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="reverb_mix"
+                 mod-widget-rotation="270"
+                 title="How much of the reverb is heard"></div>
+            <div class="voice-knob-title{{{cns}}}">REVERB</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="reverb_mix"></div>
+        </div>
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-gain{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="drive"
+                 mod-widget-rotation="270"
+                 title="Soft saturation. The colour changes, the level does not."></div>
+            <div class="voice-knob-title{{{cns}}}">DRIVE</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="drive"></div>
+        </div>
+        <div class="voice-knob{{{cns}}}">
+            <div class="voice-knob-body{{{cns}}} voice-knob-gain{{{cns}}}"
+                 mod-role="input-control-port" mod-port-symbol="output"
+                 mod-widget-rotation="270"
+                 title="Output level"></div>
+            <div class="voice-knob-title{{{cns}}}">OUT</div>
+            <div class="voice-knob-value{{{cns}}}"
+                 mod-role="input-control-value" mod-port-symbol="output"></div>
+        </div>
+    </div>
+
+    <!-- ---------------- the six favourites, under the foot ---------------- -->
+    <div class="voice-go{{{cns}}}">
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="1"
+             mod-port-symbol="fav_1" title="Go to USER 1">1</div>
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="2"
+             mod-port-symbol="fav_2" title="Go to USER 2">2</div>
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="3"
+             mod-port-symbol="fav_3" title="Go to USER 3">3</div>
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="4"
+             mod-port-symbol="fav_4" title="Go to USER 4">4</div>
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="5"
+             mod-port-symbol="fav_5" title="Go to USER 5">5</div>
+        <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="6"
+             mod-port-symbol="fav_6" title="Go to USER 6">6</div>
+        <div class="voice-cmd{{{cns}}}">
+            <div class="voice-sw{{{cns}}} voice-mute-sw" mod-role="input-control-port"
+                 mod-port-symbol="mute" mod-widget="switch"
+                 title="Cuts the sound between two songs. The tails go on decaying behind it."></div>
+            <div class="voice-cmd-title{{{cns}}}">MUTE</div>
+        </div>
+        <div class="voice-cmd{{{cns}}}">
+            <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
+                 mod-port-symbol="fx" mod-widget="switch"
+                 title="Feeds the doubler, the chorus, the delay and the reverb. OFF stops feeding them - their switches stay lit and nothing comes out - and lets their tails ring out."></div>
+            <div class="voice-cmd-title{{{cns}}} voice-state">FX</div>
+        </div>
+    </div>
+
+    <!-- ---------------- and the rest of the foot ---------------- -->
     <div class="voice-foot{{{cns}}}">
         <div class="voice-btn{{{cns}}} voice-save" mod-port-symbol="save"
              title="Store what you are hearing into the USER slot chosen in the settings. The sound only - it never renames the slot.">SAVE</div>
@@ -244,29 +324,6 @@
              title="Walk the favourites WITHOUT hearing them. On the pedal, HOLD it half a second to go there.">GO TO &#9655;</div>
         <div class="voice-btn{{{cns}}} voice-tap" mod-port-symbol="tap"
              title="Two presses set the delay time">TAP</div>
-        <div class="voice-go{{{cns}}}">
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="1"
-                     mod-port-symbol="fav_1" title="Go to USER 1">1</div>
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="2"
-                     mod-port-symbol="fav_2" title="Go to USER 2">2</div>
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="3"
-                     mod-port-symbol="fav_3" title="Go to USER 3">3</div>
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="4"
-                     mod-port-symbol="fav_4" title="Go to USER 4">4</div>
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="5"
-                     mod-port-symbol="fav_5" title="Go to USER 5">5</div>
-                <div class="voice-go-btn{{{cns}}} voice-go-btn" data-slot="6"
-                     mod-port-symbol="fav_6" title="Go to USER 6">6</div>
-        </div>
-        <div class="voice-foot-space{{{cns}}}"></div>
-        <div class="voice-sw{{{cns}}} voice-mute-sw" mod-role="input-control-port"
-             mod-port-symbol="mute" mod-widget="switch"
-             title="Cuts the sound between two songs. The tails go on decaying behind it."></div>
-        <span class="voice-foot-cap{{{cns}}}">MUTE</span>
-        <div class="voice-sw{{{cns}}}" mod-role="input-control-port"
-             mod-port-symbol="fx" mod-widget="switch"
-             title="Cuts the four effects at once, in forty milliseconds, and lets their tails ring out."></div>
-        <span class="voice-foot-cap{{{cns}}} voice-state">FX</span>
     </div>
 
     <!-- What the plugin SEES. A footswitch is a black box from inside a

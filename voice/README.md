@@ -1174,6 +1174,72 @@ Either way a column a build never had comes back **at its own default**,
 which for every level above is the position where the knob does nothing.
 A favourite dialled last summer sounds exactly as it did.
 
+## The double: louder, and late by the syllable
+
+"I am still not convinced by the double - can you not do better?" Two
+things, both measured first.
+
+**It was too quiet to be a double.** With the knob at the top the three
+copies sat **6.7 dB under the lead** — a hint of a double, never a
+double. The ceiling is up three decibels: they sit 3.7 dB under it now,
+and the knob still goes down. Two choir presets that had been tuned
+against the old level came out a decibel over the loudness band and had
+their doubles trimmed back to fit it.
+
+**And its timing was an LFO.** A second take is not the first one played
+late by a fixed amount with a slow wobble on it. A singer who records a
+double lands every syllable a little early or a little late of the first
+take, and **differently each time** — that is the thing the ear reads as
+a second person, and no LFO has it. So the send now carries an attack
+detector (a 2 ms envelope against a 60 ms lagging copy of itself, with a
+100 ms refractory period), and at every attack each copy draws a new
+small offset: up to ±10 ms at SPREAD 100, nothing at SPREAD 0, which is
+still one singer twice.
+
+Moving a delay is the whole difficulty, and three ways were tried:
+
+* **Slide it** and it is a pitch bend — ten milliseconds over sixty is
+  two semitones.
+* **Wait for the grain to restart** and move it then, while its weight
+  is zero. Written, and wrong: the grains here go round at the *detune*
+  rate, which is once every few seconds, not once a window. The offset
+  would have arrived long after the syllable it was drawn for.
+* **Read at the old offset and the new one and crossfade** over twenty
+  milliseconds, raised-cosine — the way a delay pedal changes time
+  without bending. Two extra reads per copy for a fiftieth of a second,
+  a few times a second. That is what shipped.
+
+The detector itself was wrong the first time, and the bench said so:
+fed the rectified wave directly, a slow envelope settles on its *mean*
+and a fast one on its *peak*, and a held vowel then read as an attack
+every hundred milliseconds. The lagging envelope follows the fast one
+now, not the signal, and the bench counts one attack per syllable on a
+train of them.
+
+The bench plays syllables of a voice-like wave — partials, not a sine:
+a copy that jumps ten milliseconds on a 220 Hz sine lands two periods
+on from where it was, which is nearly the same number — with a shallow
+gap between them, like legato singing, because with the gap near silence
+the copies are reading silence at the attack and a jump there is
+inaudible by construction. It checks that an attack is heard about once a
+syllable, that every copy lands somewhere of its own, that the copy is
+simply *at* its new place nearly all the time, that the biggest step
+inside the twenty milliseconds after an attack is no bigger than the
+biggest step anywhere else over the same five seconds, and that SPREAD
+at zero moves nothing.
+
+### Where a second test was wrong
+
+"The vibrato swells and relaxes" read the sidebands 4.7 Hz either side of
+the copy's carrier through a rectangular three-second window. The carrier
+leaks into bins fourteen away at −33 dB; five cents of vibrato puts a
+sideband there at −23 dB. Ten decibels of margin — and the *phase* of
+that leak depends on the copy's delay, so one constant four-millisecond
+offset took the reading from 1.48 to 1.13 and failed a test that had
+passed for a year. Under a Hann window the leak sits at −60 dB and the
+reading is 2.31 with the syllable timing and 2.27 without: the swell was
+always there, the window was hiding it behind the carrier.
+
 ## A choir, and the people in it
 
 "It is not amazing — I would like to have a choir with me." The doubler
@@ -1254,6 +1320,28 @@ An octave above you **doubles the slew rate of every sample, legitimately**.
 The test now measures the jump at the transition and compares it against
 how fast the new sound moves once it has settled, which is the thing it
 was always trying to say. It reads 0.74 now.
+
+## The pedal, third shape
+
+The first was the mixing desk — thirteen boxes and thirty-five knobs,
+960 pixels, which the player called heavy and unreadable. The second was
+a 720-pixel strip of thirteen toggle switches and a row of grey buttons:
+clearer, and still a dashboard. The third is drawn in the same family as
+**FADE** beside it — dark, narrow, no images — and is 480 by 372:
+
+* the name of the sound in a **display**, lit from behind, with the
+  arrows and FAVORIS beside it;
+* **thirteen lamps** for the chain, each a click to turn its block off
+  and on, dim and struck through when the block is not fitted, dotted
+  when it is locked, dashed amber when the FX master is starving it;
+* **six real knobs** with a coloured pointer, for the six things a hand
+  reaches for while singing — DOUBLE, HARMONY, DELAY, REVERB in the
+  voice and room colours, DRIVE and OUT in amber. The other thirty-two
+  stay in the settings, and the web-UI check refuses a pedal that
+  carries anything but these;
+* the six favourites as **footswitch-sized buttons**, MUTE and FX as
+  switches with a word, and the five pushes under them;
+* the diagnostic line at the bottom, beside the bypass footswitch.
 
 ## A gate for the blocks that saturate
 

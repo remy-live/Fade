@@ -342,6 +342,30 @@ A(Paragraph(
     NOTE))
 
 A(PageBreak())
+A(Paragraph("Le double : plus fort, et en retard à chaque syllabe", H))
+A(Paragraph(
+    "Deux choses, mesurées d’abord. À fond, les copies restaient "
+    "<b>6,7 dB sous votre voix</b> — un soupçon de double, jamais un "
+    "double. Elles sont à 3,7 dB dessous maintenant, et le bouton "
+    "descend toujours.", P))
+A(Paragraph(
+    "Et leur timing était un LFO. Un deuxième take, ce n’est pas le "
+    "premier joué en retard d’une valeur fixe avec une ondulation "
+    "lente dessus : un chanteur qui double pose <b>chaque syllabe</b> un "
+    "peu tôt ou un peu tard, et <b>différemment à chaque fois</b>. "
+    "C’est ça que l’oreille lit comme une deuxième personne. "
+    "Désormais, à chaque attaque, chaque copie tire un nouveau petit "
+    "décalage — jusqu’à ±10 ms à SPREAD 100, rien à SPREAD 0 — et "
+    "y passe en fondu sur vingt millisecondes, sans glissando et sans "
+    "clic.", P))
+A(encadre("Si c’est trop", [
+    "<b>DOUBLE</b> plus bas : le plafond a monté, pas le plancher. "
+    "<b>SPREAD</b> plus bas : c’est lui qui dose le désaccord, la "
+    "dérive, les entrées et maintenant le timing. À zéro, c’est "
+    "un seul chanteur deux fois.",
+]))
+
+A(PageBreak())
 A(Paragraph("Un vrai chœur avec vous", H))
 A(Paragraph(
     "Le doubleur sait faire des gens depuis toujours : chacune de ses "

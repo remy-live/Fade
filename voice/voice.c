@@ -96,7 +96,7 @@
    the architecture once let a 32-bit binary pass a check meant to catch
    exactly that. */
 __attribute__((used))
-static const volatile char build_tag[] = "VOICE_BUILD37_AARCH64_20261019";
+static const volatile char build_tag[] = "VOICE_BUILD38_AARCH64_20261019";
 
 /* ------------------------------------------------------------------ */
 /* Maths without libm.                                                 */
@@ -893,8 +893,34 @@ static const float choir_win_ms[MAX_VOICES]   = { 58.0f, 66.0f, 74.0f, 82.0f };
    gain goes as one over the root of the count - written out rather than
    computed, because there is no sqrt in this binary. Indexed by the
    count, so the first two entries are never used. */
-static const float double_gain[MAX_VOICES + 1]    = { 0.0f, 0.0f, 0.760f, 0.620f, 0.540f };
-static const float double_gain_st[MAX_VOICES + 1] = { 0.0f, 0.0f, 1.170f, 0.960f, 0.830f };
+/* Three decibels up from where they were (x1.41): with the knob at the
+   top the copies used to sit 6.7 dB under the lead, which is a hint of a
+   double and never a double. They sit 3.7 dB under it now, and the knob
+   still goes down. */
+static const float double_gain[MAX_VOICES + 1]    = { 0.0f, 0.0f, 1.072f, 0.874f, 0.761f };
+static const float double_gain_st[MAX_VOICES + 1] = { 0.0f, 0.0f, 1.650f, 1.354f, 1.170f };
+
+/* ------------------------------------------------------------------ */
+/* TIMING BY THE SYLLABLE                                              */
+/*                                                                     */
+/* A second take is not the first one played late by a fixed amount    */
+/* with a slow wobble on it. A singer who records a double lands every */
+/* syllable a little early or a little late of the first take, and     */
+/* DIFFERENTLY each time - that is the thing the ear reads as a second */
+/* person, and no LFO has it. So at every attack the voice makes, each */
+/* copy draws a new small offset.                                      */
+/*                                                                     */
+/* Moving a delay is the whole difficulty. Slide it and it is a pitch  */
+/* bend - ten milliseconds over sixty is two semitones. Jump it and it */
+/* is a click. Waiting for the grain to restart does not work either:  */
+/* the grains here go round at the DETUNE rate, which is once every    */
+/* few seconds, not once a window. So the copy is read at the old      */
+/* offset AND the new one for twenty milliseconds and crossfaded, the  */
+/* way a delay pedal changes time without bending: two extra reads per */
+/* copy, for a fiftieth of a second, a few times a second.             */
+/* ------------------------------------------------------------------ */
+#define JIT_MS   10.0f    /* at SPREAD 100; SPREAD 0 is one singer twice */
+#define JIT_XF_MS 20.0f   /* old and new offset, crossfaded over this */
 
 /* ------------------------------------------------------------------ */
 /* HARM_HUMAN - what turns a harmoniser into other singers             */
@@ -1465,6 +1491,14 @@ typedef struct {
     float ph_choir_vib[MAX_VOICES];    /* and the vibrato on top of it */
     float ph_choir_swell[MAX_VOICES];  /* and how deep that vibrato is now */
     float ph_choir_amp[MAX_VOICES];    /* and how hard the singer is leaning in */
+    /* timing by the syllable: the offset each copy is heading for, and
+       the one each of its two grains is actually using */
+    float    jit_target[MAX_VOICES];
+    float    jit_old[MAX_VOICES];    /* the offset being faded out */
+    float    jit_x[MAX_VOICES];      /* 0 = all old, 1 = all new, done */
+    float    on_fast, on_slow;       /* the attack detector on the send */
+    uint32_t on_hold;                /* samples before the next attack counts */
+    uint32_t jit_seed;
     float ph_mod;
 
     /* --- screen --- */
@@ -2662,11 +2696,18 @@ activate(LV2_Handle instance)
     static const float depart_amp[MAX_VOICES]  = { 0.31f, 0.07f, 0.61f, 0.89f };
     for (int k = 0; k < MAX_VOICES; ++k) {
         self->ph_choir[k]       = depart[k];
+        self->jit_target[k]     = 0.0f;
+        self->jit_old[k]        = 0.0f;
+        self->jit_x[k]          = 1.0f;
         self->ph_choir_drift[k] = depart_lent[k];
         self->ph_choir_vib[k]   = depart_vib[k];
         self->ph_choir_swell[k] = depart_swell[k];
         self->ph_choir_amp[k]   = depart_amp[k];
     }
+    self->on_fast      = 0.0f;
+    self->on_slow      = 0.0f;
+    self->on_hold      = 0u;
+    self->jit_seed     = 0x2545F491u;
     self->ph_mod       = 0.0f;
     self->pitch_phase  = 0.0f;
     self->pitch_was_moving = 0;
@@ -4472,6 +4513,14 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float fx_target = self->fx_state ? 1.0f : 0.0f;
     const float fx_step   = 1.0f / (FX_RAMP_MS * 0.001f * rate);
     const float glide     = env_coef(120.0f, rate);
+    /* the attack detector: a fast envelope against a slow one */
+    const float on_a_fast = env_coef(2.0f,  rate);
+    const float on_r_fast = env_coef(30.0f, rate);
+    const float on_a_slow = env_coef(60.0f, rate);   /* the same thing, lagging */
+    const float on_r_slow = env_coef(60.0f, rate);
+    const uint32_t on_refrac = (uint32_t)(0.10f * rate);
+    const float jit_range = JIT_MS * sm[SM_SPREAD] * ms2n;
+    const float jit_xf    = 1.0f / (JIT_XF_MS * 0.001f * rate);
     const float glide_lent = env_coef(400.0f, rate);
 
     float sw_target[SW_COUNT];
@@ -5060,6 +5109,36 @@ run(LV2_Handle instance, uint32_t n_samples)
            it was worked out again for each of them, and in stereo that
            is four sines a sample computed twice for one answer. */
         float lean[MAX_VOICES];
+        if (run_double) {
+            /* The lagging envelope follows the FAST one, not the signal:
+               fed the rectified wave directly, a slow envelope settles
+               on its mean and a fast one on its peak, and a held vowel
+               then reads as an attack every hundred milliseconds. */
+            const float det = absf(send_sum);
+            self->on_fast = flush(self->on_fast
+                + ((det > self->on_fast) ? on_a_fast : on_r_fast) * (det - self->on_fast));
+            self->on_slow = flush(self->on_slow
+                + ((self->on_fast > self->on_slow) ? on_a_slow : on_r_slow)
+                  * (self->on_fast - self->on_slow));
+            if (self->on_hold > 0u) {
+                --self->on_hold;
+            } else if (self->on_fast > 1.5f * self->on_slow + 0.003f) {
+                /* an attack: every copy draws where it will land, and
+                   starts fading from where it is */
+                self->on_hold = on_refrac;
+                for (int k = 0; k < MAX_VOICES; ++k) {
+                    self->jit_seed = self->jit_seed * 1664525u + 1013904223u;
+                    const float r = (float)(self->jit_seed >> 8)
+                                  * (1.0f / 8388608.0f) - 1.0f;    /* -1 .. 1 */
+                    self->jit_old[k]    = self->jit_target[k];
+                    self->jit_target[k] = r * jit_range;
+                    self->jit_x[k]      = 0.0f;
+                }
+            }
+        }
+        /* where each copy's two grains read from at the OLD offset while
+           it is still being faded out, and the fade's position */
+        float d_a_old[MAX_VOICES], d_b_old[MAX_VOICES], xf[MAX_VOICES];
         for (int k = 0; k < n_run; ++k) {
             /* 0.55 to 1.00 of the nominal depth, so the vibrato breathes */
             const float swell = 0.775f
@@ -5085,8 +5164,15 @@ run(LV2_Handle instance, uint32_t n_samples)
             float q = p + 0.5f;
             if (q >= 1.0f) { q -= 1.0f; }
             const float base = choir_ms[k] * entry_scale * ms2n;
-            d_a[k] = base + p * choir_win[k];
-            d_b[k] = base + q * choir_win[k];
+            d_a[k] = base + self->jit_target[k] + p * choir_win[k];
+            d_b[k] = base + self->jit_target[k] + q * choir_win[k];
+            xf[k]  = self->jit_x[k];
+            if (xf[k] < 1.0f) {
+                d_a_old[k] = base + self->jit_old[k] + p * choir_win[k];
+                d_b_old[k] = base + self->jit_old[k] + q * choir_win[k];
+                self->jit_x[k] += jit_xf;
+                if (self->jit_x[k] > 1.0f) { self->jit_x[k] = 1.0f; }
+            }
             w_a[k] = 0.5f - 0.5f * lfo_sin(p + 0.25f);
             lean[k] = 1.0f + 0.12f * lfo_sin(self->ph_choir_amp[k]);
         }
@@ -5103,6 +5189,15 @@ run(LV2_Handle instance, uint32_t n_samples)
             for (int k = 0; k < n_run; ++k) {
                 float v = ring_read(&ch->shortline, d_a[k]) * w_a[k]
                         + ring_read(&ch->shortline, d_b[k]) * (1.0f - w_a[k]);
+                if (xf[k] < 1.0f) {
+                    /* between two offsets: the old one fading out under
+                       the new one fading in, raised-cosine so neither
+                       end of the fade is a corner */
+                    const float vo = ring_read(&ch->shortline, d_a_old[k]) * w_a[k]
+                                   + ring_read(&ch->shortline, d_b_old[k]) * (1.0f - w_a[k]);
+                    const float t  = 0.5f - 0.5f * lfo_sin(0.5f * xf[k] + 0.25f);
+                    v = vo + t * (v - vo);
+                }
                 /* each voice through its own throat: one bright, one
                    darker. Identical copies sound like an effect. */
                 ch->choir_lp[k] = flush(ch->choir_lp[k]

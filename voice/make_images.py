@@ -78,6 +78,8 @@ def alleger(path, largeur=560, couleurs=128):
     img = Image.open(path)
     if img.width <= largeur and img.mode == 'P':
         return img.size, os.path.getsize(path)
+    # never UP: a 480-pixel pedal blown up to 560 is a blurred pedal
+    largeur = min(largeur, img.width)
     h = int(img.height * largeur / img.width)
     img = img.convert('RGB').resize((largeur, h), Image.LANCZOS)
     img = img.quantize(colors=couleurs, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)

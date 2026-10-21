@@ -1193,8 +1193,10 @@ static void essai_doubleur(void)
     const double copies_db = 10.0 * log10(e_copies / e_sec);
     const double total_db  = 10.0 * log10(e_avec / e_sec);
 
+    /* 3.7 dB under the lead at the top of the knob. It was 6.7, which
+       is a hint of a double and never a double. */
     verifie_entre("the three copies sit just under the lead voice",
-                  copies_db, -10.0, -4.0);
+                  copies_db, -6.0, -1.5);
     verifie_entre("so the doubler is not a volume pedal", total_db, 0.3, 2.5);
     verifie("its switch takes it back out completely", ecart_coupe, 0.0, 0.0);
 
@@ -1223,6 +1225,117 @@ static void essai_doubleur(void)
 /* ================================================================== */
 /* Stereo                                                              */
 /* ================================================================== */
+
+/* Timing by the syllable: at every attack each copy draws a new small
+   offset and its grains pick it up as they restart. */
+static void essai_double_syllabes(void)
+{
+    Banc b;
+    ouvrir(&b, 0, 48000.0, 128, 0);
+    neutre(&b);
+    b.ctl[CTL_DOUBLER] = 100.0f;
+    b.ctl[CTL_VOICES]  = 4.0f;
+    b.ctl[CTL_SPREAD]  = 100.0f;
+    Voice* v = (Voice*)b.h;
+
+    /* syllables: 180 ms loud, 120 ms quiet, on a 220 Hz tone */
+    double ph = 0.0;
+    const double w = 2.0 * PI * 220.0 / 48000.0;
+    int attaques = 0, cibles_differentes = 0, suivies = 0;
+    float cible_prec[MAX_VOICES] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    double precedent = 0.0, saut = 0.0, calme = 0.0;
+    int fondu = 0;   /* blocks left in the window after an attack */
+    /* The syllable's edges are raised cosines over 12 ms: a step in the
+       INPUT would be a step in the output whatever the doubler did, and
+       the thing on trial here is the doubler. */
+    long n_ech = 0;
+    for (int k = 0; k < 2400; ++k) {
+        for (uint32_t i = 0; i < b.bloc; ++i, ++n_ech) {
+            const double t_ms = (double)(n_ech % 14400) / 48.0;  /* 300 ms cycle */
+            double amp;
+            if (t_ms < 12.0)        { amp = 0.12 + 0.13 * 0.5 * (1.0 - cos(PI * t_ms / 12.0)); }
+            else if (t_ms < 168.0)  { amp = 0.25; }
+            else if (t_ms < 180.0)  { amp = 0.12 + 0.13 * 0.5 * (1.0 + cos(PI * (t_ms - 168.0) / 12.0)); }
+            else                    { amp = 0.12; }
+            /* a voice-ish wave, not a sine: a copy that jumps ten
+               milliseconds on a sine lands two periods on from where
+               it was, which is nearly the same number; on partials it
+               does not */
+            {
+                const double t = ph + w * (double)i;
+                b.in[0][i] = (float)(amp * (sin(t) + 0.5 * sin(2.0 * t)
+                                                 + 0.25 * sin(3.0 * t + 0.4)
+                                                 + 0.12 * sin(5.0 * t + 1.1)));
+            }
+        }
+        ph += w * (double)b.bloc;
+        tourner(&b);
+        if (k > 400) {
+            int neuf = 0;
+            for (int q = 0; q < MAX_VOICES; ++q) {
+                if (v->jit_target[q] != cible_prec[q]) { neuf = 1; }
+            }
+            if (neuf) {
+                ++attaques;
+                fondu = 5;   /* this block and four more: 27 ms */
+                /* four people do not all land the same way */
+                if (v->jit_target[0] != v->jit_target[1]
+                    && v->jit_target[1] != v->jit_target[2]) { ++cibles_differentes; }
+                for (int q = 0; q < MAX_VOICES; ++q) { cible_prec[q] = v->jit_target[q]; }
+            }
+            /* the fade is twenty milliseconds; the rest of the time the
+               copy is simply AT its new offset */
+            if (v->jit_x[0] >= 1.0f) { ++suivies; }
+        }
+        /* followed from the first block, or the first sample looked at
+           is a step from the zero it was initialised to */
+        for (uint32_t i = 0; i < b.bloc; ++i) {
+            const double d = fabs((double)b.out[0][i] - precedent);
+            if (k > 400) {
+                if (fondu > 0) { if (d > saut)  { saut  = d; } }
+                else           { if (d > calme) { calme = d; } }
+            }
+            precedent = b.out[0][i];
+        }
+        if (fondu > 0) { --fondu; }
+    }
+    const double secondes = (2400 - 400) * 128.0 / 48000.0;
+    verifie_entre("an attack is heard about every syllable",
+                  (double)attaques / secondes, 2.0, 4.5);
+    verifie_vrai("and every copy lands somewhere of its own",
+                 cibles_differentes >= attaques * 0.8);
+    verifie_vrai("and the copy is simply AT its new place nearly all the time",
+                 suivies > 1700);
+    /* the offset moves by up to ten milliseconds and is never heard
+       moving: a grain is only ever moved while its weight is zero */
+    if (getenv("TRACE_CLIC")) {
+        printf("    SYLLABES: calme=%.6f saut=%.6f (x%.2f) attaques=%d\n",
+               calme, saut, saut / (calme > 0 ? calme : 1), attaques);
+    }
+    verifie_vrai("and none of it clicks", saut < calme * 1.25);
+    {
+        double plus_grand = 0.0;
+        for (int q = 0; q < MAX_VOICES; ++q) {
+            const double a = fabs((double)v->jit_target[q]) / 48.0;
+            if (a > plus_grand) { plus_grand = a; }
+        }
+        verifie_vrai("and stays within ten milliseconds", plus_grand <= 10.0001);
+    }
+    /* SPREAD at zero is one singer twice: nothing moves */
+    b.ctl[CTL_SPREAD] = 0.0f;
+    for (int k = 0; k < 600; ++k) {
+        for (uint32_t i = 0; i < b.bloc; ++i, ++n_ech) {
+            const double t_ms = (double)(n_ech % 14400) / 48.0;
+            const double amp = (t_ms < 168.0) ? 0.25 : 0.02;
+            b.in[0][i] = (float)(amp * sin(ph + w * (double)i));
+        }
+        ph += w * (double)b.bloc;
+        tourner(&b);
+    }
+    verifie("with SPREAD at zero the copies do not move about",
+            (double)v->jit_target[0], 0.0, 1.0e-6);
+    fermer(&b);
+}
 
 static void essai_stereo(void)
 {
@@ -4697,6 +4810,25 @@ static void essai_choeur(void)
    ones near the trough; the peak group has to come out clearly louder.
    If it does not, the depth is constant and this comment sits over dead
    code. */
+/* The same, under a Hann window. A rectangular one leaks the carrier
+   into bins fourteen away at -33 dB, and a sideband five cents of
+   vibrato puts there is -23 dB: ten decibels of margin, which the PHASE
+   of the leak eats whenever the copy's delay changes by a few
+   milliseconds. The syllable timing changed it by four, and a test that
+   had passed for a year read 1.13. Hann puts the leak at -60 dB. */
+static double energie_a_hann(const float* x, size_t n, double f, double sr)
+{
+    const double w = 2.0 * PI * f / sr, c = 2.0 * cos(w);
+    double s1 = 0.0, s2 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double h = 0.5 - 0.5 * cos(2.0 * PI * (double)i / (double)(n - 1));
+        const double s = h * (double)x[i] + c * s1 - s2;
+        s2 = s1;
+        s1 = s;
+    }
+    return s1 * s1 + s2 * s2 - c * s1 * s2;
+}
+
 static void essai_choeur_souffle(void)
 {
     const double sr = 48000.0;
@@ -4734,8 +4866,8 @@ static void essai_choeur_souffle(void)
         double e = 0.0;
         for (int j = -4; j <= 4; ++j) {
             const double d = 0.25 * (double)j;
-            e += energie_a(out + deb, n, 214.41 + d, sr)
-               + energie_a(out + deb, n, 223.81 + d, sr);
+            e += energie_a_hann(out + deb, n, 214.41 + d, sr)
+               + energie_a_hann(out + deb, n, 223.81 + d, sr);
         }
         const double s = 0.775 + 0.225 * sin(2.0 * PI * 0.041 * (t + 1.5));
         if (s > 0.93)      { haut += e; ++n_haut; }
@@ -5683,6 +5815,7 @@ int main(int argc, char** argv)
     printf("The gate on the saturating blocks:\n"); essai_porte_satu();
     printf("Reverb:\n");                   essai_reverb();
     printf("Doubler:\n");                  essai_doubleur();
+    printf("Timing by the syllable:\n");   essai_double_syllabes();
     printf("Stereo variant:\n");           essai_stereo();
     printf("In place:\n");                 essai_sur_place();
     printf("Missing ports:\n");            essai_ports_absents();

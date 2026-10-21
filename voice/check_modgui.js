@@ -118,6 +118,9 @@ const places = new Set([...pedale.querySelectorAll('[mod-port-symbol]')]
 const AU_PIED = [
     'program', 'save', 'ab', 'next_user', 'fav_browse', 'tap', 'fx', 'mute',
     'fav_1', 'fav_2', 'fav_3', 'fav_4', 'fav_5', 'fav_6',
+    /* the six knobs a hand reaches for while singing - the rest of the
+       thirty-eight stay in the settings, and that is the whole point */
+    'doubler', 'harm_mix', 'delay_mix', 'reverb_mix', 'drive', 'output',
     'gate_on', 'comp_on', 'de_ess_on', 'eq_on', 'grille_on', 'drive_on',
     'pitch_on', 'harm_on', 'doubler_on', 'mod_on', 'feedback_on',
     'delay_on', 'reverb_on',

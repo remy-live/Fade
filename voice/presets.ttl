@@ -4256,7 +4256,7 @@
         pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 65.0
+        pset:value 52.0
     ] , [
         lv2:symbol "spread" ;
         pset:value 100.0
@@ -4430,7 +4430,7 @@
         pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 60.0
+        pset:value 46.0
     ] , [
         lv2:symbol "spread" ;
         pset:value 85.0
@@ -16784,7 +16784,7 @@
         pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 65.0
+        pset:value 52.0
     ] , [
         lv2:symbol "spread" ;
         pset:value 100.0
@@ -16958,7 +16958,7 @@
         pset:value 1.0
     ] , [
         lv2:symbol "doubler" ;
-        pset:value 60.0
+        pset:value 46.0
     ] , [
         lv2:symbol "spread" ;
         pset:value 85.0
